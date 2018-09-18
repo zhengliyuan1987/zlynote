@@ -1,1 +1,2 @@
-# xmem
+# xmem: Xilinx Memory Access Library
+
