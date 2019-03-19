@@ -1,5 +1,5 @@
-#ifndef XF_DATA_UTILS_ENUMS_H
-#define XF_DATA_UTILS_ENUMS_H
+#ifndef XF_UTIL_ENUMS_H
+#define XF_UTIL_ENUMS_H
 
 struct tag_select_t {};
 static const tag_select_t tag_select {};
@@ -10,4 +10,4 @@ static const load_balance_t load_balance {};
 struct round_robin_t {};
 static const round_robin_t round_robin {};
 
-#endif // XF_DATA_UTILS_ENUMS_H
+#endif // XF_UTIL_ENUMS_H

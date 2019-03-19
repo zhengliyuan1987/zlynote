@@ -1,1 +1,1 @@
-This directory contains kernel headers from XF Data-Utils Library.
+This directory contains kernel headers from XF Utility Library.
