@@ -1,6 +1,6 @@
-# XF Data Utilities Library
+# XF Utility Library
 
-XF Data Utilities Library is an Scout library of stream-based data utility modules.
+XF Utility Library is an SDx library of common patterns of streaming and storage access.
 
 ## Comprehensive Documentation
 
