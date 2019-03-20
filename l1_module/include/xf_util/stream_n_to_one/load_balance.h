@@ -15,14 +15,14 @@ void strm_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<_WOutStrm> >& ostrm,
                    hls::stream<bool>& e_ostrm,
-                   load_balance_t _flag);
+                   load_balance_t _op);
 
 template <typename _TIn, int _NStrm>
 void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<_TIn>& ostrm,
                    hls::stream<bool>& e_ostrm,
-                   load_balance_t _flag);
+                   load_balance_t _op);
 
 } // level1
 } // util
