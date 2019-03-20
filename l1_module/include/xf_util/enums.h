@@ -10,4 +10,7 @@ static const load_balance_t load_balance {};
 struct round_robin_t {};
 static const round_robin_t round_robin {};
 
+struct duplicate_t {};
+static const duplicate_t duplicate {};
+
 #endif // XF_UTIL_ENUMS_H
