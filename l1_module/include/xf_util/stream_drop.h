@@ -1,23 +1,27 @@
 #ifndef XF_UTIL_STRM_DROP_H
 #define XF_UTIL_STRM_DROP_H
 
-#ifndef XF_UTIL_STREAM_N1
-#error "Please user upper level header stream_n_to_one.h"
-#endif
+#include "xf_util/types.h"
 
 // Forward decl
 
 namespace xf {
 namespace util {
+namespace level1 {
 
+/* @brief Drop multiple streams with end flag helpers.
+ */
 template <typename _TIn, int _NStrm>
-void strm_drop(hls::stream<_TIn> istrms[_NStrm],
-               hls::stream<bool> e_istrms[_NStrm]);
+void stream_drop(hls::stream<_TIn> istrms[_NStrm],
+                 hls::stream<bool> e_istrms[_NStrm]);
 
+/* @brief Drop one stream with end flag helper.
+ */
 template <typename _TIn>
-void strm_drop(hls::stream<_TIn>& istrm,
-               hls::stream<bool>& e_istrm);
+void stream_drop(hls::stream<_TIn>& istrm,
+                 hls::stream<bool>& e_istrm);
 
+} // level1
 } // util
 } // xf
 
