@@ -23,14 +23,14 @@ namespace level1 {
  * @param e_istrm end flag stream for input data.
  * @param ostrms output data streams.
  * @param e_ostrms end flag streams, one for each output data stream.
- * @param _flag algorithm selector.
+ * @param _op algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
                    hls::stream<bool> e_ostrms[_NStrm],
-                   load_balance_t _flag);
+                   load_balance_t _op);
 
 // TODO doxygen comment.
 template <typename _TIn, int _NStrm>
@@ -38,7 +38,7 @@ void strm_one_to_n(hls::stream<_TIn>& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<_TIn> ostrms[_NStrm],
                    hls::stream<bool> e_ostrms[_NStrm],
-                   load_balance_t _flag);
+                   load_balance_t _op);
 
 } // level1
 } // util

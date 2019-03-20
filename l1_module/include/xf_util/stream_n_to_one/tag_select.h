@@ -19,7 +19,7 @@ void strm_n_to_one(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm + _WTagStrm> >& data_ostrm,
     hls::stream<bool>& e_ostrm,
-    tag_select_t _flag);
+    tag_select_t _op);
 
 // tag based collect, discard tag
 template <typename _TIn, int _WTagStrm>
@@ -30,7 +30,7 @@ void strm_n_to_one(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
     hls::stream<bool>& e_ostrm,
-    tag_select_t _flag);
+    tag_select_t _op);
 
 } // level1
 } // utils
