@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_STRM_DUP_H
-#define XF_UTIL_STRM_DUP_H
+#ifndef XF_UTIL_ENUMS_H
+#define XF_UTIL_ENUMS_H
 
 namespace xf {
 namespace util {
@@ -33,4 +33,4 @@ static const xf::util::combine_right_t combine_right {};
 static const xf::util::shuffle_left_t shuffle_left {};
 static const xf::util::shuffle_right_t shuffle_right {};
 
-#endif // XF_UTIL_STRM_DUP_H
+#endif // XF_UTIL_ENUMS_H
