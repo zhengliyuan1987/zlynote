@@ -5,7 +5,7 @@
 
 #define WIN_STRM  8 
 #define WTAG_STRM 3
-#define NS (WIN_STRM) * (WIN_STRM)
+#define NS (WIN_STRM) * (WIN_STRM)-5
 #define NSTRM (1 << WTAG_STRM )
 
 void test_core_1_n_select(hls::stream<ap_uint<WIN_STRM> >& data_istrm,

@@ -67,20 +67,20 @@ void strm_one_to_n_tag(
     hls::stream<ap_uint<_WInStrm> > data_ostrms[PowerOf2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value]){
 
-  bool last_tag  = e_tag_istrm.read();
+  bool last_tag    = e_tag_istrm.read();
   bool last_istrm  = e_istrm.read();
   while(!last_tag && !last_istrm) {
   #pragma HLS pipeline II = 1
     ap_uint<_WInStrm> data  = istrm.read();
-    ap_uint<_WTagStrm> tag = tag_istrm.read(); 
+    ap_uint<_WTagStrm> tag  = tag_istrm.read(); 
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
-    last_tag  = e_tag_istrm.read();
+    last_tag    = e_tag_istrm.read();
     last_istrm  = e_istrm.read();
   }
   // drop 
   while(!last_istrm) {
-     last_istrm  = e_istrm.read();
+     last_istrm              = e_istrm.read();
      ap_uint<_WInStrm> data  = istrm.read();
   }
   
