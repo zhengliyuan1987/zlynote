@@ -35,6 +35,20 @@ void strm_one_to_n(
     hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op);
 
+/* 
+* @brief strm_one_to_n primitive implements that one stream is distributed to n streams.
+* In this primitive, the tag is the index of ouput streams. 
+* The input data in data_istrms is distributed to  the data_ostrm whose index is tag .
+* @tparam _TIn  the type of input & output data
+* @tparam _WTagStrm the width of tag,  pow(2, _WTagStrm) is the number of ouput streams.
+*
+* @param data_istrm the input stream
+* @param tag_istrm  the  tag stream,  each tag is the index of output streams and data_istrm and tag_istrm are synchronous.
+* @param e_tag_istrm the end signal stream, true if data_istrm and tag_istrm are ended.
+* @param data_ostrms the output stream. 
+* @param e_data_ostrms the end signals of data_ostrms.
+* @param _op  tag lable
+*/
 template <typename _TIn, int _WTagStrm>
 void strm_one_to_n(
     hls::stream<_TIn>& istrm,
@@ -165,7 +179,7 @@ void strm_one_to_n(
     hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op){
-    details::strm_one_to_n_tag_select_type<int, _WTagStrm>( istrm,
+    details::strm_one_to_n_tag_select_type<_TIn, _WTagStrm>( istrm,
    	                        e_istrm,
    	                        tag_istrm,
    	                        e_tag_istrm,
