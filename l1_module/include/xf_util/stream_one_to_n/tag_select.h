@@ -57,9 +57,8 @@ namespace util {
 namespace level1 {
 namespace details{
 
-
 template <int _WInStrm, int _WTagStrm>
-void strm_one_to_n_tag(
+void strm_one_to_n_tag_select(
     hls::stream<ap_uint<_WInStrm> >& istrm,
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
@@ -96,8 +95,6 @@ void strm_one_to_n_tag(
 
 } //details
 
-
-
 template <int _WInStrm, int _WTagStrm>
 void strm_one_to_n(
     hls::stream<ap_uint<_WInStrm> >& istrm,
@@ -108,7 +105,7 @@ void strm_one_to_n(
     hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op){
 
-    details::strm_one_to_n_tag( istrm,
+    details::strm_one_to_n_tag_select<_WInStrm, _WTagStrm>( istrm,
    	                        e_istrm,
    	                        tag_istrm,
    	                        e_tag_istrm,
@@ -120,8 +117,44 @@ void strm_one_to_n(
 
 
 namespace details{
-//TODO
-}
+
+template <typename _TIn, int _WTagStrm>
+void strm_one_to_n_tag_select_type (
+    hls::stream<_TIn>& istrm,
+    hls::stream<bool>& e_istrm,
+    hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
+    hls::stream<bool>& e_tag_istrm,
+    hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value]) {
+
+  bool last_tag    = e_tag_istrm.read();
+  bool last_istrm  = e_istrm.read();
+  while(!last_tag && !last_istrm) {
+  #pragma HLS pipeline II = 1
+    _TIn data               = istrm.read();
+    ap_uint<_WTagStrm> tag  = tag_istrm.read(); 
+    data_ostrms[tag].write(data);
+    e_data_ostrms[tag].write(false);
+    last_tag    = e_tag_istrm.read();
+    last_istrm  = e_istrm.read();
+  }
+  // drop 
+  while(!last_istrm) {
+     last_istrm = e_istrm.read();
+     _TIn  data = istrm.read();
+  }
+  
+  assert(last_tag);
+
+  const unsigned int  nstrm = PowerOf2<_WTagStrm>::value;
+  for(unsigned int  i=0; i< nstrm; ++i) {
+    #pragma HLS unroll
+    e_data_ostrms[i].write(true);
+  }
+
+} 
+
+} // details
 
 template <typename _TIn, int _WTagStrm>
 void strm_one_to_n(
@@ -132,7 +165,13 @@ void strm_one_to_n(
     hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op){
-//TODO
+    details::strm_one_to_n_tag_select_type<int, _WTagStrm>( istrm,
+   	                        e_istrm,
+   	                        tag_istrm,
+   	                        e_tag_istrm,
+   	                        data_ostrms,
+   	                        e_data_ostrms
+   	                        );
 }
 
 } // level1
