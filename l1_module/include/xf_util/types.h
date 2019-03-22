@@ -36,8 +36,14 @@ typedef unsigned long long int uint64_t;
 #endif // __LP64__
 #endif
 
-#include "hls_stream.h"
+#if defined(AP_INT_MAX_W) and AP_INT_MAX_W < 32768
+#warning "AP_INT_MAX_W has been defined to be less than 32768"
+#endif
+#undef AP_INT_MAX_W
+#define AP_INT_MAX_W 32768
+
 #include "ap_int.h"
+#include "hls_stream.h"
 
 #endif // ifndef XF_UTIL_TYPES_H
 
