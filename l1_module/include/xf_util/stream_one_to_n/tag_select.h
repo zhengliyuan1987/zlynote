@@ -4,7 +4,7 @@
 #include "xf_util/types.h"
 #include "xf_util/enums.h"
 #include "xf_util/traits.h"
-
+#include <assert.h>
 // Forward decl
 
 namespace xf {
@@ -67,11 +67,9 @@ void strm_one_to_n_tag(
     hls::stream<ap_uint<_WInStrm> > data_ostrms[PowerOf2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value]){
 
-
   bool last_tag  = e_tag_istrm.read();
   bool last_istrm  = e_istrm.read();
-  while(!last_tag && !last_istrm) 
-  {
+  while(!last_tag && !last_istrm) {
   #pragma HLS pipeline II = 1
     ap_uint<_WInStrm> data  = istrm.read();
     ap_uint<_WTagStrm> tag = tag_istrm.read(); 
@@ -85,8 +83,8 @@ void strm_one_to_n_tag(
      last_istrm  = e_istrm.read();
      ap_uint<_WInStrm> data  = istrm.read();
   }
-  while(!last_tag)
-    last_tag  = e_tag_istrm.read();
+  
+  assert(last_tag);
 
   const unsigned int  nstrm = PowerOf2<_WTagStrm>::value;
   for(unsigned int  i=0; i< nstrm; ++i) {
