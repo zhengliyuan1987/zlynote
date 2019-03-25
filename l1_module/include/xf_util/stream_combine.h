@@ -50,7 +50,7 @@ template <int _WIn, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     hls::stream<ap_uint<_WIn> > istrms[_NStrm],
-                    hls::stream<bool> e_istrms[_NStrm],
+                    hls::stream<bool> e_istrm,
 
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
