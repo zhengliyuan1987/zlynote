@@ -17,7 +17,7 @@ namespace level1 {
  *
  * @param select_cfg one-hot encoded selection, LSB for istrms[0].
  * @param istrms output data streams.
- * @param e_istrms end flag streams, one for each output data stream.
+ * @param e_istrm end flag for all input streams.
  * @param ostrm input data stream.
  * @param e_ostrm end flag stream for input data.
  * @param _op algorithm selector for this function.
@@ -26,7 +26,7 @@ template <int _WIn, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     hls::stream<ap_uint<_WIn> > istrms[_NStrm],
-                    hls::stream<bool> e_istrms[_NStrm],
+                    hls::stream<bool> e_istrm,
 
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
@@ -41,7 +41,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
  *
  * @param select_cfg one-hot encoded selection, LSB for istrms[0].
  * @param istrms output data streams.
- * @param e_istrms end flag streams, one for each output data stream.
+ * @param e_istrm end flag for all input streams.
  * @param ostrm input data stream.
  * @param e_ostrm end flag stream for input data.
  * @param _op algorithm selector for this function.
