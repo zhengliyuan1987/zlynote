@@ -314,10 +314,26 @@ template <typename _TIn, int _NStrm>
 void strm_n_to_one_round_robin_type(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<_TIn>& ostrm,
-                   hls::stream<bool>& e_ostrm) {
-  
+                   hls::stream<bool>& e_ostrm) {  
  
-
+ int id=0;
+ ap_uint<_NStrm> end=0;
+ ap_uint<_NStrm> end_flag=~end;
+ for(int i=0; i< _NStrm; ++i) {    
+   #pragma HLS unroll
+   end[id] = e_istrms[i].read();
+  }
+ // output the data from input in order of round robin 
+ while( end != end_flag) {
+   if(!end[id]){
+      _TIn d = istrms[id].read();
+      end[id]=e_istrms[id].read();
+      id = (id+1)== _NStrm ? 0 : (id+1);
+      ostrm.write(d);
+      e_ostrm.write(false);
+   } 
+}
+ e_ostrm.write(true);
 }
 
 } // details
@@ -328,7 +344,6 @@ void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<_TIn>& ostrm,
                    hls::stream<bool>& e_ostrm,
                    round_robin_t _op) {
-// TODO
     details::strm_n_to_one_round_robin_type<_TIn, _NStrm>( istrms,
                                        e_istrms,
                                        ostrm,
