@@ -10,21 +10,36 @@
 namespace xf {
 namespace util {
 namespace level1 {
-/*
+/* @brief stream distribute, in round-robin order from NStrm input streams.
  *
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of input streams.
  *
- *
- *
- *
- * 
- * */
-template <int _WInStrm, int _WOutStrm, int _NStrm>
+ * @param istrms input data streams.
+ * @param e_istrms end flag streams for input data.
+ * @param ostrm output data stream.
+ * @param e_ostrm end flag stream.
+ * @param _op algorithm selector.
+ */
+template <int _WInStrm, int _WOutStrm,int _NStrm>
 void strm_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<_WOutStrm> >& ostrm,
                    hls::stream<bool>& e_ostrm,
                    round_robin_t _op);
 
+/* @brief stream distribute, in round-robin order from NStrm input streams.
+ *
+ * @tparam _TIn the type of input and output stream.
+ * @tparam _NStrm number of input streams.
+ *
+ * @param istrms input data streams.
+ * @param e_istrms end flag streams for input data.
+ * @param ostrm output data stream.
+ * @param e_ostrm end flag stream.
+ * @param _op algorithm selector.
+ */
 template <typename _TIn, int _NStrm>
 void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
@@ -46,8 +61,18 @@ namespace level1 {
 
 namespace details {
 
-///////////////////////////////////
-template <int _WInStrm, int _WOutStrm, int _NStrm>
+/* @brief read data in round-robin order from NStrm input streams.
+ * combine  _NStrm data(_WInStrm bits) from input streams to one(_NStrm*_NStrm bits)
+ * @tparam _WInStrm input stream width.
+ * @tparam _NStrm number of input streams.
+ *
+ * @param istrms input data streams.
+ * @param e_istrms end flag streams for input data.
+ * @param lef_n the number of available data in last n_in_strm.
+ * @param n_in_strm output stream.
+ * @param e_n_in_strm end flag stream.
+ */
+template <int _WInStrm,  int _NStrm>
 void strm_n_to_one_read(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<32> > &left_n,
@@ -98,7 +123,20 @@ void strm_n_to_one_read(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
   e_n_in_strm.write(true);
 
 }
-
+/* @brief buffer data to solve different input and output width.
+ * 
+ *input  _WInStrm * _NStrm bit --> output lcm(_WInStrm*_NStrm, WOutStrm) bits
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of input streams.
+ *
+ * @param n_in_strm input data stream.
+ * @param e_n_in_strm end flag stream for input data.
+ * @param lef_n the number of available data in last n_in_strm, input port
+ * @param lef_b the number of available data in last buf_strm, output port.
+ * @param buf_strm output stream.
+ * @param e_buf_strm end flag stream.
+ */
 template <int _WInStrm, int _WOutStrm,int _NStrm>
 void strm_n_to_one_collect(
                    hls::stream<ap_uint<_WInStrm*_NStrm> > &n_in_strm,
@@ -112,6 +150,7 @@ void strm_n_to_one_collect(
   const int count_in  = num_in/_NStrm;
   int p=0;
   ap_uint<buf_size> buf_a;
+  // pos stands for total available bits in buf_a
   int pos=0;
   bool last= e_n_in_strm.read();
   while(!last)  {
@@ -120,6 +159,7 @@ void strm_n_to_one_collect(
     pos += _NStrm*_WInStrm;
     buf_a.range(pos-1,low)=n_in_strm.read();    
     last = e_n_in_strm.read();
+    //output when the buf_a is full
     if(!last && p+1== count_in) {
       e_buf_strm.write(false);
       buf_strm.write(buf_a);
@@ -135,14 +175,27 @@ void strm_n_to_one_collect(
     buf_strm.write(buf_a);
     e_buf_strm.write(true); // even if true, the data in buf_strm is available.
  
-   int left=left_n.read();
-   if (left >0)
+   int left=left_n.read(); 
+   if (left >0)  //left is the number of available data(WInStrm bits) in last data(_NStrm*_WInStrm bits) from n_in_strm
      left_b.write(pos-(_NStrm-left)*_WInStrm);
    else
      left_b.write(pos);
 }
 
 
+/* @brief output data sequentially from input stream with big width.
+ * 
+ * output buf_size=lcm(_WInStrm*_NStrm, WOutStrm) bits in buf_size/_WOutStrm cycles
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of input streams.
+ *
+ * @param buf_strm input data stream.
+ * @param e_buf_strm end flag stream for input data.
+ * @param lef_b the number of available data in last buf_strm, input port.
+ * @param ostrm output stream.
+ * @param estrm end flag stream.
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_n_to_one_distribute(
                    hls::stream<ap_uint< lcm<_WInStrm*_NStrm, _WOutStrm>::value> >& buf_strm,
@@ -160,26 +213,31 @@ void strm_n_to_one_distribute(
   bool last = false; 
   unsigned int up_pos= -1;  
   while(!last) {
-   #pragma HLS pipeline II=1 
+   #pragma HLS pipeline II=1
+    // read once, output num_out data 
     if(c==num_out) {
         buf_b= buf_strm.read();    
         c=0;
         last= e_buf_strm.read(); 
+        //when  e_buf_strm is true, read left_b  
         if (last)
-         up_pos=left_b.read();
+         up_pos=left_b.read(); // up_pos is changed only if the input will end
      }
-    if( (c+1)*_WOutStrm< up_pos) {
+    // ouput data at almost every cycle 
+    if( (c+1)*_WOutStrm< up_pos) { 
        ostrm.write(buf_b.range((c+1)*_WOutStrm-1, c*_WOutStrm));
        e_ostrm.write(false);
      }
       c++;
-  }
+  } // while
  e_ostrm.write(true);
 
 }
 
-//////////////////////////////////////////////////
-
+/**
+ *  read data from _NStrm input streams and output them to one stream in order of round robin
+ *  assume the input and output width( _WInStrm and _WOutStrm) are different.
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_n_to_one_round_robin(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
@@ -201,12 +259,14 @@ hls::stream<ap_uint<32> > left_b; // how many input(_WInStrm bits) are stored in
 #pragma HLS dataflow
 
 /*  read data   : read data from input streams, output _NStrm * _WInStrm bits
- *  collect data: buffer  buf_size=lcm<_WInStrm*_NStrm, _WOutStrm> bits and output it.
- *  distribute  : output buf_size/_WOutStrm data when read buf_size once
+ *  collect data: buffer  buf_size=lcm<_WInStrm*_NStrm, _WOutStrm> bits and output them.
+ *  distribute  : output buf_size/_WOutStrm  data when read buf_size bits once
+ *
+ * least common mutiple(lcm) is used for solving the difference between  the input width and output width
  *
  * */
  
-strm_n_to_one_read < _WInStrm,_WOutStrm, _NStrm>
+strm_n_to_one_read < _WInStrm, _NStrm>
                 ( istrms,
                   e_istrms,
                   left_n,
