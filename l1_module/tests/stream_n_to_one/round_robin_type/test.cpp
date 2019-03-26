@@ -34,6 +34,7 @@ int test_n_1(){
    
 
   std::cout<<std::dec<< "NS        = "<< NS <<std::endl;
+  std::cout<<std::dec<< "input NS = "<< NS <<" float data "<<std::endl;
   for(int d=0; d< NS; ++d)
   { 
     int id =d % NSTRM; 
@@ -66,6 +67,8 @@ int test_n_1(){
       std::cout<< "gld  = "<< gld << std::endl;
      }
  } // while(!last)
+  std::cout<<std::dec<< "output n = "<< n <<" float data"<<std::endl;
+  nerror = (n!=(NS))? 1 : nerror;
    if (nerror) {
         std::cout << "\nFAIL: " << nerror << "the order is wrong.\n";
    } 

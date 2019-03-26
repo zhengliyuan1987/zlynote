@@ -326,10 +326,11 @@ void strm_n_to_one_round_robin_type(hls::stream<_TIn> istrms[_NStrm],
  ap_uint<_NStrm> end_flag=~end;
  for(int i=0; i< _NStrm; ++i) {    
    #pragma HLS unroll
-   end[id] = e_istrms[i].read();
+   end[i] = e_istrms[i].read();
   }
  // output the data from input in order of round robin 
  while( end != end_flag) {
+   #pragma HLS pipeline II=1
    if(!end[id]){
       _TIn d = istrms[id].read();
       end[id]=e_istrms[id].read();
@@ -337,7 +338,7 @@ void strm_n_to_one_round_robin_type(hls::stream<_TIn> istrms[_NStrm],
       ostrm.write(d);
       e_ostrm.write(false);
    } 
-}
+ } // while
  e_ostrm.write(true);
 }
 
