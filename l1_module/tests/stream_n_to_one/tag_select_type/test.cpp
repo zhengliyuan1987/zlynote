@@ -6,22 +6,22 @@
 
 #include "xf_util/stream_n_to_one/tag_select.h"
 
-#define WIN_STRM 8 
+#define WIN_STRM 16 
 #define WTAG_STRM 3
-#define NS       128
+#define NS       (1024*8)
 #define NSTRM   (1<<(WTAG_STRM))
 
 
-void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > data_istrms[NSTRM],
+void test_core_n_1(hls::stream<float> data_istrms[NSTRM],
                    hls::stream<bool> e_data_istrms[NSTRM],
                    hls::stream<ap_uint<WTAG_STRM> >& tag_istrm,
                    hls::stream<bool>& e_tag_istrm,
-                   hls::stream<ap_uint<WIN_STRM> >& data_ostrm,
+                   hls::stream<float >& data_ostrm,
                    hls::stream<bool>& e_data_ostrm)
 {
 
 
- xf::util::level1::strm_n_to_one<WIN_STRM, WTAG_STRM>(
+ xf::util::level1::strm_n_to_one<float, WTAG_STRM>(
                    data_istrms, e_data_istrms, 
                    tag_istrm,   e_tag_istrm,
                    data_ostrm,  e_data_ostrm,
@@ -32,24 +32,25 @@ void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > data_istrms[NSTRM],
 
 int test_n_1(){
 
-  hls::stream<ap_uint<WIN_STRM> > data_istrms[NSTRM];
+  hls::stream<float > data_istrms[NSTRM];
   hls::stream<bool>  e_data_istrms[NSTRM];
   hls::stream<ap_uint<WTAG_STRM> > tag_istrm;
   hls::stream<bool>  e_tag_istrm;
-  hls::stream<ap_uint<WIN_STRM > > data_ostrm;
+  hls::stream<float > data_ostrm;
   hls::stream<bool>  e_data_ostrm;
 
  for(int j=0; j< NS; ++j) {
     int id =j % NSTRM;
-    int data = j; 
-    data_istrms[id].write(data);
+    float d = j*j+ 0.5; 
+    data_istrms[id].write(d);
     e_data_istrms[id].write(false);
     tag_istrm.write(id);
     e_tag_istrm.write(false);
   #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
-   std::cout<<"id="<< id <<" "<<"data= "<< data <<std::endl;
+   std::cout<<"id="<< id <<" "<<"data= "<< d <<std::endl;
   #endif
  }
+ 
  for(int i=0; i< NSTRM; ++i)
     e_data_istrms[i].write(true);
 
@@ -58,13 +59,14 @@ int test_n_1(){
  test_core_n_1( data_istrms, e_data_istrms,
                    tag_istrm, e_tag_istrm,
                    data_ostrm, e_data_ostrm);
-  int nerror    = 0;
-  unsigned int n= 0;
+  int nerror     = 0;
+  unsigned int n = 0;
    while(!e_data_ostrm.read())  {
-      ap_uint<WIN_STRM > data = data_ostrm.read();
-      if(  data != n ) {
+      float data = data_ostrm.read();
+      float gld  = n*n +0.5;
+      if(  data != gld ) {
          nerror=1;
-         std::cout<<" erro :  tag="<< n %NSTRM <<" "<<"data= "<< data <<std::endl;
+         std::cout<<" erro :  tag="<< n %NSTRM <<" "<<"data= "<< data << " gld= "<< gld <<std::endl;
        }
        else {
          #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
@@ -73,8 +75,9 @@ int test_n_1(){
        }
       n++;
    } // while
-  std::cout<<"totally input NS= "<< NS << " data through NSTRM = "<< NSTRM << "streams"<< std::endl; 
-  std::cout<<"totally output n= "<< n << " data from the output stream"<< std::endl; 
+  std::cout<<"totally input NS = "<< NS << " float data through NSTRM = "<< NSTRM << "streams"<< std::endl;
+  std::cout<<"totally output n = "<< n << " float data from the output stream"<< std::endl;
+
   std::cout<< "the length of the collected stream: "<< n << std::endl;
   if(n != NS) 
     nerror=1; 
