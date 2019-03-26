@@ -102,12 +102,13 @@ void strm_n_to_one_read(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
   // read data from unfinished streams 
   int left=0;
   for(int id=0; id< _NStrm; ++id) {    
-       if(!ends[id]){  
-         ap_uint<_WInStrm> d = istrms[id].read();
-         cmb.range((left+1)*_WInStrm-1, left * _WInStrm)=d;           
-         ends[id] = e_istrms[id].read();
-         left++;
-        }
+    #pragma HLS pipeline II=1 
+    if(!ends[id]){  
+      ap_uint<_WInStrm> d = istrms[id].read();
+      cmb.range((left+1)*_WInStrm-1, left * _WInStrm)=d;           
+      ends[id] = e_istrms[id].read();
+      left++;
+     }
   }
  // output the data from last loop
   buf_n_strm.write(cmb);
@@ -166,7 +167,7 @@ void strm_n_to_one_collect(
       #endif
      }
     else
-    p++;
+     p++;
   }
     // here, there are some useless data in buf_a, and left_lcm is the number of useful data 
     buf_lcm_strm.write(buf_a);
@@ -205,7 +206,8 @@ void strm_n_to_one_distribute(
   int up    = 0;
   int c     = num_out;
   bool last = false; 
-  unsigned int up_pos= -1;  
+  unsigned int up_pos= -1; 
+ // assume the lengths of buf_lcm_strm and e_buf_lcm_strm are same and >=1
   while(!last) {
    #pragma HLS pipeline II=1
     // read once, output num_out data 
@@ -218,8 +220,7 @@ void strm_n_to_one_distribute(
         if (last)
          up_pos = left_lcm.read(); // up_pos is changed only if the input will end
      }
-    // ouput data at almost every cycle 
-    //if( (c+1)*_WOutStrm <= up_pos) { 
+    // ouput data at every cycle 
     if( !last) { 
        ostrm.write(buf_b.range((c+1)*_WOutStrm-1, c*_WOutStrm));
        e_ostrm.write(false);
