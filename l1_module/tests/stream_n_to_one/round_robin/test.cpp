@@ -6,10 +6,10 @@
 
 #include "xf_util/stream_n_to_one/round_robin.h"
 
-#define WIN_STRM  16 
-#define WOUT_STRM 256
-#define NS       1024*8
-#define NSTRM    16
+#define WIN_STRM  15 
+#define WOUT_STRM 64
+#define NS       1024*8-3
+#define NSTRM    11
 
 
 void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > istrms[NSTRM],
@@ -61,6 +61,7 @@ int test_n_1(){
  int n      = 0;
  int k      = 0;
  bool last= e_data_ostrm.read();
+ int kk=0;
  while(!last) {
    // get num_out*WOUT_STRM bits from stream 
    while(!last && k< num_out){
@@ -68,6 +69,7 @@ int test_n_1(){
     ap_uint<WOUT_STRM> d = data_ostrm.read();
     buff_test.range( (k+1)*WOUT_STRM-1, k*WOUT_STRM)= d;
     ++k;
+    ++kk;
    }
    if(k == num_out)  {
      k=0;
@@ -84,6 +86,7 @@ int test_n_1(){
      }
    } //if (k == num_out)
  } // while(!last)
+ int output_count = kk;//n + k ;
  if (k>0) {
     for(int i=0; i<num_in ; ++i) {
      buff_gld.range( (i+1)*WIN_STRM-1, i*WIN_STRM)= n;
@@ -96,13 +99,19 @@ int test_n_1(){
      std::cout<< "buff_gld  = "<< buff_gld << std::endl;
     }
  }
-   if (nerror) {
+ int comp_count = (NS)*(WIN_STRM) / (WOUT_STRM); 
+ if(comp_count != output_count)
+   nerror=1;
+   
+  std::cout << "\n comp_count= "<< comp_count  << std::endl;
+  std::cout << "\n output_count= "<< output_count  << std::endl;
+  if (nerror) {
         std::cout << "\nFAIL: " << nerror << "the order is wrong.\n";
-   } 
-   else {
+  } 
+  else {
         std::cout << "\nPASS: no error found.\n";
-   }
-   return nerror;
+  }
+  return nerror;
 
 }
 
