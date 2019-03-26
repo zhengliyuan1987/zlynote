@@ -102,9 +102,15 @@ int test_n_1(){
  int comp_count = (NS)*(WIN_STRM) / (WOUT_STRM); 
  if(comp_count != output_count)
    nerror=1;
-   
-  std::cout << "\n comp_count= "<< comp_count  << std::endl;
-  std::cout << "\n output_count= "<< output_count  << std::endl;
+  int total_input = (NS) * WIN_STRM;
+  int total_output= comp_count * WOUT_STRM;
+  std::cout << "comp_count= "<< comp_count  << std::endl;
+  std::cout << "output_count= "<< output_count  << std::endl;
+  std::cout << "totally input NS*WIN_STRM = "<< total_input <<" bits through NStrm = " << NSTRM<< " streams"<< std::endl;
+  std::cout << "totally output output_count*WOUT_STRM = "<< total_output <<" bits" << std::endl;
+  std::cout << "discard "<< total_input - total_output << " bits" <<std::endl; 
+  std::cout << "compare comp_count*WOUT_STRM= "<< comp_count*WOUT_STRM << " bits" <<std::endl; 
+
   if (nerror) {
         std::cout << "\nFAIL: " << nerror << "the order is wrong.\n";
   } 
