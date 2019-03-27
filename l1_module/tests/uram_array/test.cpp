@@ -4,7 +4,7 @@
 #include <ap_int.h>
 
 #include "hls_stream.h"
-#include "uram_array.h"
+#include "xf_util/uram_array.h"
 
 #define INT_RAND_MAX 1024
 #define WDATA        128
