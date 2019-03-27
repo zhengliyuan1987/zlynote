@@ -62,7 +62,7 @@ namespace level1 {
 namespace details {
 
 /* @brief read data in round-robin order from NStrm input streams.
- * combine  _NStrm data(_WInStrm bits) from input streams to one(_NStrm*_NStrm bits)
+ * collect  _NStrm data(_WInStrm bits) from input streams to one(_NStrm*_NStrm bits)
  * @tparam _WInStrm input stream width.
  * @tparam _NStrm number of input streams.
  *
@@ -146,9 +146,9 @@ void strm_n_to_one_collect(
   const int num_in    = buf_size/_WInStrm;
   const int count_in  = num_in/_NStrm;
   ap_uint<buf_size> buf_a;
-  int p     =0;
-  int pos   =0;
-  bool last = false ;// e_buf_n_strm.read();
+  int p     = 0;
+  int pos   = 0;
+  bool last = false ;
   while(!last)  {
     #pragma HLS pipeline II=1 
     int low=pos;
@@ -264,7 +264,7 @@ hls::stream<ap_uint<32> > left_lcm; // how many input(_WInStrm bits) are stored 
 #pragma HLS dataflow
 
 /*  read data   : read data from input streams, output _NStrm * _WInStrm bits
- *  collect data: buffer  buf_size=lcm<_WInStrm*_NStrm, _WOutStrm> bits and output them.
+ *  collect data: buffer  buf_size=lcm(_WInStrm*_NStrm, _WOutStrm) bits and output them.
  *  distribute  : output buf_size/_WOutStrm  data when read buf_size bits once
  *
  * least common mutiple(lcm) is used for solving the difference between  the input width and output width
