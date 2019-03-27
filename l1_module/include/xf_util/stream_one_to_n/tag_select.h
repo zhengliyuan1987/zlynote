@@ -87,6 +87,8 @@ void strm_one_to_n_tag_select(
   #pragma HLS pipeline II = 1
     ap_uint<_WInStrm> data  = istrm.read();
     ap_uint<_WTagStrm> tag  = tag_istrm.read(); 
+    XF_UTIL_ASSERT(tag >=0 );
+    XF_UTIL_ASSERT(tag < PowerOf2<_WTagStrm>::value);
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
     last_tag    = e_tag_istrm.read();
@@ -148,6 +150,8 @@ void strm_one_to_n_tag_select_type (
   #pragma HLS pipeline II = 1
     _TIn data               = istrm.read();
     ap_uint<_WTagStrm> tag  = tag_istrm.read(); 
+    XF_UTIL_ASSERT(tag >=0 );
+    XF_UTIL_ASSERT(tag < PowerOf2<_WTagStrm>::value);
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
     last_tag    = e_tag_istrm.read();
