@@ -17,4 +17,23 @@ template<int a,int b> struct lcm{
 };
 } //util
 } //xf
+
+#ifndef __SYNTHESIS__
+// for assert function.
+#include <cassert>
+#define XF_UTIL_ASSERT(b) assert((b))
+#else
+#define XF_UTIL_ASSERT(b) ((void)0)
+#endif
+
+#if __cplusplus >= 201103L
+#define XF_UTIL_STATIC_ASSERT(b, m) static_assert((b), m)
+#else
+#define XF_UTIL_STATIC_ASSERT(b, m) XF_UTIL_ASSERT((b) && (m))
+#endif
+
+#define XF_UTIL_MACRO_QUOTE(s) #s
+#define XF_UTIL_MACRO_STR(s) XF_UTIL_MACRO_QUOTE(s)
+
+
 #endif // XF_UTIL_COMMON_H
