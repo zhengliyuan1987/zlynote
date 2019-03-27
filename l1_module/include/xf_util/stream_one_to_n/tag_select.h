@@ -31,8 +31,8 @@ void strm_one_to_n(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<ap_uint<_WInStrm> > data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op);
 
 /* 
@@ -55,8 +55,8 @@ void strm_one_to_n(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op);
 
 } // level1
