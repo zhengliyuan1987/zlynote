@@ -4,6 +4,7 @@
 #include "xf_util/types.h"
 #include "xf_util/traits.h"
 #include "xf_util/enums.h"
+#include "xf_util/common.h"
 
 // Forward decl
 
@@ -87,7 +88,6 @@ void strm_n_to_one_select(
 
   const int n=PowerOf2<_WTagStrm>::value;
   ap_uint<n> ends=0;
-  ap_uint<n> bak_ends=0;
   bool last_tag  = e_tag_istrm.read();
   for(int i=0; i< n; ++i) {
   #pragma HLS unroll
@@ -97,17 +97,13 @@ void strm_n_to_one_select(
   {
   #pragma HLS pipeline II = 1
     ap_uint<_WTagStrm> tag = tag_istrm.read(); 
-   bak_ends=ends; 
-   if(!bak_ends[tag]) {
-       ap_uint<_WInStrm> data  = data_istrms[tag].read();
-       data_ostrm.write(data);
-       e_ostrm.write(false);
-       ends[tag] = e_data_istrms[tag].read();
-    }
-    else {
-      // stream tag is over. skip or write something ?
-     // assert();
-    }
+    ap_uint<_WInStrm> data  = data_istrms[tag].read();
+ 
+    XF_UTIL_ASSERT(ends[tag]==false);
+
+    data_ostrm.write(data);
+    e_ostrm.write(false);
+    ends[tag] = e_data_istrms[tag].read();
     last_tag  = e_tag_istrm.read();
   } // while
   // drop
@@ -167,16 +163,13 @@ void strm_n_to_one_select_type(
   {
   #pragma HLS pipeline II = 1
     ap_uint<_WTagStrm> tag = tag_istrm.read(); 
-    if(!ends[tag]) {
-       _TIn data  = data_istrms[tag].read();
-       data_ostrm.write(data);
-       e_ostrm.write(false);
-       ends[tag] = e_data_istrms[tag].read();
-    }
-    else {
-      // stream tag is over. skip or write something ?
-     // assert();
-    }
+    
+    XF_UTIL_ASSERT(ends[tag]==false);
+    
+    _TIn data  = data_istrms[tag].read();
+    data_ostrm.write(data);
+    e_ostrm.write(false);
+    ends[tag] = e_data_istrms[tag].read();
     last_tag  = e_tag_istrm.read();
   } // while
   // drop
