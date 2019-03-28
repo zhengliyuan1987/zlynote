@@ -7,8 +7,12 @@ set_top dut
 
 open_solution -reset "solution1"
 set_part virtexuplus
-create_clock -period 2.5
+create_clock -period 3
 
 csim_design -compiler gcc
 
 csynth_design
+
+cosim_design
+
+exit

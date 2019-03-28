@@ -6,31 +6,18 @@
 
 #include "ap_int.h"
 #include "hls_stream.h"
-#define WIn 32
-#define NStrm 4
+#define WIN 32
+#define NSTRM 16 
 
-#ifdef __SYNTHESIS__
-void dut(
-    hls::stream<ap_uint<NStrm> >& cfg,
-    hls::stream<ap_uint<WIn> > in[NStrm],
+extern "C" void dut(
+    hls::stream<ap_uint<NSTRM> >& cfg,
+    hls::stream<ap_uint<WIN> > in[NSTRM],
     hls::stream<bool>& ein,
-    hls::stream<ap_uint<WIn * NStrm> >& out,
+    hls::stream<ap_uint<WIN * NSTRM> >& out,
     hls::stream<bool>& eout) {
-  xf::util::level1::stream_combine(cfg, in, ein, out, eout, combine_left);
-}
-#else
-
-template <int _WIn, int _NStrm>
-void dut(
-    hls::stream<ap_uint<_NStrm> >& cfg,
-    hls::stream<ap_uint<_WIn> > in[_NStrm],
-    hls::stream<bool>& ein,
-    hls::stream<ap_uint<_WIn * _NStrm> >& out,
-    hls::stream<bool>& eout) {
-  xf::util::level1::stream_combine(cfg, in, ein, out, eout, combine_left);
+  xf::util::level1::details::stream_combine(cfg, in, ein, out, eout, xf::util::combine_left_t());
 }
 
-#endif
 #ifndef __SYNTHESIS__
 
 // generate a random integer sequence between specified limits a and b (a<b);
@@ -104,7 +91,7 @@ int test_function(int len){
 		ein.write(1);
 	
 	//run hls::func
-	dut<_WIn, _NStrm>(incfg, in, ein, out, eout);
+	dut(incfg, in, ein, out, eout);
 	//compare hls::func and reference result
 	int nerror = 0;
 	//compare value
@@ -144,7 +131,7 @@ int main(int argc, const char *argv[]) {
   int err = 0; // 0 for pass, 1 for error
   // TODO prepare cfg, in, ein; decl out, eout
 
-err = test_function<32, 4>(10);
+err = test_function<32, 16>(32);
 
 //  dut<32, 4>(cfg, in, ein, out, eout);
   // TODO check out, eout
@@ -155,6 +142,7 @@ else{
 	std::cout<<"\nPASS: no error found.\n";
 }
   return err;
+
 }
 
 #endif

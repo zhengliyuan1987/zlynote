@@ -7,31 +7,18 @@
 #include "ap_int.h"
 #include "hls_stream.h"
 
-typedef uint32_t TIn;
-#define NStrm 4
+typedef uint32_t TIN;
+#define NSTRM 16
 
-
-#ifdef __SYNTHESIS__
-
-void dut(
-    hls::stream<TIn>& istrm,
+extern "C" void dut(
+    hls::stream<TIN>& istrm,
     hls::stream<bool>& e_istrm,
-    hls::stream<TIn> ostrms[NStrm],
-    hls::stream<bool> e_ostrms[NStrm]) {
-  xf::util::level1::stream_dup<TIn, NStrm>(istrm, e_istrm, ostrms, e_ostrms);
-}
-#else
-
-template <typename _TIn, int _NStrm>
-void dut(
-    hls::stream<_TIn>& istrm,
-    hls::stream<bool>& e_istrm,
-    hls::stream<_TIn> ostrms[_NStrm],
-    hls::stream<bool> e_ostrms[_NStrm]) {
-  xf::util::level1::stream_dup<_TIn, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
+    hls::stream<TIN> ostrms[NSTRM],
+    hls::stream<bool> e_ostrms[NSTRM]) {
+  xf::util::level1::details::stream_dup<TIN, NSTRM>(istrm, e_istrm, ostrms, e_ostrms);
 }
 
-#endif
+
 #ifndef __SYNTHESIS__
 
 // generate a random integer sequence between specified limits a and b (a<b);
@@ -72,7 +59,7 @@ int test_function(int len){
 	}
 	e_istrm.write(1);
 	//run hls::func
-	dut<_TIn, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
+	dut(istrm, e_istrm, ostrms, e_ostrms);
 	//compare hls::func and reference result
 	int nerror = 0;
 	//compare value
@@ -80,12 +67,11 @@ int test_function(int len){
 			_TIn out_res[_NStrm];
 				std::cout<<refvec[i]<<std::endl;
 				for(int j = 0; j < _NStrm; j++){
-				out_res[j] = ostrms[j].read();
-				std::cout<<out_res[j]<<"   ";
-				bool comp_res = (refvec[i] == out_res[j]) ? 1 : 0;
-				if(!comp_res){
-					nerror++;
-				}
+					out_res[j] = ostrms[j].read();
+					std::cout<<out_res[j]<<"   ";
+					if(refvec[i]!=out_res[j]){
+						nerror++;
+					}							
 				}
 				std::cout<<nerror<<std::endl;
 		}
@@ -115,7 +101,7 @@ int main(int argc, const char *argv[]) {
   int err = 0; // 0 for pass, 1 for error
   // TODO prepare cfg, in, ein; decl out, eout
 
-err = test_function<uint32_t, 4>(10);
+err = test_function<uint32_t, 16>(10);
 
 //  dut<32, 4>(cfg, in, ein, out, eout);
   // TODO check out, eout
