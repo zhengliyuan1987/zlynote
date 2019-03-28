@@ -1,0 +1,12 @@
+
+****** Vivado(TM) HLS - High-Level Synthesis from C, C++ and SystemC v2018.3 (64-bit)
+  **** SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
+  **** IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
+    ** Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+
+source /proj/xbuilds/2018.3_1207_2324/installs/lin64/Vivado/2018.3/scripts/vivado_hls/hls.tcl -notrace
+INFO: [HLS 200-10] Running '/proj/xbuilds/2018.3_1207_2324/installs/lin64/Vivado/2018.3/bin/unwrapped/lnx64.o/vivado_hls'
+INFO: [HLS 200-10] For user 'yunleiz' on host 'xsjrdevl158' (Linux_x86_64 version 3.10.0-693.el7.x86_64) on Wed Mar 27 00:16:51 PDT 2019
+INFO: [HLS 200-10] On os "CentOS Linux release 7.4.1708 (Core) "
+INFO: [HLS 200-10] In directory '/wrk/xsjhdnobkup5/yunleiz/util/xf_util/l1_module/tests/axi_to_stream'
+INFO: [Common 17-206] Exiting vivado_hls at Wed Mar 27 00:16:51 2019...
