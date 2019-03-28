@@ -35,7 +35,7 @@ void strm_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
 
 /* @brief stream distribute, in round-robin order from first output.
  *
- * @tparam _TIn input stream width.
+ * @tparam _TIn  the type of input stream.
  * @tparam _NStrm number of output stream.
  *
  * @param istrm input data stream.
@@ -201,7 +201,28 @@ void strm_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
 // -------------------------------------------------------------------
 
 namespace details {
-// TODO
+template <typename _TIn, int _NStrm>
+void strm_one_to_n_rr_type(hls::stream<_TIn>& istrm,
+                   hls::stream<bool>& e_istrm,
+                   hls::stream<_TIn> ostrms[_NStrm],
+                   hls::stream<bool> e_ostrms[_NStrm]) {
+  int id    = 0;
+  bool last = e_istrm.read();
+  while(!last) {
+  #pragma HLS pipeline II = 1
+    _TIn data = istrm.read();
+    ostrms[id].write(data);
+    e_ostrms[id].write(false);
+    last = e_istrm.read();
+    id = (id+1 == _NStrm) ? 0: (id+1);
+  }
+
+  for(int  i=0; i< _NStrm; ++i) {
+    #pragma HLS unroll
+    e_ostrms[i].write(true);
+  }
+
+} 
 } // details
 
 template <typename _TIn, int _NStrm>
@@ -210,7 +231,11 @@ void strm_one_to_n(hls::stream<_TIn>& istrm,
                    hls::stream<_TIn> ostrms[_NStrm],
                    hls::stream<bool> e_ostrms[_NStrm],
                    round_robin_t _op) {
-  // TODO
+   
+details::strm_one_to_n_rr_type<_TIn, _NStrm>( istrm,
+                       e_istrm,
+                       ostrms,
+                       e_ostrms);
 }
 
 } // level1
