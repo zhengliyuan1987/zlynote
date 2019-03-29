@@ -7,7 +7,6 @@
 #include "xf_util/stream_one_to_n/round_robin.h"
 
 #define WIN_STRM  512 
-#define WOUT_STRM 16
 #define NS       1024*8
 #define NSTRM    18
 
