@@ -6,7 +6,7 @@
 open_project uram_array.prj
 set_top uram_array_test
 add_files test.cpp -cflags "-I../../include"
-add_files -tb test.cpp -cflags "-I../../include"
+add_files -tb test.cpp -cflags "-I../../include" 
 open_solution "solution1"
 set_part {xcvu9p-fsgd2104-2-i} -tool vivado
 create_clock -period 3.33 -name default

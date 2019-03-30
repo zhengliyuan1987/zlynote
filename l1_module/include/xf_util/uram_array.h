@@ -26,14 +26,18 @@
 
 #ifndef __cplusplus
 #error \
-    "xf_database_direct_aggregate hls::stream<> interface, and thus requires C++"
+    "xf_util_level1 uram_array interface, and thus requires C++"
 #endif
 
+#include <math.h>
 #include <ap_int.h>
 #include <iostream>
 
 namespace xf{
-namespace dal{
+namespace util{
+namespace level1{
+
+#define   N   5
 
 template<int total,int one>
 struct need_num{
@@ -45,24 +49,36 @@ class uram_array{
 public:
 	uram_array(){
 #ifndef __SYNTHESIS__
-	//TODO:malloc the array
-	for(int i=0;i<_num_uram_block;i++)
-	{
-		_blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * (4 << 10));
+		//TODO:malloc the array
+		for(int i=0;i<_num_uram_block;i++)
+		{
+			_blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * (4 << 10));
+		}
+#endif
+		for(int i=0;i<N;i++)
+		{
+			index_r[i] = -1;
+			state_r[i] = 0;
+		}
 	}
-
+	~uram_array()
+	{
+#ifndef __SYNTHESIS__
+		for(int i=0;i<_num_uram_block;i++)
+		{
+			free(_blocks[i]);
+		}
 #endif
 	}
-	~uram_array();
 
-	void write(int index, const ap_uint<WData>& d);
+	bool write(int index, const ap_uint<WData>& d);
 	ap_uint<WData> read(int index);
 private:
 	static const int _num_uram_block;
 
-	static int index_r[3];
+	int index_r[N];
 
-	static ap_uint<WData> state_r[3];
+	ap_uint<WData> state_r[N];
 
 #ifndef __SYNTHESIS__
 	ap_uint<72>* _blocks[need_num <72 * (4 << 10), WData * NData>::value];
@@ -74,163 +90,177 @@ private:
 template<int WData, int NData>
 const int uram_array<WData, NData>::_num_uram_block = need_num <72 * (4 << 10), WData * NData>::value;
 
-template<int WData, int NData>
-int uram_array<WData, NData>::index_r[3]={-1,-1,-1};
-
-template<int WData, int NData>
-ap_uint<WData> uram_array<WData, NData>::state_r[3]={0,0,0};
-
 // to ensure the array can be updated every cycle.
 template<int WData, int NData>
-void uram_array<WData, NData>::write(int index, const ap_uint<WData>& d)
+bool uram_array<WData, NData>::write(int index, const ap_uint<WData>& d)
 {
-	int num_index;//one block numbers of index
-	int div, dec;
+	int num_block;//block numbers of need
+	int WData_padding;
 	ap_uint<WData> value;
+#pragma HLS RESOURCE variable=_blocks core=XPM_MEMORY uram//core=RAM_T2P_URAM
 
-	if(WData <= 64)
-	{
-		num_index = (4 << 10) * (72 / WData);
-		div = index / ((num_index * _num_uram_block) -1);
-		dec = index % ((num_index * _num_uram_block) -1);
-	}
-	else
-	{
-		num_index = (4 << 10) / ((WData / 72) + 1);
-		div = index / ((num_index * _num_uram_block) -1);
-		dec = index % ((num_index * _num_uram_block) -1);
-	}
+//	if((WData & (WData-1)) != 0)//no 2^n
+//	{
+//		WData_padding = WData;
+//		WData_padding |= WData_padding >> 1;
+//		WData_padding |= WData_padding >> 2;
+//		WData_padding |= WData_padding >> 4;
+//		WData_padding |= WData_padding >> 8;
+//		WData_padding |= WData_padding >> 16;
+//		WData_padding  = WData_padding +  1;
+//	}
+//	else
+//	{
+//		WData_padding = WData;
+//	}
 
-	if(div < _num_uram_block)
+	num_block = (WData + 71) / 72;
+
+	if(num_block <= _num_uram_block)
 	{
 #ifndef __SYNTHESIS__
+		ap_uint<72> *pDiv;
 
-		ap_uint<72>* pDiv = _blocks[div];
-		pDiv += dec*(WData / 64);
-		if(WData <= 64)
+		if(num_block <= 1)
 		{
+			pDiv = _blocks[0] + index;
 			*pDiv = d;
-			value = *pDiv;
+			//value = *pDiv;
 		}
 		else
 		{
-			for(int i=0;i<WData/64;i++)
+			for(int i=0; i < num_block; i++)
 			{
-#pragma HLS PIPELINE II=1
-				*pDiv = d( i*64 + 63, i*63);
-				value(i*64 + 63, i*63) = *pDiv;
-				pDiv += 1;
+				pDiv = _blocks[i]+index;
+				if(i == (num_block-1) )
+				{
+					*pDiv = d( WData -1, i*72);
+				}
+				else
+					*pDiv = d( i*72 + 71, i*72);
 			}
-
 		}
-	std::cout<< "write local_value="<< value << std::endl;
+		//std::cout<< "write local_value="<< value << std::endl;
 #else
-		dec = dec*(WData / 64);
-		if(WData <= 64)
+		if(num_block <= 1)
 		{
-			_blocks[div][dec] = d;
-			value = _blocks[div][dec];
+			_blocks[0][index] = d;
 		}
 		else
 		{
-			for(int i=0;i<WData/64;i++)
+			for(int i=0; i < num_block; i++)
 			{
 #pragma HLS PIPELINE II=1
-				_blocks[div][dec+i] = d( i*64 + 63, i*63);
-				//value(i*64 + 63, i*63) = _blocks[div][dec+i];
+				if(i == (num_block -1 ))
+				{
+					_blocks[i][index] = d( WData -1, i*72);
+				}
+				else
+					_blocks[i][index] = d( i*72 + 71, i*72);
 			}
 		}
 #endif
+
+		for(int i=N-1;i>=1;i--)
+		{
+			state_r[i] = state_r[i-1];
+			index_r[i] = index_r[i-1];
+		}
+		state_r[0] = d;
+		index_r[0] = index;
 	}
+	else
+	{
+		std::cout<< "The WData="<< WData<< " NData="<< NData << " is not expansion."<< std::endl;
+		return false;
+	}
+	return true;
 }
 
 template<int WData, int NData>
 ap_uint<WData> uram_array<WData, NData>::read(int index)
 {
 	ap_uint<WData> value;
+	bool is_InState = false;
 
-	int num_index;//one block numbers of index
-	int div, dec;
+	int num_block;//one block numbers of index
+	int WData_padding;
+#pragma HLS RESOURCE variable=_blocks core=XPM_MEMORY uram//core=RAM_T2P_URAM
 
-	if(index == index_r[0])
-		value = state_r[0];
-	else if(index == index_r[1])
-		value = state_r[1];
-	else if(index == index_r[2])
-		value = state_r[2];
-	else
+	for(int i=0;i<N;i++)
 	{
-
-		if(WData <= 64)
+		if(index == index_r[i])
 		{
-			num_index = (4 << 10) * (72 / WData);
-			div = index / ((num_index * _num_uram_block) -1);
-			dec = index % ((num_index * _num_uram_block) -1);
+			value = state_r[i];
+			is_InState = true;
+			break;
 		}
-		else
-		{
-			num_index = (4 << 10) / ((WData / 72) + 1);
-			div = index / ((num_index * _num_uram_block) -1);
-			dec = index % ((num_index * _num_uram_block) -1);
-		}
+	}
+	if(!is_InState)
+	{
+//		if((WData & (WData-1)) != 0)//no 2^n
+//		{
+//			WData_padding = WData;
+//			WData_padding |= WData_padding >> 1;
+//			WData_padding |= WData_padding >> 2;
+//			WData_padding |= WData_padding >> 4;
+//			WData_padding |= WData_padding >> 8;
+//			WData_padding |= WData_padding >> 16;
+//			WData_padding = WData_padding + 1;
+//		}
 
-		if(div < _num_uram_block)
-		{
-	#ifndef __SYNTHESIS__
-			ap_uint<72>* pDiv = _blocks[div];
-			pDiv += dec*(WData / 64);
+		num_block = (WData + 71) / 72;
 
-			if(WData <= 64)
+		if(num_block <= _num_uram_block)
+		{
+#ifndef __SYNTHESIS__
+			ap_uint<72> *pDiv;
+			if(num_block <= 1)
 			{
+				pDiv = _blocks[0] + index;
 				value = *pDiv;
 			}
 			else
 			{
-				for(int i=0;i<WData/64;i++)
+				for(int i=0; i < num_block; i++)
 				{
-					value(i*64 + 63, i*63) = *pDiv;
-					pDiv += 1;
+					pDiv = _blocks[i]+index;
+					if(i == (num_block -1 ))
+					{
+						value( WData -1, i*72) = *pDiv;
+					}
+					else
+						value(i*72 + 71, i*72) = *pDiv;
 				}
-
 			}
-	#else
-			dec = dec*(WData / 64);
-			if(WData <= 64)
+#else
+			if(num_block <= 1)
 			{
-				value = _blocks[div][dec];
+				value = _blocks[0][index];
 			}
 			else
 			{
-				for(int i=0;i<WData/64;i++)
+				for(int i=0; i < num_block; i++)
 				{
 #pragma HLS PIPELINE II=1
-					value(i*64 + 63, i*63) = _blocks[div][dec+i];
+					if(i == (num_block -1 ))
+					{
+						value( WData -1, i*72) = _blocks[i][index];
+					}
+					else
+						value( i*72 + 71, i*72) = _blocks[i][index];
 				}
 			}
-	#endif
+#endif
 		}
+		else
+			std::cerr<< "The WData="<< WData<< " NData="<< NData << " is not expansion."<< std::endl;
 	}
-	state_r[2] = state_r[1];
-	state_r[1] = state_r[0];
-	state_r[0] = value;
-	index_r[2] = index_r[1];
-	index_r[1] = index_r[0];
-	index_r[0] = index;
 
 	return value;
 }
 
-template<int WData, int NData>
-uram_array<WData, NData>::~uram_array()
-{
-#ifndef __SYNTHESIS__
-	for(int i=0;i<_num_uram_block;i++)
-	{
-		free(_blocks[i]);
-	}
-#endif
-}
-
+} //level1
 } //dal
 } //xf
 

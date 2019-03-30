@@ -1,4 +1,4 @@
-#include <vector>
+
 #include <iostream>
 #include <stdlib.h>
 #include <ap_int.h>
@@ -6,24 +6,34 @@
 #include "hls_stream.h"
 #include "xf_util/uram_array.h"
 
-#define INT_RAND_MAX 1024
-#define WDATA        128
+#define NUM_SIZE     2048
+#define WDATA        64
 #define NDATA        1024
-
 
 void uram_array_test()
 {
-	ap_uint<WDATA> data;
-	xf::dal::uram_array<WDATA,NDATA> uram_array1;
+	ap_uint<WDATA> data1,data2;
+	xf::util::level1::uram_array<WDATA,NDATA> uram_array1;
 
-	for(int i=0;i<NDATA;i++)
+	WRITE_URAM:for(int i=0;i<NUM_SIZE;i++)
 	{
-		uram_array1.write(i, i+1);
+#pragma HLS PIPELINE
+
+		if(!uram_array1.write(i, 1))
+			break;
 	}
 
-	data = uram_array1.read(1023);
-	std::cout<< "read data="<< data << std::endl;
-
+	std::cout<<std::left<<std::fixed;
+	READ_URAN:for(int i=0;i<NUM_SIZE;i++)
+	{
+#pragma HLS PIPELINE
+		data1 = uram_array1.read(i);
+		data2 = uram_array1.read(i+1);
+		data2 = data1 + data2;
+		uram_array1.write(i+1, data2);
+		data1 = uram_array1.read(i);
+		std::cout<< "index="<<i<< "  data="<< data1 << std::endl;
+	}
 }
 
 int main()
