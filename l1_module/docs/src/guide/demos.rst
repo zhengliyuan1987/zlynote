@@ -13,37 +13,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=====================
-XF Database Library
-=====================
+.. demos:
 
-XF Database Library is an SDx library for accelerating database applications.
-It consists of the following parts:
-
-* HLS C++ based hardware acceleration primitives.
-* Predefined SDx kernel and corresponding software utilities.
-* Design examples of different database acceleration approach.
+*****************************
+Demos
+*****************************
 
 .. toctree::
-   :caption: Library Overview
    :maxdepth: 1
 
-   overview.rst
-
-.. toctree::
-   :caption: User Guide
-   :maxdepth: 2
-
-   guide/toc.rst
-
-.. toctree::
-   :caption: Benchmark Result
-   :maxdepth: 1
-
-   benchmark/result.rst
-
-
-Index
------
-
-* :ref:`genindex`
+.. ERROR:: TODO need some demos, and explanations.
