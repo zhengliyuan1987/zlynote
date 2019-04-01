@@ -11,15 +11,15 @@
 #define DATA_NUM      (5120)
 #define SCAL_AXI      (2)
 const int  DDR_DEPTH   =  (DATA_NUM/SCAL_AXI);
-typedef int   		  TYPE_Strm;
-//typedef ap_uint<32> TYPE_Strm;
+//typedef int   		  TYPE_Strm;
+typedef ap_uint<32> TYPE_Strm;
 //#define TYPE_Strm     ap_uint<32>
 
 // ------------------------------------------------------------
 // top functions
 void top_align_axi_to_stream(
     ap_uint<AXI_WIDTH>* 		rbuf,
-    hls::stream<int >& 			ostrm,
+    hls::stream<TYPE_Strm >& 	ostrm,
     hls::stream<bool>& 			e_ostrm,
     const int 					num,
     const int 					offset
@@ -36,7 +36,7 @@ void top_align_axi_to_stream(
 	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
 		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
-	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   int >(rbuf, ostrm, e_ostrm, num, offset);
+	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, ostrm, e_ostrm, num, offset);
 }
 
 //void top_read_to_vec(
@@ -109,6 +109,22 @@ private:
   std::vector <std::string> mTokens;
 };
 
+// ------------------------------------------------------------
+// function to align str
+template <class dataType>
+std::string alignStrtodataType (std::string str)
+{
+  // convert string into numeric value
+  dataType data;
+  std::stringstream strStream(str);
+  strStream >> data;
+  // align str
+  char *bytesPtr = reinterpret_cast<char *>(&data);
+  std::string alignString;
+  for(unsigned i = 0; i < sizeof(dataType); i++)
+	  alignString.push_back(*(bytesPtr+i));
+  return alignString;
+}
 
 
 struct Test_Row {
@@ -131,6 +147,14 @@ int main(int argc, const char* argv[]) {
 		dataFile = optValue;
 	}else{
 		std::cout << "WARNING: data file not specified for this test. use '-datafile' to specified it. \n";
+	}
+
+	bool ref_aligned = false;
+
+	if (parser.getCmdOption("-alignedRef",optValue)){
+		ref_aligned = atoi(optValue.c_str());
+	}else{
+		std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_aligned << std::endl;
 	}
 
 	//load data
@@ -189,32 +213,37 @@ int main(int argc, const char* argv[]) {
 		}
 
 	    int idx=0;
-	    std::string line;
+	    std::string line, line_aligned;
 	     // move to the offset from where comparison will start
 	    while(idx<DATA_NUM){
 	    getline(inputFile, line);
 	    if(row[idx].rowIdx >= DATA_NUM) break;
 
-
+	    if(ref_aligned){
+	    	line_aligned = line;
+	    }else{
+	    	line_aligned = alignStrtodataType<int>(line);
+	    }
 	    // data_lenth for specified row index
 
 
 	    //print the compare
-	    std::cout << " FPGA stream: "<<"{";
+	    std::cout << "{ FPGA stream: ";
 	    for(int j=0; j<row[idx].length; j++){
 	      std::cout << *(row[idx].rowData+j);
 	    }
-	    std::cout << ",  Reference: " << line <<"}"<< std::endl;
+	    std::cout << ",  Reference: " << line_aligned <<"}"<< std::endl;
 
 	    //compare
-	    if(line.compare(0,line.size(),row[idx].rowData,row[idx].length) != 0){
+	    if(line_aligned.compare(0,line_aligned.size(),row[idx].rowData,row[idx].length) != 0){
 	      std::cout << "Failed compare!\nMismatch at Row " << row[idx].rowIdx << std::endl;
-	      std::cout << "Reference: " << line << std::endl;
+	      std::cout << "Reference: " << line_aligned << std::endl;
 	      std::cout << "  FPGA stream: ";
 	      for(int j=0; j<row[idx].length; j++){
 	        std::cout << *(row[idx].rowData+j);
 	      }
 	      std::cout << "\n";
+	      std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_aligned << std::endl;
 	      return 1;
 	    }
 	    idx++;
