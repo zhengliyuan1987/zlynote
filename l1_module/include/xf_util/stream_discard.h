@@ -6,8 +6,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief Discard multiple streams with end flag helper for each.
  */
@@ -27,8 +27,8 @@ template <typename _TIn>
 void stream_discard(hls::stream<_TIn>& istrm,
                     hls::stream<bool>& e_istrm);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // TODO implementation

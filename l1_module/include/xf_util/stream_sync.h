@@ -4,8 +4,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief Synchronize streams for successor module.
  */
@@ -15,8 +15,8 @@ void stream_sync(hls::stream<_TIn> istrms[_NStrm],
                  hls::stream<_TIn> ostrms[_NStrm],
                  hls::stream<bool> e_ostrm);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // TODO implementation

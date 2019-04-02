@@ -2,7 +2,7 @@
 #define XF_UTIL_ENUMS_H
 
 namespace xf {
-namespace util {
+namespace common {
 
 // Use argument type to select function,
 // to avoid trouble with template inference.
@@ -20,7 +20,7 @@ struct combine_right_t {};
 struct shuffle_left_t {};
 struct shuffle_right_t {};
 
-} // util
+} // common
 } // xf
 
 #endif // XF_UTIL_ENUMS_H

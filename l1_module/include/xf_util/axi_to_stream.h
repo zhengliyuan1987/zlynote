@@ -7,8 +7,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief Loading data from AXI master to stream.
  *
@@ -62,8 +62,8 @@ void axi_to_stream(
     const int num,
     const int offset = 0);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation

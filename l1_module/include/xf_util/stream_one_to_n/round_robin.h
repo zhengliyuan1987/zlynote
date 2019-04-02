@@ -8,8 +8,8 @@
 // Forward decl ======================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief stream distribute, in round-robin order from first output.
  *
@@ -50,15 +50,15 @@ void strm_one_to_n(hls::stream<_TIn>& istrm,
                    hls::stream<_TIn> ostrms[_NStrm],
                    hls::stream<bool> e_ostrms[_NStrm],
                    round_robin_t _op);
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation ====================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 namespace details {
 
@@ -238,8 +238,8 @@ details::strm_one_to_n_rr_type<_TIn, _NStrm>( istrm,
                        e_ostrms);
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 

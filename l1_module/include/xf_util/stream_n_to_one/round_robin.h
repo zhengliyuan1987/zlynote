@@ -8,8 +8,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 /* @brief stream distribute, in round-robin order from NStrm input streams.
  *
  * @tparam _WInStrm input stream width.
@@ -47,8 +47,8 @@ void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool>& e_ostrm,
                    round_robin_t _op);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation
@@ -56,8 +56,8 @@ void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
 
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 namespace details {
 
@@ -357,7 +357,7 @@ void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
 
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 #endif // XF_UTIL_STREAM_N1_RR

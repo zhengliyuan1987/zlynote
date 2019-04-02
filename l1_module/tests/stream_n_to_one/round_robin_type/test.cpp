@@ -17,10 +17,10 @@ void test_core_n_1(hls::stream<float > istrms[NSTRM],
                    hls::stream<float >& ostrm,
                    hls::stream<bool>& e_ostrm
                    ) {
-  xf::util::level1::strm_n_to_one<float,NSTRM>(
+  xf::common::utils_hw::strm_n_to_one<float,NSTRM>(
                         istrms, e_istrms,
                         ostrm, e_ostrm,
-                        xf::util::round_robin_t());
+                        xf::common::round_robin_t());
                         
 }
 

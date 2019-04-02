@@ -15,14 +15,14 @@ void test_core_1_n_select(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
                    hls::stream<ap_uint<WIN_STRM> > data_ostrms[NSTRM],
                    hls::stream<bool> e_data_ostrms[NSTRM]) {
   
-  xf::util::level1::strm_one_to_n<WIN_STRM, WTAG_STRM>(
+  xf::common::utils_hw::strm_one_to_n<WIN_STRM, WTAG_STRM>(
                          data_istrm, 
                          e_data_istrm,
                          tag_istrm,   
                          e_tag_istrm,
                          data_ostrms, 
                          e_data_ostrms,
-                         xf::util::tag_select_t());
+                         xf::common::tag_select_t());
 }
 
 

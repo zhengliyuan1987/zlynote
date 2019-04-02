@@ -9,8 +9,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /*tag based collect, select tag
 * @brief strm_n_to_one primitive implements that n streams is mereged  to one stream.
@@ -64,8 +64,8 @@ void strm_n_to_one(
     hls::stream<bool>& e_ostrm,
     tag_select_t _op);
 
-} // level1
-} // utils
+} // utils_hw
+} // common
 } // xf
 
 // Implementation
@@ -73,8 +73,8 @@ void strm_n_to_one(
 
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 namespace details {
 
 template <int _WInStrm, int _WTagStrm>
@@ -206,8 +206,8 @@ void strm_n_to_one(
 
 }
 
-} // level1
-} // utils
+} // utils_hw
+} // common
 } // xf
 
 

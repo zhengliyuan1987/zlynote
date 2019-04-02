@@ -7,8 +7,8 @@
 // Forward decl ======================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief stream combine, shift selected stream to left.
  *
@@ -58,15 +58,15 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     combine_right_t _op);
 
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation ====================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 namespace details {
 // TODO
@@ -74,8 +74,8 @@ namespace details {
 
 // TODO
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 #endif // XF_UTIL_STREAM_DUP_H

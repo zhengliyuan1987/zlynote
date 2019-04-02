@@ -7,8 +7,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief Loading multiple categories of data from one AXI master to streams.
  *
@@ -60,8 +60,8 @@ void axi_to_stream(
 
 // TODO for 2 and for 4
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation

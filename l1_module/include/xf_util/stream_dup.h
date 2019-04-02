@@ -7,8 +7,8 @@
 // Forward decl ======================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief stream duplication.
  *
@@ -27,15 +27,15 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation ====================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 namespace details {
 // TODO
@@ -49,8 +49,8 @@ void stream_dup(hls::stream<_TIn>& istrm,
   // TODO
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 

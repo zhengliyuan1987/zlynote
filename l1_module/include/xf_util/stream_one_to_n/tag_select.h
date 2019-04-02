@@ -8,8 +8,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* 
 * @brief strm_one_to_n primitive implements that one stream is distributed to n streams.
@@ -59,8 +59,8 @@ void strm_one_to_n(
     hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
     tag_select_t _op);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 ////////////////////////////////////////////////////////////////////////////
@@ -68,8 +68,8 @@ void strm_one_to_n(
 // Implementation
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 namespace details{
 
 template <int _WInStrm, int _WTagStrm>
@@ -193,8 +193,8 @@ void strm_one_to_n(
    	                        );
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 #endif // XF_UTIL_STREAM_1N_TAG_H
