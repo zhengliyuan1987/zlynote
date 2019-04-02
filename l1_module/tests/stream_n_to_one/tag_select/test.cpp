@@ -25,7 +25,7 @@ void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > data_istrms[NSTRM],
                    data_istrms, e_data_istrms, 
                    tag_istrm,   e_tag_istrm,
                    data_ostrm,  e_data_ostrm,
-                   xf::common::tag_select_t());
+                   xf::common::utils_hw::tag_select_t());
 
 }
 

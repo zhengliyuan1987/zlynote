@@ -20,7 +20,7 @@ void test_core_n_1(hls::stream<float > istrms[NSTRM],
   xf::common::utils_hw::strm_n_to_one<float,NSTRM>(
                         istrms, e_istrms,
                         ostrm, e_ostrm,
-                        xf::common::round_robin_t());
+                        xf::common::utils_hw::round_robin_t());
                         
 }
 

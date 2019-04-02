@@ -3,6 +3,7 @@
 
 namespace xf {
 namespace common {
+namespace utils_hw {
 
 // Greatest Common Divisor
 template<int a,int b> struct gcd{
@@ -15,6 +16,8 @@ template<int a> struct gcd<a,0> {
 template<int a,int b> struct lcm{
      static const int value= a * b / gcd<b, a % b>::value;
 };
+
+} // utils_hw
 } //common
 } //xf
 

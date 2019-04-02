@@ -22,7 +22,7 @@ void test_core_1_n_select(hls::stream<float>& data_istrm,
                          e_tag_istrm,
                          data_ostrms, 
                          e_data_ostrms,
-                         xf::common::tag_select_t());
+                         xf::common::utils_hw::tag_select_t());
 }
 
 int test_1_n_select() {

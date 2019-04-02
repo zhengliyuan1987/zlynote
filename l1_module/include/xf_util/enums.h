@@ -3,6 +3,7 @@
 
 namespace xf {
 namespace common {
+namespace utils_hw {
 
 // Use argument type to select function,
 // to avoid trouble with template inference.
@@ -20,6 +21,7 @@ struct combine_right_t {};
 struct shuffle_left_t {};
 struct shuffle_right_t {};
 
+} // utils_hw
 } // common
 } // xf
 
