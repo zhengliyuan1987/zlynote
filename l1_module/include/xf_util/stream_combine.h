@@ -1,8 +1,8 @@
 #ifndef XF_UTIL_STREAM_COMBINE_H
 #define XF_UTIL_STREAM_COMBINE_H
 
-#include "xf_util/types.h"
 #include "xf_util/enums.h"
+#include "xf_util/types.h"
 
 // Forward decl ======================================================
 
@@ -32,7 +32,6 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<bool>& e_ostrm,
 
                     combine_left_t _op);
-
 
 /* @brief stream combine, shift selected stream to right.
  *
@@ -79,124 +78,63 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_left_t _op
-                    ) {
-		bool e = e_istrm.read();
-		ap_uint<_NStrm> b[_NStrm+1];
-		b[0] = select_cfg.read();   //b record output payload of colum
-		ap_uint<_WIn * _NStrm> tmp_pld;
-		ap_uint<_WIn> tmp[_NStrm + 1][_NStrm];
-		int time = _NStrm;
-		int count = 0;
-		int delay = _NStrm;	
-		while (!e) {
+                    combine_left_t _op) {
+  bool e = e_istrm.read();
+  ap_uint<_NStrm> bb = select_cfg.read();
+  bool b[_NStrm][_NStrm];
+#pragma HLS array_partition variable = b complete dim = 1
+  // b record output payload of colum
+  ap_uint<_WIn * _NStrm> tmp_pld;
+  ap_uint<_WIn> tmp[_NStrm][_NStrm];
+#pragma HLS array_partition variable = tmp complete dim = 1
+
+firstloop:
+  while (!e) {
 #pragma HLS pipeline II = 1
-			e = e_istrm.read();
-			for (int i = 0; i < _NStrm; i++) {
+    ap_uint<_NStrm> c = select_cfg.read();
+    for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-				tmp[0][i] = istrms[i].read();
-			}
-			
-				
-			for (int k = count; k >= 0; k--){
+      tmp[0][i] = istrms[i].read();
+      b[0][i] = bb[i];
+    }
+    for (int k = 0; k < _NStrm - 1; k++) {
 #pragma HLS unroll
-				int flag = 0;
-				for (int j = 0; j < _NStrm; j++){
+      int flag = 0;
+      for (int j = 0; j < _NStrm; j++) {
 #pragma HLS unroll
-					if (b[k][j] == 1 && flag == 0){	
-							//if b == 1,column stay the same
-							b[k+1][j] = b[k][j];
-							tmp[k+1][j] = tmp[k][j];
-						
-					}
-					if (b[k][j] == 0 && flag == 0){	
-							//if b == 0,columns all on the right side shift one step
-						
-							for (int s = j; s < _NStrm -1; s++){
-#pragma HLS unroll	
-								b[k+1][s] = b[k][s+1];
-								tmp[k+1][s] = tmp[k][s+1];
-							}
-						
-					
-						//padding zero at the last column
-						
-						b[k+1][_NStrm - 1] = 0;
-						tmp[k+1][_NStrm -1] = 0;
-						
-						flag = 1;
-					}
-				}
-			}
-			if(count < _NStrm){
-				count++;
-			}
-			if(time > 0){
-				time--;
-			}
-			for(int i = 0; i<_NStrm; i++){
+        if (b[k][j] == 1 && flag == 0) {
+          // if b == 1,column stay the same
+          b[k + 1][j] = b[k][j];
+          tmp[k + 1][j] = tmp[k][j];
+        }
+        if ((b[k][j] == 0 && flag == 0) || (flag == 1)) {
+          // if b == 0,columns all on the right side shift one step
+          if (j < _NStrm - 1) {
+            b[k + 1][j] = b[k][j + 1];
+            tmp[k + 1][j] = tmp[k][j + 1];
+          }
+          // padding zero at the last column
+          if (j == _NStrm - 1) {
+            b[k + 1][_NStrm - 1] = 0;
+            tmp[k + 1][_NStrm - 1] = 0;
+          }
+          flag = 1;
+        }
+      }
+    }
+    for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-				tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm][i];
-			}
-			if(time == 0)
-			{
-				ostrm.write(tmp_pld);
-				e_ostrm.write(0);
-			} 		
-		}
-// after input data is over, wait for _NStrm-1 period cycles to output 
-	while (delay-1) {
-#pragma HLS pipeline II = 1				
-			 delay--;
-			for (int k = count; k >= 0; k--){
-#pragma HLS unroll
-				int flag = 0;
-				for (int j = 0; j < _NStrm; j++){
-#pragma HLS unroll
-					if (b[k][j] == 1 && flag == 0){	
-							//if b == 1,column stay the same
-							b[k+1][j] = b[k][j];
-							tmp[k+1][j] = tmp[k][j];
-						
-					}
-					if (b[k][j] == 0 && flag == 0){	
-							//if b == 0,columns all on the right side shift one step
-						
-							for (int s = j; s < _NStrm -1; s++){
-#pragma HLS unroll	
-								b[k+1][s] = b[k][s+1];
-								tmp[k+1][s] = tmp[k][s+1];
-							}
-						
-					
-						//padding zero at the last column
-						
-						b[k+1][_NStrm - 1] = 0;
-						tmp[k+1][_NStrm -1] = 0;
-						
-						flag = 1;
-					}
-				}
-			}
-			if(count < _NStrm){
-				count++;
-			}
-			if(time > 0){
-				time--;
-			}
-			for(int i = 0; i<_NStrm; i++){
-#pragma HLS unroll
-				tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm][i];
-			}
-			if(time == 0)
-			{
-				ostrm.write(tmp_pld);
-				e_ostrm.write(0);
-			} 		
-		}
-	e_ostrm.write(1);
+      tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm - 1][i];
+    }
+    {
+      ostrm.write(tmp_pld);
+      e_ostrm.write(0);
+    }
+    e = e_istrm.read();
+  }
+  e_ostrm.write(1);
 }
-//combine right
+// combine right
 template <int _WIn, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
@@ -206,128 +144,64 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_right_t _op
-                    ) {
-		bool e = e_istrm.read();
-		ap_uint<_NStrm> b[_NStrm+1];
-		b[0] = select_cfg.read();   //b record output payload of colum
-		ap_uint<_WIn * _NStrm> tmp_pld;
-		ap_uint<_WIn> tmp[_NStrm + 1][_NStrm];
-		int time = _NStrm;
-		int count = 0;
-		int delay = _NStrm;	
-		while (!e) {
+                    combine_right_t _op) {
+  bool e = e_istrm.read();
+  ap_uint<_NStrm> bb = select_cfg.read();
+  bool b[_NStrm][_NStrm];
+#pragma HLS array_partition variable = b complete dim = 1
+  // b record output payload of colum
+  ap_uint<_WIn * _NStrm> tmp_pld;
+  ap_uint<_WIn> tmp[_NStrm][_NStrm];
+#pragma HLS array_partition variable = tmp complete dim = 1
+
+firstloop:
+  while (!e) {
 #pragma HLS pipeline II = 1
-			e = e_istrm.read();
-								
-			for (int i = 0; i < _NStrm; i++) {
+    ap_uint<_NStrm> c = select_cfg.read();
+    for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-				tmp[0][i] = istrms[i].read();
-			}
-			
-				
-			for (int k = count; k >= 0; k--){
+      tmp[0][i] = istrms[i].read();
+      b[0][i] = bb[i];
+    }
+    for (int k = 0; k < _NStrm - 1; k++) {
 #pragma HLS unroll
-				int flag = 0;
-				for (int j = 0; j < _NStrm; j++){
+      int flag = 0;
+      for (int j = 0; j < _NStrm; j++) {
 #pragma HLS unroll
-					if (b[k][j] == 1 && flag == 0){	
-							//if b == 1,column stay the same
-							b[k+1][j] = b[k][j];
-							tmp[k+1][j] = tmp[k][j];
-						
-					}
-					if (b[k][j] == 0 && flag == 0){	
-							//if b == 0,columns all on the right side shift one step
-						
-							for (int s = j; s < _NStrm -1; s++){
-#pragma HLS unroll	
-								b[k+1][s] = b[k][s+1];
-								tmp[k+1][s] = tmp[k][s+1];
-							}
-						
-					
-						//padding zero at the last column
-						
-						b[k+1][_NStrm - 1] = 0;
-						tmp[k+1][_NStrm -1] = 0;
-						
-						flag = 1;
-					}
-				}
-			}
-			if(count < _NStrm){
-				count++;
-			}
-			if(time > 0){
-				time--;
-			}
-			for(int i = 0; i<_NStrm; i++){
+        if (b[k][j] == 1 && flag == 0) {
+          // if b == 1,column stay the same
+          b[k + 1][j] = b[k][j];
+          tmp[k + 1][j] = tmp[k][j];
+        }
+        if ((b[k][j] == 0 && flag == 0) || (flag == 1)) {
+          // if b == 0,columns all on the right side shift one step
+          if (j < _NStrm - 1) {
+            b[k + 1][j] = b[k][j + 1];
+            tmp[k + 1][j] = tmp[k][j + 1];
+          }
+          // padding zero at the last column
+          if (j == _NStrm - 1) {
+            b[k + 1][_NStrm - 1] = 0;
+            tmp[k + 1][_NStrm - 1] = 0;
+          }
+          flag = 1;
+        }
+      }
+    }
+    for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-				tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm][_NStrm - 1 - i];
-			}
-			if(time == 0)
-			{
-				ostrm.write(tmp_pld);
-				e_ostrm.write(0);
-			} 		
-		}
-// after input data is over, wait for _NStrm-1 period cycles to output 
-	while (delay-1) {
-#pragma HLS pipeline II = 1					
-			 delay--;		
-			for (int k = count; k >= 0; k--){
-#pragma HLS unroll
-				int flag = 0;
-				for (int j = 0; j < _NStrm; j++){
-#pragma HLS unroll
-					if (b[k][j] == 1 && flag == 0){	
-							//if b == 1,column stay the same
-							b[k+1][j] = b[k][j];
-							tmp[k+1][j] = tmp[k][j];
-						
-					}
-					if (b[k][j] == 0 && flag == 0){	
-							//if b == 0,columns all on the right side shift one step
-						
-							for (int s = j; s < _NStrm -1; s++){
-#pragma HLS unroll	
-								b[k+1][s] = b[k][s+1];
-								tmp[k+1][s] = tmp[k][s+1];
-							}
-						
-					
-						//padding zero at the last column
-						
-						b[k+1][_NStrm - 1] = 0;
-						tmp[k+1][_NStrm -1] = 0;
-						
-						flag = 1;
-					}
-				}
-			}
-			if(count < _NStrm){
-				count++;
-			}
-			if(time > 0){
-				time--;
-			}
-			for(int i = 0; i<_NStrm; i++){
-#pragma HLS unroll
-				tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm][_NStrm - 1 - i];
-			}
-			if(time == 0)
-			{
-				ostrm.write(tmp_pld);
-				e_ostrm.write(0);
-			} 		
-		}
-	e_ostrm.write(1);
+      tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm - 1][_NStrm - i - 1];
+    }
+    {
+      ostrm.write(tmp_pld);
+      e_ostrm.write(0);
+    }
+    e = e_istrm.read();
+  }
+  e_ostrm.write(1);
 }
 
-
-}// details
-// TODO
+} // details
 } // level1
 } // util
 } // xf

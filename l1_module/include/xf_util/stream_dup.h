@@ -25,7 +25,6 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]);
- 
 
 } // level1
 } // util
@@ -45,28 +44,27 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]) {
   // TODO
-	bool e = e_istrm.read();
-	while(!e) {
+  bool e = e_istrm.read();
+  while (!e) {
 #pragma HLS pipeline II = 1
-		_TIn tmp;
-		e = e_istrm.read();
-		tmp  = istrm.read();
-		for (int i = 0; i < _NStrm; i++) {
+    _TIn tmp;
+    e = e_istrm.read();
+    tmp = istrm.read();
+    for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-		ostrms[i].write(tmp);
-		e_ostrms[i].write(0);
-		}	
-	}	
-	for (int i = 0; i < _NStrm; i++) {
-#pragma HLS unroll	
-		e_ostrms[i].write(1);
-	}
+      ostrms[i].write(tmp);
+      e_ostrms[i].write(0);
+    }
+  }
+  for (int i = 0; i < _NStrm; i++) {
+#pragma HLS unroll
+    e_ostrms[i].write(1);
+  }
 }
- 	
+
 } // details
 } // level1
 } // util
 } // xf
-
 
 #endif // XF_UTIL_STREAM_DUP_H
