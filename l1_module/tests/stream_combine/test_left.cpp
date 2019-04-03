@@ -9,10 +9,10 @@
 #define WIN 32
 #define NSTRM 16
 
-extern "C" void dut(hls::stream<ap_uint<NSTRM>>& cfg,
-                    hls::stream<ap_uint<WIN>> in[NSTRM],
+extern "C" void dut(hls::stream<ap_uint<NSTRM> >& cfg,
+                    hls::stream<ap_uint<WIN> > in[NSTRM],
                     hls::stream<bool>& ein,
-                    hls::stream<ap_uint<WIN * NSTRM>>& out,
+                    hls::stream<ap_uint<WIN * NSTRM> >& out,
                     hls::stream<bool>& eout) {
   xf::common::utils_hw::stream_combine(
       cfg, in, ein, out, eout, xf::common::utils_hw::combine_left_t());
@@ -25,9 +25,9 @@ uint rand_uint(uint a, uint b) { return rand() % (b - a + 1) + a; }
 
 // generate test data
 template <int _WIn, int _NStrm>
-void generate_test_data(std::vector<ap_uint<_NStrm>>& testcfg,
+void generate_test_data(std::vector<ap_uint<_NStrm> >& testcfg,
                         uint64_t len,
-                        std::vector<std::vector<ap_uint<_WIn>>>& testvector) {
+                        std::vector<std::vector<ap_uint<_WIn> > >& testvector) {
   ap_uint<_NStrm> cfg;
   for (int j = 0; j < _NStrm; j++) {
     cfg[j] = (ap_uint<1>)(rand_uint(0, 1));
@@ -35,7 +35,7 @@ void generate_test_data(std::vector<ap_uint<_NStrm>>& testcfg,
   }
   std::cout << std::endl;
   for (int i = 0; i < len; i++) {
-    std::vector<ap_uint<_WIn>> a;
+    std::vector<ap_uint<_WIn> > a;
     testcfg.push_back(cfg);
     if (i > 0) {
       cfg = (ap_uint<_NStrm>)0;
@@ -57,16 +57,16 @@ int main(int argc, const char* argv[]) {
                // TODO prepare cfg, in, ein; decl out, eout
 
   int len = 100;
-  std::vector<ap_uint<NSTRM>> testcfg;
-  std::vector<std::vector<ap_uint<WIN>>> testvector;
-  hls::stream<ap_uint<NSTRM>> incfg;
-  hls::stream<ap_uint<WIN>> in[NSTRM];
-  hls::stream<ap_uint<WIN * NSTRM>> out;
+  std::vector<ap_uint<NSTRM> > testcfg;
+  std::vector<std::vector<ap_uint<WIN> > > testvector;
+  hls::stream<ap_uint<NSTRM> > incfg;
+  hls::stream<ap_uint<WIN> > in[NSTRM];
+  hls::stream<ap_uint<WIN * NSTRM> > out;
   hls::stream<bool> ein;
   hls::stream<bool> eout;
 
   // reference vector
-  std::vector<ap_uint<WIN * NSTRM>> refvec;
+  std::vector<ap_uint<WIN * NSTRM> > refvec;
   // generate test data
   generate_test_data<WIN, NSTRM>(testcfg, len, testvector);
   // prepare data to stream
