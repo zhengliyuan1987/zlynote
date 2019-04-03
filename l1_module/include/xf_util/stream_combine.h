@@ -67,7 +67,6 @@ namespace xf {
 namespace common {
 namespace utils_hw {
 
-namespace details {
 // comebin_left
 template <int _WIn, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
@@ -134,6 +133,7 @@ loop:
   }
   e_ostrm.write(1);
 }
+
 // combine right
 template <int _WIn, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
@@ -201,7 +201,6 @@ loop:
   e_ostrm.write(1);
 }
 
-} // details
 } // utils_hw
 } // common
 } // xf

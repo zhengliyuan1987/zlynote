@@ -1,10 +1,10 @@
 
-open_project -reset "test_n_to_one.prj"
+open_project -reset "test_one_to_n.prj"
 
 add_files test.cpp -cflags "-I../../../include/"  
 add_files -tb test.cpp -cflags "-I../../../include/"
 
-set_top  test_core_n_1
+set_top  test_core_1_n
 
 open_solution -reset "solution1"
 set_part virtexuplus

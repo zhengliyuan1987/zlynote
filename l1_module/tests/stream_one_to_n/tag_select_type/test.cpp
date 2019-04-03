@@ -8,14 +8,14 @@
 #define NS (WIN_STRM) * (WIN_STRM)-5
 #define NSTRM (1 << WTAG_STRM )
 
-void test_core_1_n_select(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
+void test_core_1_n_select(hls::stream<float>& data_istrm,
                    hls::stream<bool>& e_data_istrm,
                    hls::stream<ap_uint<WTAG_STRM> >& tag_istrm,
                    hls::stream<bool>& e_tag_istrm,
-                   hls::stream<ap_uint<WIN_STRM> > data_ostrms[NSTRM],
+                   hls::stream<float > data_ostrms[NSTRM],
                    hls::stream<bool> e_data_ostrms[NSTRM]) {
   
-  xf::common::utils_hw::strm_one_to_n<WIN_STRM, WTAG_STRM>(
+  xf::common::utils_hw::strm_one_to_n<float, WTAG_STRM>(
                          data_istrm, 
                          e_data_istrm,
                          tag_istrm,   
@@ -25,14 +25,13 @@ void test_core_1_n_select(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
                          xf::common::utils_hw::tag_select_t());
 }
 
-
 int test_1_n_select() {
 
-   hls::stream<ap_uint<WIN_STRM> > data_istrm;
+   hls::stream<float> data_istrm;
    hls::stream<bool> e_data_istrm;
    hls::stream<ap_uint<WTAG_STRM> > tag_istrm;
    hls::stream<bool> e_tag_istrm;
-   hls::stream<ap_uint<WIN_STRM> > data_ostrms[NSTRM];
+   hls::stream<float> data_ostrms[NSTRM];
    hls::stream<bool> e_data_ostrms[NSTRM];
 
    std::cout<< "NS    = "<< NS <<std::endl;
@@ -40,7 +39,8 @@ int test_1_n_select() {
    std::cout<< "pow   = "<< PowerOf2<WTAG_STRM>::value <<std::endl;
    for(int j=0; j< NS; ++j) {
       ap_uint<WTAG_STRM> id =j % NSTRM; 
-      data_istrm.write(j);
+      float d = j * j;
+      data_istrm.write(d);
       e_data_istrm.write(false);
       tag_istrm.write(id);
       e_tag_istrm.write(false);
@@ -58,8 +58,10 @@ int test_1_n_select() {
   for(int id=0;id< NSTRM; ++id) { 
     unsigned int ls = 0;
     while( false==e_data_ostrms[id].read()) {
-       ap_uint<WIN_STRM> data = data_ostrms[id].read();
-       if( data % NSTRM != id) {
+       float data = data_ostrms[id].read();
+       float sq   = (ls*NSTRM+id)*(ls*NSTRM+id);  
+       if( data != sq) {
+       //if( data % NSTRM != id) {
          nerror=1;
          std::cout<<" erro :  tag="<< id <<" "<<"data= "<< data <<std::endl;
        }
@@ -83,7 +85,6 @@ int test_1_n_select() {
   }
   return nerror;
 }
-
 int main()
 {
   return test_1_n_select();
