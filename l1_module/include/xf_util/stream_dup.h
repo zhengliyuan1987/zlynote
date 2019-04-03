@@ -2,13 +2,12 @@
 #define XF_UTIL_STREAM_DUP_H
 
 #include "xf_util/types.h"
-#include "xf_util/enums.h"
 
 // Forward decl ======================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief stream duplication.
  *
@@ -27,19 +26,15 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation ====================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
-
-namespace details {
-// TODO
-} // details
+namespace common {
+namespace utils_hw {
 
 template <typename _TIn, int _NStrm>
 void stream_dup(hls::stream<_TIn>& istrm,
@@ -47,11 +42,26 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]) {
   // TODO
+  bool e = e_istrm.read();
+  while (!e) {
+#pragma HLS pipeline II = 1
+    _TIn tmp;
+    e = e_istrm.read();
+    tmp = istrm.read();
+    for (int i = 0; i < _NStrm; i++) {
+#pragma HLS unroll
+      ostrms[i].write(tmp);
+      e_ostrms[i].write(0);
+    }
+  }
+  for (int i = 0; i < _NStrm; i++) {
+#pragma HLS unroll
+    e_ostrms[i].write(1);
+  }
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
-
 
 #endif // XF_UTIL_STREAM_DUP_H

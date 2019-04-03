@@ -7,8 +7,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
@@ -24,8 +24,8 @@ void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool>& e_ostrm,
                    load_balance_t _op);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation

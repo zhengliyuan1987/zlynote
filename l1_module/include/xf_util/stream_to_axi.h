@@ -7,8 +7,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 template <int _WAxi, int _WStrm>
 void stream_to_axi(
@@ -26,8 +26,8 @@ void stream_to_axi(
     const int num,
     const int offset = 0);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation
