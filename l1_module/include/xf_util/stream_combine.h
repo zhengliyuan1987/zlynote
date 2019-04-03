@@ -90,7 +90,6 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 loop:
   while (!e) {
 #pragma HLS pipeline II = 1
-    ap_uint<_NStrm> c = select_cfg.read();
     for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
       tmp[0][i] = istrms[i].read();
@@ -157,7 +156,6 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 loop:
   while (!e) {
 #pragma HLS pipeline II = 1
-    ap_uint<_NStrm> c = select_cfg.read();
     for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
       tmp[0][i] = istrms[i].read();

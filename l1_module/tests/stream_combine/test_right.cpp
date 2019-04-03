@@ -25,21 +25,16 @@ uint rand_uint(uint a, uint b) { return rand() % (b - a + 1) + a; }
 
 // generate test data
 template <int _WIn, int _NStrm>
-void generate_test_data(std::vector<ap_uint<_NStrm> >& testcfg,
+void generate_test_data(ap_uint<_NStrm>& testcfg,
                         uint64_t len,
                         std::vector<std::vector<ap_uint<_WIn> > >& testvector) {
-  ap_uint<_NStrm> cfg;
   for (int j = 0; j < _NStrm; j++) {
-    cfg[j] = (ap_uint<1>)(rand_uint(0, 1));
-    std::cout << cfg[j];
+    testcfg[j] = (ap_uint<1>)(rand_uint(0, 1));
+    std::cout << testcfg[j];
   }
   std::cout << std::endl;
   for (int i = 0; i < len; i++) {
     std::vector<ap_uint<_WIn> > a;
-    testcfg.push_back(cfg);
-    if (i > 0) {
-      cfg = (ap_uint<_NStrm>)0;
-    }
     for (int j = 0; j < _NStrm; j++) {
       uint randnum = rand_uint(1, 9);
       a.push_back((ap_uint<_WIn>)randnum);
@@ -57,7 +52,7 @@ int main(int argc, const char* argv[]) {
                // TODO prepare cfg, in, ein; decl out, eout
 
   int len = 100;
-  std::vector<ap_uint<NSTRM> > testcfg;
+  ap_uint<NSTRM> testcfg;
   std::vector<std::vector<ap_uint<WIN> > > testvector;
   hls::stream<ap_uint<NSTRM> > incfg;
   hls::stream<ap_uint<WIN> > in[NSTRM];
@@ -73,10 +68,12 @@ int main(int argc, const char* argv[]) {
   for (std::string::size_type i = 0; i < len; i++) {
     int count = 0;
     ap_uint<WIN * NSTRM> tmp;
-    incfg.write(testcfg[i]);
+    if (i == 0) {
+      incfg.write(testcfg);
+    }
     for (int j = 0; j < NSTRM; j++) {
       in[j].write(testvector[i][j]);
-      if (testcfg[0][j] == 1) {
+      if (testcfg[j] == 1) {
         tmp((NSTRM - count) * WIN - 1, (NSTRM - count - 1) * WIN) =
             testvector[i][j];
         count++;
