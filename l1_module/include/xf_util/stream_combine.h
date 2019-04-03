@@ -88,7 +88,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
   ap_uint<_WIn> tmp[_NStrm][_NStrm];
 #pragma HLS array_partition variable = tmp complete dim = 1
 
-firstloop:
+loop:
   while (!e) {
 #pragma HLS pipeline II = 1
     ap_uint<_NStrm> c = select_cfg.read();
@@ -154,7 +154,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
   ap_uint<_WIn> tmp[_NStrm][_NStrm];
 #pragma HLS array_partition variable = tmp complete dim = 1
 
-firstloop:
+loop:
   while (!e) {
 #pragma HLS pipeline II = 1
     ap_uint<_NStrm> c = select_cfg.read();

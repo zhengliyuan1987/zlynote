@@ -37,7 +37,7 @@ namespace common {
 namespace utils_hw {
 
 namespace details {
-// TODO
+
 template <typename _TIn, int _NStrm>
 void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<bool>& e_istrm,
