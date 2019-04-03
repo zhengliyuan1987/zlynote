@@ -14,7 +14,7 @@ extern "C" void dut(hls::stream<TIN>& istrm,
                     hls::stream<bool>& e_istrm,
                     hls::stream<TIN> ostrms[NSTRM],
                     hls::stream<bool> e_ostrms[NSTRM]) {
-  xf::common::utils_hw::details::stream_dup<TIN, NSTRM>(
+  xf::common::utils_hw::stream_dup<TIN, NSTRM>(
       istrm, e_istrm, ostrms, e_ostrms);
 }
 
