@@ -15,7 +15,7 @@ extern "C" void dut(
     hls::stream<bool>& e_istrm,
     hls::stream<TIN> ostrms[NSTRM],
     hls::stream<bool> e_ostrms[NSTRM]) {
-  xf::util::level1::details::stream_dup<TIN, NSTRM>(istrm, e_istrm, ostrms, e_ostrms);
+  xf::common::utils_hw::details::stream_dup<TIN, NSTRM>(istrm, e_istrm, ostrms, e_ostrms);
 }
 
 
@@ -38,21 +38,23 @@ std::cout<<randnum<<std::endl;
 	std::cout << " random test data generated! " << std::endl;
 }
 
-template <typename _TIn, int _NStrm>
-int test_function(int len){
-	std::vector<_TIn> testvector;
-	hls::stream<_TIn> istrm;
-	hls::stream<_TIn> ostrms[_NStrm];
+int main(int argc, const char *argv[]) {
+  int err = 0; // 0 for pass, 1 for error
+
+	int len = 10;
+	std::vector<TIN> testvector;
+	hls::stream<TIN> istrm;
+	hls::stream<TIN> ostrms[NSTRM];
 	hls::stream<bool> e_istrm;
-	hls::stream<bool> e_ostrms[_NStrm];
+	hls::stream<bool> e_ostrms[NSTRM];
 	
 	//reference vector
-	std::vector<_TIn> refvec;
+	std::vector<TIN> refvec;
 	//generate test data
-	generate_test_data<_TIn, _NStrm>(len, testvector);
+	generate_test_data<TIN, NSTRM>(len, testvector);
 	//prepare data to stream
 	for (std::string::size_type i =0; i < len; i++){
-		_TIn tmp = testvector[i];
+		TIN tmp = testvector[i];
 		refvec.push_back(tmp);
 		istrm.write(tmp);
 		e_istrm.write(0);
@@ -61,49 +63,34 @@ int test_function(int len){
 	//run hls::func
 	dut(istrm, e_istrm, ostrms, e_ostrms);
 	//compare hls::func and reference result
-	int nerror = 0;
-	//compare value
 		for(std::string::size_type i = 0; i < len; i++){
-			_TIn out_res[_NStrm];
+			TIN out_res[NSTRM];
 				std::cout<<refvec[i]<<std::endl;
-				for(int j = 0; j < _NStrm; j++){
+				for(int j = 0; j < NSTRM; j++){
 					out_res[j] = ostrms[j].read();
 					std::cout<<out_res[j]<<"   ";
 					if(refvec[i]!=out_res[j]){
-						nerror++;
+						err++;
 					}							
 				}
-				std::cout<<nerror<<std::endl;
+				std::cout<<err<<std::endl;
 		}
 		//compare e flag
 		for (std::string::size_type i =0; i < len; i++){
-			for(int j = 0; j < _NStrm; j++){
+			for(int j = 0; j < NSTRM; j++){
 				bool estrm = e_ostrms[j].read();
 				if(estrm){
-					nerror++;
+					err++;
 				}
 			}		
 		}
-		for(int j = 0; j < _NStrm; j++){
+		for(int j = 0; j < NSTRM; j++){
 			bool estrm = e_ostrms[j].read();
 			if(!estrm){
-				nerror++;
+				err++;
 			}
 		}	
-	return nerror;
-}
 
-
-
-
-
-int main(int argc, const char *argv[]) {
-  int err = 0; // 0 for pass, 1 for error
-  // TODO prepare cfg, in, ein; decl out, eout
-
-err = test_function<uint32_t, 16>(10);
-
-//  dut<32, 4>(cfg, in, ein, out, eout);
   // TODO check out, eout
 if(err){
 	std::cout<<"\nFAIL: nerror= "<<err<<" errors found.\n";

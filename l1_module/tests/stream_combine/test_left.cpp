@@ -15,7 +15,7 @@ extern "C" void dut(
     hls::stream<bool>& ein,
     hls::stream<ap_uint<WIN * NSTRM> >& out,
     hls::stream<bool>& eout) {
-  xf::util::level1::details::stream_combine(cfg, in, ein, out, eout, xf::util::combine_left_t());
+  xf::common::utils_hw::details::stream_combine(cfg, in, ein, out, eout, xf::common::utils_hw::combine_left_t());
 }
 
 #ifndef __SYNTHESIS__
@@ -41,7 +41,7 @@ void generate_test_data( std::vector<ap_uint<_NStrm>> &testcfg, uint64_t len, st
 				cfg = (ap_uint<_NStrm>)0;
 			}
 		for (int j = 0; j<_NStrm; j++){
-			uint randnum = rand_uint(1,15);
+			uint randnum = rand_uint(1,9);
 			a.push_back((ap_uint<_WIn>)randnum);
 std::cout<<randnum<<" ";
 		}
@@ -52,35 +52,39 @@ std::cout<<std::endl;
 	std::cout << " random test data generated! " << std::endl;
 }
 
-template <int _WIn, int _NStrm>
-int test_function(int len){
-	std::vector<ap_uint<_NStrm>> testcfg;
-	std::vector<std::vector<ap_uint<_WIn>>> testvector;
-	hls::stream<ap_uint<_NStrm>> incfg;
-	hls::stream<ap_uint<_WIn>> in[_NStrm];
-	hls::stream<ap_uint<_WIn * _NStrm>> out;
+
+int main(int argc, const char *argv[]) {
+  int err = 0; // 0 for pass, 1 for error
+  // TODO prepare cfg, in, ein; decl out, eout
+
+	int len = 100;
+	std::vector<ap_uint<NSTRM>> testcfg;
+	std::vector<std::vector<ap_uint<WIN>>> testvector;
+	hls::stream<ap_uint<NSTRM>> incfg;
+	hls::stream<ap_uint<WIN>> in[NSTRM];
+	hls::stream<ap_uint<WIN * NSTRM>> out;
 	hls::stream<bool> ein;
 	hls::stream<bool> eout;
 	
 	//reference vector
-	std::vector<ap_uint<_WIn * _NStrm>> refvec;
+	std::vector<ap_uint<WIN * NSTRM>> refvec;
 	//generate test data
-	generate_test_data<_WIn, _NStrm>(testcfg, len, testvector);
+	generate_test_data<WIN, NSTRM>(testcfg, len, testvector);
 	//prepare data to stream
 	for (std::string::size_type i =0; i < len; i++){
 		int count = 0;
-		ap_uint<_WIn * _NStrm> tmp;
+		ap_uint<WIN * NSTRM> tmp;
 		incfg.write(testcfg[i]);
-		for(int j = 0; j<_NStrm; j++){
+		for(int j = 0; j<NSTRM; j++){
 			in[j].write(testvector[i][j]);
 			if(testcfg[0][j] == 1){
-				tmp((count + 1) * _WIn - 1,count * _WIn) = testvector[i][j];
+				tmp((count + 1) * WIN - 1,count * WIN) = testvector[i][j];
 				count++;
 			}
 		}
-		if(count < _NStrm)
-		for(int j = count; j<_NStrm; j++){
-			tmp((j+1) * _WIn - 1,j * _WIn) = (ap_uint<_WIn>)(0);
+		if(count < NSTRM)
+		for(int j = count; j<NSTRM; j++){
+			tmp((j+1) * WIN - 1,j * WIN) = (ap_uint<WIN>)(0);
 		}
 		refvec.push_back(tmp);
 		
@@ -93,47 +97,32 @@ int test_function(int len){
 	//run hls::func
 	dut(incfg, in, ein, out, eout);
 	//compare hls::func and reference result
-	int nerror = 0;
-	//compare value
 		for(std::string::size_type i = 0; i < len; i++){
-			ap_uint<_WIn * _NStrm> out_res = out.read();
-			for(int n = 0; n< _NStrm; n++){
-				std::cout<<refvec[i].range(_WIn * (n + 1) - 1, _WIn * n)<<"   ";
+			ap_uint<WIN * NSTRM> out_res = out.read();
+			for(int n = 0; n< NSTRM; n++){
+				std::cout<<refvec[i].range(WIN * (n + 1) - 1, WIN * n)<<"   ";
 			}
-			for(int n = 0; n< _NStrm; n++){	
-				std::cout<<out_res.range(_WIn * (n + 1) - 1, _WIn * n)<<"   ";
+			for(int n = 0; n< NSTRM; n++){	
+				std::cout<<out_res.range(WIN * (n + 1) - 1, WIN * n)<<"   ";
 			}
-			std::cout<<nerror<<std::endl;
+			std::cout<<err<<std::endl;
 			bool comp_res = (refvec[i] == out_res) ? 1 : 0;
 			if(!comp_res){
-				nerror++;
+				err++;
 			}
 		}
 		//compare e flag
 		for (std::string::size_type i =0; i < len; i++){
 			bool estrm = eout.read();
 			if(estrm){
-				nerror++;
+				err++;
 			}
 		}
 		bool estrm = eout.read();
 		if(!estrm){
-			nerror++;
+			err++;
 		}
-	return nerror;
-}
 
-
-
-
-
-int main(int argc, const char *argv[]) {
-  int err = 0; // 0 for pass, 1 for error
-  // TODO prepare cfg, in, ein; decl out, eout
-
-err = test_function<32, 16>(32);
-
-//  dut<32, 4>(cfg, in, ein, out, eout);
   // TODO check out, eout
 if(err){
 	std::cout<<"\nFAIL: nerror= "<<err<<" errors found.\n";

@@ -1,14 +1,14 @@
 #ifndef XF_UTIL_STREAM_COMBINE_H
 #define XF_UTIL_STREAM_COMBINE_H
 
-#include "xf_util/enums.h"
 #include "xf_util/types.h"
+#include "xf_util/enums.h"
 
 // Forward decl ======================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief stream combine, shift selected stream to left.
  *
@@ -64,8 +64,8 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 // Implementation ====================================================
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 namespace details {
 // comebin_left
