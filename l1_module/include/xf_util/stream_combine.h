@@ -57,8 +57,8 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     combine_right_t _op);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation ====================================================
@@ -202,8 +202,8 @@ loop:
 }
 
 } // details
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 #endif // XF_UTIL_STREAM_DUP_H
