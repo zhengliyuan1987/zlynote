@@ -4,7 +4,7 @@
 #include <fstream>
 #endif
 
-#include "xf_util/axi_to_stream.h"
+#include "xf_util/axi_to_multi_stream.h"
 
 #define AXI_WIDTH     (64)
 #define BURST_LENTH   (32)
@@ -43,6 +43,7 @@ void top_align_axi_to_stream(
 // top functions for unaligned data
 void top_unalign_axi_to_stream(
     ap_uint<AXI_WIDTH>* 				rbuf,
+		  int &  						nrow,
     hls::stream<ap_uint<STRM_WIDTH> >& 	ostrm,
     hls::stream<bool>& 					e_ostrm,
     const int 							num,
@@ -61,7 +62,7 @@ void top_unalign_axi_to_stream(
 	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
 		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
-	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, STRM_WIDTH >(rbuf, ostrm, e_ostrm, num, len, offset);
+	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, STRM_WIDTH >(rbuf, nrow, ostrm, e_ostrm, num, len, offset);
 }
 
 //void top_read_to_vec(
@@ -203,6 +204,7 @@ int main(int argc, const char* argv[]) {
 	//call top
 	hls::stream<TYPE_Strm > ostrm;
 	hls::stream<bool>     e_ostrm;
+	int nrow;
 	int err;
 	const int len	 = 4799;
 
@@ -214,7 +216,7 @@ int main(int argc, const char* argv[]) {
 	}else{
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, (len+offset+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
 		if (err) return err;
-		top_unalign_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM, len, offset);
+		top_unalign_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, nrow, ostrm, e_ostrm, DATA_NUM, len, offset);
 	}
 
 

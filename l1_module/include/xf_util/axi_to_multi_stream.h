@@ -46,16 +46,17 @@ namespace level1 {
  * @param num number of data to load from AXI port for each type.
  * @param offset offset for each type, in number of char.
  */
-template <int _WAxi, typename _TStrm1, typename _TStrm2, typename _TStrm3>
+template <int _WAxi, int _BstLen, int _WStrm1, int _WStrm2, int _WStrm3>
 void axi_to_stream(
     ap_uint<_WAxi>* rbuf,
-    hls::stream<_TStrm1>& ostrm1,
+    hls::stream<ap_uint<_WStrm1> >& ostrm1,
     hls::stream<bool>& e_ostrm1,
-    hls::stream<_TStrm2>& ostrm2,
+    hls::stream<ap_uint<_WStrm2> >& ostrm2,
     hls::stream<bool>& e_ostrm2,
-    hls::stream<_TStrm3>& ostrm3,
+    hls::stream<ap_uint<_WStrm3> >& ostrm3,
     hls::stream<bool>& e_ostrm3,
     const int num[3],
+	const int len,
     const int offset[3]);
 
 // TODO for 2 and for 4

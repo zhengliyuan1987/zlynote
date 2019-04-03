@@ -100,7 +100,6 @@ void split_vec_to_aligned(
     const int len,
 	const int scal_char,
 	const int offset,
-		  int &nrow,
     hls::stream<ap_uint<_WStrm> >& r_strm,
     hls::stream<bool>& e_strm
 ){
@@ -109,8 +108,6 @@ void split_vec_to_aligned(
 	const int nwrite = (len + size_strm - 1) / size_strm;
 	ap_uint<_WAxi> vec_reg = vec_strm.read();
 	ap_uint<_WAxi> vec_aligned = 0;
-
-
 
 	if((scal_char-offset)<len){
 
@@ -139,6 +136,7 @@ void split_vec_to_aligned(
 		SPLIT_VEC_TO_ALIGNED:
 		vec_aligned((scal_char-offset)<<3-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
 	    for (int j = 0; j < scal_vec; ++j) {
+		#pragma HLS PIPELINE II = 1
 	        ap_uint<_WStrm > r0 =
 	    	    vec_aligned.range(_WStrm * (j + 1) - 1, _WStrm*j);
 	        if (j < nwrite) {
@@ -149,7 +147,6 @@ void split_vec_to_aligned(
 
 	}
   e_strm.write(true);
-  nrow = num;
 }
 
 
@@ -185,7 +182,6 @@ void split_vec_to_aligned(
 template <int _WAxi, int _BstLen, int _WStrm>
 void axi_to_stream(
     ap_uint<_WAxi>* rbuf,
-		  int &     nrow,
     hls::stream<ap_uint<_WStrm> >& ostrm,
     hls::stream<bool>& e_ostrm,
     const int num,
@@ -210,7 +206,7 @@ void axi_to_stream(
 
 	  details::split_vec_to_aligned<_WAxi, _WStrm, scal_vec>(
 	      vec_strm, num, len, scal_char, offset,
-		  nrow, ostrm, e_ostrm);
+		  ostrm, e_ostrm);
 }
 
 /* @brief Loading data from AXI master to stream.
