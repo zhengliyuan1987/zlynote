@@ -100,7 +100,7 @@ void split_vec_to_aligned(
     const int len,
 	const int scal_char,
 	const int offset,
-	int nrow,
+		  int &nrow,
     hls::stream<ap_uint<_WStrm> >& r_strm,
     hls::stream<bool>& e_strm
 ){
@@ -108,18 +108,20 @@ void split_vec_to_aligned(
 	const int size_strm = _WStrm/8;
 	const int nwrite = (len + size_strm - 1) / size_strm;
 	ap_uint<_WAxi> vec_reg = vec_strm.read();
-	ap_uint<_WAxi> vec_aligned;
+	ap_uint<_WAxi> vec_aligned = 0;
 
-	vec_aligned(scal_char-offset-1, 0) = vec_reg(scal_char-1, offset);
+
 
 	if((scal_char-offset)<len){
 
 		//need read again
-		SPLIT_VEC_TO_ALIGNED:
+		LOOP_SPLIT_VEC_TO_ALIGNED:
 		  for (int i = 0; i < nwrite; i += scal_vec) {
 		#pragma HLS PIPELINE II = scal_vec
 			  ap_uint<_WAxi> vec = vec_strm.read();
-			  vec_aligned(scal_char-1, scal_char-offset) = vec_reg(offset, 0);
+			  vec_aligned((scal_char-offset<<3)-1, 0) 			   = vec_reg((scal_char<<3)-1, offset<<3);
+			  vec_aligned((scal_char<<3)-1, (scal_char-offset)<<3) = vec(offset<<3, 0);
+			  vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
 		      int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
 		      for (int j = 0; j < scal_vec; ++j) {
 		          ap_uint<_WStrm > r0 =
@@ -135,6 +137,7 @@ void split_vec_to_aligned(
 
 		//no read
 		SPLIT_VEC_TO_ALIGNED:
+		vec_aligned((scal_char-offset)<<3-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
 	    for (int j = 0; j < scal_vec; ++j) {
 	        ap_uint<_WStrm > r0 =
 	    	    vec_aligned.range(_WStrm * (j + 1) - 1, _WStrm*j);
@@ -182,9 +185,9 @@ void split_vec_to_aligned(
 template <int _WAxi, int _BstLen, int _WStrm>
 void axi_to_stream(
     ap_uint<_WAxi>* rbuf,
+		  int &     nrow,
     hls::stream<ap_uint<_WStrm> >& ostrm,
     hls::stream<bool>& e_ostrm,
-	      int nrow,
     const int num,
 	const int len,
     const int offset = 0

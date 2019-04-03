@@ -13,10 +13,11 @@
 const int  DDR_DEPTH   =  (DATA_NUM/SCAL_AXI);
 //typedef int   		  TYPE_Strm;
 typedef ap_uint<32> TYPE_Strm;
+#define STRM_WIDTH     (32)
 //#define TYPE_Strm     ap_uint<32>
 
 // ------------------------------------------------------------
-// top functions
+// top functions for aligned data
 void top_align_axi_to_stream(
     ap_uint<AXI_WIDTH>* 		rbuf,
     hls::stream<TYPE_Strm >& 	ostrm,
@@ -37,6 +38,31 @@ void top_align_axi_to_stream(
 		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
 	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, ostrm, e_ostrm, num, offset);
+}
+
+// top functions for unaligned data
+void top_unalign_axi_to_stream(
+    ap_uint<AXI_WIDTH>* 				rbuf,
+		  int &  						nrow,
+    hls::stream<ap_uint<STRM_WIDTH> >& 	ostrm,
+    hls::stream<bool>& 					e_ostrm,
+    const int 							num,
+	const int 							len,
+    const int 							offset
+){
+#pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
+		  	 offset=slave bundle=gmem_in1 	latency = 8 	\
+		     num_read_outstanding = 32 \
+		     max_read_burst_length = 32
+
+#pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
+#pragma HLS INTERFACE s_axilite port = return bundle = control
+
+#ifndef __SYNTHESIS__
+	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
+		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
+#endif
+	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, STRM_WIDTH >(rbuf, nrow, ostrm, e_ostrm, num, len, offset);
 }
 
 //void top_read_to_vec(
@@ -149,13 +175,21 @@ int main(int argc, const char* argv[]) {
 		std::cout << "WARNING: data file not specified for this test. use '-datafile' to specified it. \n";
 	}
 
-	bool ref_aligned = false;
-
-	if (parser.getCmdOption("-alignedRef",optValue)){
-		ref_aligned = atoi(optValue.c_str());
+	bool bin_isaligned = false;
+	if (parser.getCmdOption("-isALBIN",optValue)){
+		bin_isaligned = atoi(optValue.c_str());
 	}else{
-		std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_aligned << std::endl;
+		std::cout << "WARNING: bin_isaligned not specified. Defaulting to " << bin_isaligned << std::endl;
 	}
+
+	bool ref_isaligned = false;
+	if (parser.getCmdOption("-isALREF",optValue)){
+		ref_isaligned = atoi(optValue.c_str());
+	}else{
+		std::cout << "WARNING: ref_isaligned not specified. Defaulting to " << ref_isaligned << std::endl;
+	}
+
+	//l_orderkey_unaligned
 
 	//load data
 	int fixedDataLen  = 4;
@@ -167,21 +201,36 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	int err;
-	err = load_dat<char>(dataInDDR, dataFile, in_dir, DATA_LEN_CHAR);
-	if (err) return err;
-
 	//call top
 	hls::stream<TYPE_Strm > ostrm;
 	hls::stream<bool>     e_ostrm;
-	top_align_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM , 0);
+	int nrow;
+	int err;
+	const int len	 = 4799;
 
-	free(dataInDDR);
+	const int offset = 3;
+	if(bin_isaligned){
+		err = load_dat<char>(dataInDDR, dataFile, in_dir, DATA_LEN_CHAR);
+		if (err) return err;
+		top_align_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM , 0);
+	}else{
+		err = load_dat<char>(dataInDDR, dataFile, in_dir, (len+offset+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
+		if (err) return err;
+		top_unalign_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, nrow, ostrm, e_ostrm, DATA_NUM, len, offset);
+	}
+
+
 	//strm output
     Test_Row row[DATA_NUM];
     bool e_TestRow;
+    int out_num;
+    if(bin_isaligned){
+    	out_num = DATA_NUM;
+    }else{
+    	out_num = (len+STRM_WIDTH/8-1)/(STRM_WIDTH/8);
+    }
 
-    for(int i=0;i<(DATA_NUM);i++){
+    for(int i=0;i<(out_num);i++){
     	TYPE_Strm tmp;
     	ostrm.read(tmp);
         e_ostrm.read(e_TestRow);
@@ -214,44 +263,49 @@ int main(int argc, const char* argv[]) {
 
 	    int idx=0;
 	    std::string line, line_aligned;
-	     // move to the offset from where comparison will start
-	    while(idx<DATA_NUM){
-	    getline(inputFile, line);
-	    if(row[idx].rowIdx >= DATA_NUM) break;
 
-	    if(ref_aligned){
-	    	line_aligned = line;
-	    }else{
-	    	line_aligned = alignStrtodataType<int>(line);
-	    }
-	    // data_lenth for specified row index
+	    while(idx < out_num){
+			getline(inputFile, line);
+			if(row[idx].rowIdx >= out_num) break;
 
-
-	    //print the compare
-	    std::cout << "{ FPGA stream: ";
-	    for(int j=0; j<row[idx].length; j++){
-	      std::cout << *(row[idx].rowData+j);
-	    }
-	    std::cout << ",  Reference: " << line_aligned <<"}"<< std::endl;
-
-	    //compare
-	    if(line_aligned.compare(0,line_aligned.size(),row[idx].rowData,row[idx].length) != 0){
-	      std::cout << "Failed compare!\nMismatch at Row " << row[idx].rowIdx << std::endl;
-	      std::cout << "Reference: " << line_aligned << std::endl;
-	      std::cout << "  FPGA stream: ";
-	      for(int j=0; j<row[idx].length; j++){
-	        std::cout << *(row[idx].rowData+j);
-	      }
-	      std::cout << "\n";
-	      std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_aligned << std::endl;
-	      return 1;
-	    }
-	    idx++;
-	  }//end while
-	  if(idx == DATA_NUM) std::cout << "passed compare!\n ";
-	  std::cout <<"idx: "<<idx<< "= number of data = " << DATA_NUM<< "\n";
-	  inputFile.close();//added
+			if(ref_isaligned){
+				line_aligned = line;
+			}else{
+				line_aligned = alignStrtodataType<int>(line);
+			}
+			// data_lenth for specified row index
 
 
+			//print the compare
+			std::cout << "{ FPGA stream: ";
+			for(int j=0; j<row[idx].length; j++){
+			  std::cout << *(row[idx].rowData+j);
+			}
+			std::cout << ",  Reference: " << line_aligned <<"}"<< std::endl;
+
+			//compare
+//			if(bin_isaligned){
+				if(line_aligned.compare(0,line_aligned.size(),row[idx].rowData,row[idx].length) != 0){
+				  std::cout << "Failed compare!\nMismatch at Row " << row[idx].rowIdx << std::endl;
+				  std::cout << "Reference: " << line_aligned << std::endl;
+				  std::cout << "  FPGA stream: ";
+				  for(int j=0; j<row[idx].length; j++){
+					std::cout << *(row[idx].rowData+j);
+				  }
+				  std::cout << "\n";
+				  //std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_isaligned << std::endl;
+				  return 1;
+				}
+				idx++;
+//			}else{
+//				idx++;
+//			}
+		}//end while
+	    if(idx == out_num) std::cout << "passed compare!\n ";
+	    std::cout <<"idx: "<<idx<< "= number of output data = " << out_num<< "\n";
+	    inputFile.close();//added
+
+	    free(dataInDDR);
+	    free(rowDtmp_ap);
 }
 #endif

@@ -6,16 +6,21 @@
 open_project prj_axi_to_stream
 config_debug
 
-set_top top_align_axi_to_stream
 add_files test_axi_to_stream.cpp  -cflags "-std=gnu++0x -g -I ../../include"
 add_files -tb l_discount_fix.bin
 add_files -tb l_orderkey_nfdint.bin
+add_files -tb l_orderkey_unaligned.bin
 add_files -tb l_discount_fix.txt
 add_files -tb l_orderkey_nfdint.txt
+add_files -tb l_orderkey_unaligned.txt
 add_files -tb test_axi_to_stream.cpp -cflags "-std=gnu++0x -g -I ../../include"
 
-set host_args "-dataFile l_discount_fix.bin -alignedRef 1"
-#set host_args "-dataFile l_orderkey_nfdint.bin -alignedRef 0"
+
+#set_top top_align_axi_to_stream
+set_top top_unalign_axi_to_stream
+#set host_args "-dataFile l_discount_fix.bin -isALBIN 1 -isALREF 1"
+#set host_args "-dataFile l_orderkey_nfdint.bin -isALBIN 1 -isALREF 0"
+set host_args "-dataFile l_orderkey_unaligned.bin -isALBIN 0 -isALREF 1"
 
 open_solution -reset "solution1"
 set_part virtexuplus
