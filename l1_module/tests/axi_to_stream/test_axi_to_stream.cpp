@@ -10,11 +10,10 @@
 #define BURST_LENTH   (32)
 #define DATA_NUM      (5120)
 #define SCAL_AXI      (2)
-const int  DDR_DEPTH   =  (DATA_NUM/SCAL_AXI);
-//typedef int   		  TYPE_Strm;
-typedef ap_uint<32> TYPE_Strm;
+
 #define STRM_WIDTH     (32)
-//#define TYPE_Strm     ap_uint<32>
+typedef ap_uint<32>    TYPE_Strm;
+const int  DDR_DEPTH   =  (DATA_NUM/SCAL_AXI);
 
 // ------------------------------------------------------------
 // top functions for aligned data
@@ -62,17 +61,6 @@ void top_general_axi_to_stream(
 #endif
 	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm >(rbuf, ostrm, e_ostrm, len, offset);
 }
-
-//void top_read_to_vec(
-//    ap_uint<AXI_WIDTH>* 		rbuf,
-//	const int 					scal_vec,
-//    const int 					num,
-//	hls::stream<ap_uint<AXI_WIDTH> >& vec_strm
-//){
-//	xf::util::level1::details::read_to_vec<AXI_WIDTH, BURST_LENTH>(
-//			rbuf, num, scal_vec,
-//	      vec_strm);
-//}
 
 #ifndef __SYNTHESIS__
 // ------------------------------------------------------------
