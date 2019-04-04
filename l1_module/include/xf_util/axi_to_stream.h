@@ -22,24 +22,23 @@ void read_to_vec(
     ap_uint<_WAxi>* vec_ptr,
     const int nrow,
 	const int scal_vec,
-    hls::stream<ap_uint<_WAxi> >& vec_strm) {
+    hls::stream<ap_uint<_WAxi> >& vec_strm
+){
 
-  const int nread = (nrow + scal_vec - 1) / scal_vec;
+    const int nread = (nrow + scal_vec - 1) / scal_vec;
 
 READ_TO_VEC:
-  for (int i = 0; i < nread; i += _BstLen) {
+    for (int i = 0; i < nread; i += _BstLen) {
 #pragma HLS PIPELINE II = _BstLen
 //#pragma HLS DATAFLOW
     int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
-  READ_VEC0:
-    for (int j = 0; j < len; ++j) {
+    READ_VEC0:
+        for (int j = 0; j < len; ++j) {
 #pragma HLS PIPELINE II = 1
-      vec_strm.write(vec_ptr[i + j]);
+            vec_strm.write(vec_ptr[i + j]);
+        }
+
     }
-#ifndef __SYNTHESIS__
-     printf("%d burst len %d\n", i / _BstLen, len);
-#endif
-  }
 }
 
 template <int _WAxi, typename _TStrm, int scal_vec>
@@ -51,20 +50,22 @@ void split_vec(
     hls::stream<bool>& e_strm) {
 
 SPLIT_VEC:
-  for (int i = 0; i < nrow; i += scal_vec) {
+    for (int i = 0; i < nrow; i += scal_vec) {
 #pragma HLS PIPELINE II = scal_vec
-    ap_uint<_WAxi> vec = vec_strm.read();
-    int n = (i + scal_vec) > nrow ? (nrow - i) : scal_vec;
-    for (int j = 0; j < scal_vec; ++j) {
-      ap_uint<8 * sizeof(_TStrm)> r0 =
-          vec.range(8 * size0 * (j + 1) - 1, 8 * size0 * j);
-      if (j < n) {
-        r_strm.write((_TStrm)r0);
-        e_strm.write(false);
-      }
-    }
-  }
-  e_strm.write(true);
+        ap_uint<_WAxi> vec = vec_strm.read();
+        int n = (i + scal_vec) > nrow ? (nrow - i) : scal_vec;
+
+        for (int j = 0; j < scal_vec; ++j) {
+            ap_uint<8 * sizeof(_TStrm)> r0 =
+            vec.range(8 * sizeof(_TStrm) * (j + 1) - 1, 8 * sizeof(_TStrm) * j);
+            if (j < n) {
+                r_strm.write((_TStrm)r0);
+                e_strm.write(false);
+            }
+        }
+
+     }
+     e_strm.write(true);
 }
 
 // ---------------------- burst_read_axi_UnalignedData_to_ram ---------------------------------
@@ -79,33 +80,30 @@ void read_to_vec(
 	const int nread = (len + offset + scal_char - 1) / scal_char;
 
 READ_TO_VEC:
-  for (int i = 0; i < nread; i += _BstLen) {
+    for (int i = 0; i < nread; i += _BstLen) {
 #pragma HLS PIPELINE II = _BstLen
-    int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
-  READ_VEC0:
-    for (int j = 0; j < len; ++j) {
+        int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
+
+    READ_VEC0:
+        for (int j = 0; j < len; ++j) {
 #pragma HLS PIPELINE II = 1
-      vec_strm.write(vec_ptr[i + j]);
+            vec_strm.write(vec_ptr[i + j]);
+        }
     }
-#ifndef __SYNTHESIS__
-     printf("%d burst len %d\n", i / _BstLen, len);
-#endif
-  }
 }
 
-template <int _WAxi, int _WStrm, int scal_vec>
+template <int _WAxi,  typename _TStrm, int scal_vec>
 void split_vec_to_aligned(
     hls::stream<ap_uint<_WAxi> >& vec_strm,
-	const int num,
     const int len,
 	const int scal_char,
 	const int offset,
-    hls::stream<ap_uint<_WStrm> >& r_strm,
+    hls::stream<_TStrm >& r_strm,
     hls::stream<bool>& e_strm
 ){
 
-	const int size_strm = _WStrm/8;
-	const int nwrite = (len + size_strm - 1) / size_strm;
+	//const int size_strm = _WStrm/8;
+	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
 	ap_uint<_WAxi> vec_reg = vec_strm.read();
 	ap_uint<_WAxi> vec_aligned = 0;
 
@@ -121,13 +119,13 @@ void split_vec_to_aligned(
 			  vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
 		      int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
 		      for (int j = 0; j < scal_vec; ++j) {
-		          ap_uint<_WStrm > r0 =
-		        	  vec_aligned.range(_WStrm * (j + 1) - 1, _WStrm*j);
-		      if (j < n) {
-		        r_strm.write(r0);
-		        e_strm.write(false);
-		      }//end if
-		    }
+		          ap_uint<8*sizeof(_TStrm) > r0 =
+		        	  vec_aligned.range(8*sizeof(_TStrm) * (j + 1) - 1, 8*sizeof(_TStrm)*j);
+				  if (j < n) {
+					  r_strm.write((_TStrm)r0);
+					  e_strm.write(false);
+				  }//end if
+		      }
 		  }
 
 	}else{
@@ -137,20 +135,25 @@ void split_vec_to_aligned(
 		vec_aligned((scal_char-offset)<<3-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
 	    for (int j = 0; j < scal_vec; ++j) {
 		#pragma HLS PIPELINE II = 1
-	        ap_uint<_WStrm > r0 =
-	    	    vec_aligned.range(_WStrm * (j + 1) - 1, _WStrm*j);
+	        ap_uint<8*sizeof(_TStrm) > r0 =
+	    	    vec_aligned.range(8*sizeof(_TStrm) * (j + 1) - 1, 8*sizeof(_TStrm)*j);
 	        if (j < nwrite) {
-	            r_strm.write(r0);
+	            r_strm.write((_TStrm)r0);
 	            e_strm.write(false);
-	      }//end if
+	        }//end if
 	    }
 
 	}
-  e_strm.write(true);
+    e_strm.write(true);
 }
+
+// ---------------------- burst_read_axi_General_case_Data_to_fixedLengthVector_stream ---------------------------------
+
 
 
 } // details
+
+
 
 /* @brief Loading data from AXI master to stream.
  *
@@ -179,19 +182,19 @@ void split_vec_to_aligned(
  * @param len number of char to load from AXI port.
  * @param offset offset from the beginning of the buffer, in number of char.
  */
-template <int _WAxi, int _BstLen, int _WStrm>
+template <int _WAxi, int _BstLen, typename _TStrm>
 void axi_to_stream(
     ap_uint<_WAxi>* rbuf,
-    hls::stream<ap_uint<_WStrm> >& ostrm,
+    hls::stream<_TStrm >& ostrm,
     hls::stream<bool>& e_ostrm,
-    const int num,
 	const int len,
     const int offset = 0
 ){
 
 #pragma HLS DATAFLOW
 	  const int fifo_depth = _BstLen * 2;
-	  const int scal_vec   = _WAxi/_WStrm;
+	  const int size0      = sizeof(_TStrm);
+	  const int scal_vec   = _WAxi/(8*size0);
 	  const int scal_char  = _WAxi/8;
 
 	  hls::stream<ap_uint<_WAxi> > vec_strm;
@@ -204,8 +207,8 @@ void axi_to_stream(
 	      vec_ptr, len, scal_char, offset,
 	      vec_strm);
 
-	  details::split_vec_to_aligned<_WAxi, _WStrm, scal_vec>(
-	      vec_strm, num, len, scal_char, offset,
+	  details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
+	      vec_strm, len, scal_char, offset,
 		  ostrm, e_ostrm);
 }
 
@@ -234,15 +237,15 @@ void axi_to_stream(
  * @param ostrm output stream.
  * @param e_ostrm end flag for output stream.
  * @param num number of data to load from AXI port.
- * @param offset offset from the beginning of the buffer, by AXI port width.
+ * @param offset_AXI offset from the beginning of the buffer, by AXI port width.
  */
 template <int _WAxi, int _BstLen,  typename _TStrm>
 void axi_to_stream(
     ap_uint<_WAxi>* 		rbuf,
+    const int 				num,
     hls::stream<_TStrm >& 	ostrm,
     hls::stream<bool>& 		e_ostrm,
-    const int 				num,
-    const int 				offset = 0
+	const int 				offset_AXI = 0
 ){
 #pragma HLS DATAFLOW
 	  const int fifo_depth = _BstLen * 2;
@@ -255,7 +258,7 @@ void axi_to_stream(
 #pragma HLS STREAM  variable = vec_strm depth = fifo_depth
 
 
-	  ap_uint<_WAxi>* 	vec_ptr= rbuf + offset;
+	  ap_uint<_WAxi>* 	vec_ptr= rbuf + offset_AXI;
 	  details::read_to_vec<_WAxi, _BstLen>(
 	      vec_ptr, num, scal_vec,
 	      vec_strm);

@@ -23,7 +23,7 @@ void top_align_axi_to_stream(
     hls::stream<TYPE_Strm >& 	ostrm,
     hls::stream<bool>& 			e_ostrm,
     const int 					num,
-    const int 					offset
+    const int 					offset_AXI
 ){
 #pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
 		  	 offset=slave bundle=gmem_in1 	latency = 8 	\
@@ -37,15 +37,14 @@ void top_align_axi_to_stream(
 	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
 		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
-	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, ostrm, e_ostrm, num, offset);
+	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, num, ostrm, e_ostrm ,offset_AXI );
 }
 
 // top functions for unaligned data
 void top_unalign_axi_to_stream(
     ap_uint<AXI_WIDTH>* 				rbuf,
-    hls::stream<ap_uint<STRM_WIDTH> >& 	ostrm,
+	hls::stream<TYPE_Strm >& 	ostrm,
     hls::stream<bool>& 					e_ostrm,
-    const int 							num,
 	const int 							len,
     const int 							offset
 ){
@@ -61,7 +60,7 @@ void top_unalign_axi_to_stream(
 	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
 		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
-	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, STRM_WIDTH >(rbuf, ostrm, e_ostrm, num, len, offset);
+	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm >(rbuf, ostrm, e_ostrm, len, offset);
 }
 
 //void top_read_to_vec(
@@ -214,7 +213,7 @@ int main(int argc, const char* argv[]) {
 	}else{
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, (len+offset+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
 		if (err) return err;
-		top_unalign_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM, len, offset);
+		top_unalign_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, len, offset);
 	}
 
 
