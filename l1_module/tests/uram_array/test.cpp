@@ -6,38 +6,79 @@
 #include "hls_stream.h"
 #include "xf_util/uram_array.h"
 
-#define NUM_SIZE     2048
-#define WDATA        64
-#define NDATA        1024
 
-void uram_array_test()
+/******************** range as reference *******************
+ * WData	1	    16	   64	 128   256	512	 1024
+ * NData	294912	16384  4096	 2048  350	80	 20
+ * block	1	    1	   1	 2	   4	8	 15
+ * *********************************************************/
+
+#define NUM_SIZE     1024
+#define WDATA        128
+#define NDATA        2048
+#define NCACHE       4
+
+void core_test(hls::stream<ap_uint<WDATA> >& ins, hls::stream<ap_uint<WDATA> >& outs)
 {
-	ap_uint<WDATA> data1,data2;
-	xf::util::level1::uram_array<WDATA,NDATA> uram_array1;
+	ap_uint<WDATA> in,out;
+	xf::util::level1::uram_array<WDATA,NDATA,NCACHE> uram_array1;
 
-	WRITE_URAM:for(int i=0;i<NUM_SIZE;i++)
+	W_LOOP: for(int i=0;i<NUM_SIZE;i++)
 	{
-#pragma HLS PIPELINE
-
-		if(!uram_array1.write(i, 1))
-			break;
+//#pragma HLS PIPELINE II=1
+		in = ins.read();
+		uram_array1.write(i, in);
 	}
 
-	std::cout<<std::left<<std::fixed;
-	READ_URAN:for(int i=0;i<NUM_SIZE;i++)
+	R_LOOP:for(int i=0;i<NUM_SIZE;i++)
 	{
-#pragma HLS PIPELINE
-		data1 = uram_array1.read(i);
-		data2 = uram_array1.read(i+1);
-		data2 = data1 + data2;
-		uram_array1.write(i+1, data2);
-		data1 = uram_array1.read(i);
-		std::cout<< "index="<<i<< "  data="<< data1 << std::endl;
+//#pragma HLS PIPELINE II=1
+		out = uram_array1.read(i);
+		outs.write(out);
 	}
+}
+
+int uram_array_test()
+{
+	hls::stream<ap_uint<WDATA> > ins, outs;
+	int in,out;
+	int nerror = 0;
+
+	for(int i=0;i<NUM_SIZE;i++)
+	{
+		ins.write(i+1);
+	}
+	core_test(ins,outs);
+
+	for(int i=0;i<NUM_SIZE;i++)
+	{
+		if(!outs.empty())
+			out = outs.read();
+
+		if(out != (i+1) )
+		{
+			nerror = 1;
+		}
+
+		std::cout<<out<<std::endl;
+	}
+
+	if (nerror)
+	{
+		std::cout << "\nFAIL: " << nerror << "the result is wrong.\n";
+	}
+	else
+	{
+		std::cout << "\nPASS: no error found.\n";
+	}
+	return nerror;
 }
 
 int main()
 {
-	uram_array_test();
-	return 0;
+	int inteval = 0;
+
+	inteval = uram_array_test();
+
+	return inteval;
 }
