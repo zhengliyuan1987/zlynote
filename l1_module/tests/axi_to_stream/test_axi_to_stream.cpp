@@ -40,8 +40,8 @@ void top_align_axi_to_stream(
 	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, num, ostrm, e_ostrm ,offset_AXI );
 }
 
-// top functions for unaligned data
-void top_unalign_axi_to_stream(
+// top functions for general data
+void top_general_axi_to_stream(
     ap_uint<AXI_WIDTH>* 				rbuf,
 	hls::stream<TYPE_Strm >& 	ostrm,
     hls::stream<bool>& 					e_ostrm,
@@ -187,7 +187,13 @@ int main(int argc, const char* argv[]) {
 		std::cout << "WARNING: ref_isaligned not specified. Defaulting to " << ref_isaligned << std::endl;
 	}
 
-	//l_orderkey_unaligned
+	bool offset_iszero = true;
+	if (parser.getCmdOption("-isZERO",optValue)){
+		offset_iszero = atoi(optValue.c_str());
+	}else{
+		std::cout << "WARNING: offset_iszero not specified. Defaulting to " << offset_iszero << std::endl;
+	}
+
 
 	//load data
 	int fixedDataLen  = 4;
@@ -205,7 +211,13 @@ int main(int argc, const char* argv[]) {
 	int err;
 	const int len	 = 4799;
 
-	const int offset = 3;
+	int offset;
+	if(offset_iszero){
+		offset = 0;
+	}else{
+		offset = 3;
+	}
+
 	if(bin_isaligned){
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, DATA_LEN_CHAR);
 		if (err) return err;
@@ -213,7 +225,7 @@ int main(int argc, const char* argv[]) {
 	}else{
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, (len+offset+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
 		if (err) return err;
-		top_unalign_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, len, offset);
+		top_general_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, len, offset);
 	}
 
 
@@ -281,22 +293,19 @@ int main(int argc, const char* argv[]) {
 			std::cout << ",  Reference: " << line_aligned <<"}"<< std::endl;
 
 			//compare
-//			if(bin_isaligned){
-				if(line_aligned.compare(0,line_aligned.size(),row[idx].rowData,row[idx].length) != 0){
-				  std::cout << "Failed compare!\nMismatch at Row " << row[idx].rowIdx << std::endl;
-				  std::cout << "Reference: " << line_aligned << std::endl;
-				  std::cout << "  FPGA stream: ";
-				  for(int j=0; j<row[idx].length; j++){
-					std::cout << *(row[idx].rowData+j);
-				  }
-				  std::cout << "\n";
-				  //std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_isaligned << std::endl;
-				  return 1;
-				}
-				idx++;
-//			}else{
-//				idx++;
-//			}
+			if(line_aligned.compare(0,line_aligned.size(),row[idx].rowData,row[idx].length) != 0){
+			  std::cout << "Failed compare!\nMismatch at Row " << row[idx].rowIdx << std::endl;
+			  std::cout << "Reference: " << line_aligned << std::endl;
+			  std::cout << "  FPGA stream: ";
+			  for(int j=0; j<row[idx].length; j++){
+				std::cout << *(row[idx].rowData+j);
+			  }
+			  std::cout << "\n";
+			  //std::cout << "WARNING: ref_aligned not specified. Defaulting to " << ref_isaligned << std::endl;
+			  return 1;
+			}
+			idx++;
+
 		}//end while
 	    if(idx == out_num) std::cout << "passed compare!\n ";
 	    std::cout <<"idx: "<<idx<< "= number of output data = " << out_num<< "\n";

@@ -45,12 +45,24 @@ template <int _WAxi, typename _TStrm, int scal_vec>
 void split_vec(
     hls::stream<ap_uint<_WAxi> >& vec_strm,
     const int nrow,
-	const int size0,
+	const int offset_AL,
     hls::stream<_TStrm >& r_strm,
     hls::stream<bool>& e_strm) {
 
+	ap_uint<_WAxi> fst_vec = vec_strm.read();
+	int fst_n = (scal_vec-offset_AL) > nrow ? (nrow+offset_AL)  : scal_vec;
+	for (int j = 0; j < scal_vec; ++j) {
+#pragma HLS PIPELINE II = 1
+		ap_uint<8 * sizeof(_TStrm)> fst_r0 =
+		fst_vec.range(8 * sizeof(_TStrm) * (j + 1) - 1, 8 * sizeof(_TStrm) * j);
+		if (j < fst_n && j >= offset_AL) {
+			r_strm.write((_TStrm)fst_r0);
+			e_strm.write(false);
+		}
+	}
+
 SPLIT_VEC:
-    for (int i = 0; i < nrow; i += scal_vec) {
+    for (int i = scal_vec - offset_AL; i < nrow; i += scal_vec) {
 #pragma HLS PIPELINE II = scal_vec
         ap_uint<_WAxi> vec = vec_strm.read();
         int n = (i + scal_vec) > nrow ? (nrow - i) : scal_vec;
@@ -68,7 +80,7 @@ SPLIT_VEC:
      e_strm.write(true);
 }
 
-// ---------------------- burst_read_axi_UnalignedData_to_ram ---------------------------------
+// ---------------------- burst_read_axi_GeneralData_to_fixedLengthVector_stream ---------------------------------
 template <int _WAxi, int _BstLen>
 void read_to_vec(
     ap_uint<_WAxi>* vec_ptr,
@@ -147,9 +159,33 @@ void split_vec_to_aligned(
     e_strm.write(true);
 }
 
-// ---------------------- burst_read_axi_General_case_Data_to_fixedLengthVector_stream ---------------------------------
+template <int _WAxi, typename _TStrm, int scal_vec>
+void split_vec(
+    hls::stream<ap_uint<_WAxi> >& vec_strm,
+    const int len,
+    hls::stream<_TStrm >& r_strm,
+    hls::stream<bool>& e_strm) {
 
+	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
 
+SPLIT_VEC:
+    for (int i = 0; i < nwrite; i += scal_vec) {
+#pragma HLS PIPELINE II = scal_vec
+        ap_uint<_WAxi> vec = vec_strm.read();
+        int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
+
+        for (int j = 0; j < scal_vec; ++j) {
+            ap_uint<8 * sizeof(_TStrm)> r0 =
+            vec.range(8 * sizeof(_TStrm) * (j + 1) - 1, 8 * sizeof(_TStrm) * j);
+            if (j < n) {
+                r_strm.write((_TStrm)r0);
+                e_strm.write(false);
+            }
+        }
+
+     }
+     e_strm.write(true);
+}
 
 } // details
 
@@ -166,10 +202,10 @@ void split_vec_to_aligned(
  * The data width is unaligned, e.g. compressed binary files.
  *********************
  *DDR   ->  AXI_BUS                          ->  FIFO  ->  	strm
- *dxdx     XXX1234567323334_3536373839646566    XXX12345    1234
+ *XXX1     XXX1234567323334_3536373839646566    XXX12345    1234
  *...      ...									67323334    5673
  *      									    ...			...
- *xdxd     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX
+ *32XX     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX
  *********************
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
@@ -201,15 +237,18 @@ void axi_to_stream(
 #pragma HLS RESOURCE variable= vec_strm core  = FIFO_LUTRAM
 #pragma HLS STREAM  variable = vec_strm depth = fifo_depth
 
-
-	  ap_uint<_WAxi>* 	vec_ptr= rbuf;
 	  details::read_to_vec<_WAxi, _BstLen>(
-	      vec_ptr, len, scal_char, offset,
+		  rbuf, len, scal_char, offset,
 	      vec_strm);
-
-	  details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
-	      vec_strm, len, scal_char, offset,
-		  ostrm, e_ostrm);
+	  if(!offset){
+		  details::split_vec<_WAxi, _TStrm, scal_vec>(
+		      vec_strm, len,
+			  ostrm, e_ostrm);
+	  }else{
+		  details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
+			  vec_strm, len, scal_char, offset,
+			  ostrm, e_ostrm);
+	  }
 }
 
 /* @brief Loading data from AXI master to stream.
@@ -222,11 +261,11 @@ void axi_to_stream(
  * Both AXI port and alignment width are assumed to be multiple of 8.
  * The data width must be no greater than its alignment width.
  *********************
- *DDR->  AXI_BUS   ->  FIFO  ->  	strm
+ *DDR->  AXI_BUS   ->  FIFO  ->  	strm(aligned to dd)
  *
- *dddd   dddddddd    dddddddd		d
- *dddd   0000dddd    0000dddd		d
- *dddd				   				...
+ *XXaa   XXaabbcc    XXaabbcc		aa
+ *bbcc   ddXX0000    ddXX0000		...
+ *ddXX				   				dd
  *********************
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
@@ -245,7 +284,7 @@ void axi_to_stream(
     const int 				num,
     hls::stream<_TStrm >& 	ostrm,
     hls::stream<bool>& 		e_ostrm,
-	const int 				offset_AXI = 0
+	const int 				offset_AL = 0
 ){
 #pragma HLS DATAFLOW
 	  const int fifo_depth = _BstLen * 2;
@@ -257,14 +296,12 @@ void axi_to_stream(
 #pragma HLS RESOURCE variable= vec_strm core  = FIFO_LUTRAM
 #pragma HLS STREAM  variable = vec_strm depth = fifo_depth
 
-
-	  ap_uint<_WAxi>* 	vec_ptr= rbuf + offset_AXI;
 	  details::read_to_vec<_WAxi, _BstLen>(
-	      vec_ptr, num, scal_vec,
+		  rbuf, num, scal_vec,
 	      vec_strm);
 
 	  details::split_vec<_WAxi, _TStrm, scal_vec>(
-	      vec_strm, num, size0,
+	      vec_strm, num, offset_AL,
 		  ostrm, e_ostrm);
 }
 
