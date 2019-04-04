@@ -191,15 +191,11 @@ SPLIT_VEC:
 
 
 
-/* @brief Loading data from AXI master to stream.
+/* @brief Loading data from AXI master to fixed_width stream.
+ * This primitive is relatively universal compared with AXI port of aligned data primitives.
  *
- * This primitive assumes the width of AXI port is multiple of data width.
- * Data width could be unaligned.
- * When input data ptr width is less than AXI port width, the AXI port bandwidth
- * will not be fully used.
- *
- * Both AXI port and data are assumed to have width as multiple of 8-bit char.
- * The data width is unaligned, e.g. compressed binary files.
+ * AXI port is assumed to have width as multiple of 8-bit char.
+ * The data width cloud be unaligned or aligned, e.g. compressed binary files.
  *********************
  *DDR   ->  AXI_BUS                          ->  FIFO  ->  	strm
  *XXX1     XXX1234567323334_3536373839646566    XXX12345    1234
@@ -209,12 +205,11 @@ SPLIT_VEC:
  *********************
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _WStrm width of the stream.
+ * @tparam _TStrm stream's type, e.g. ap_uint<fixed_width> for a fixed_width stream.
  *
  * @param rbuf input AXI port.
  * @param ostrm output stream.
  * @param e_ostrm end flag for output stream.
- * @param num number of data to load from AXI port.
  * @param len number of char to load from AXI port.
  * @param offset offset from the beginning of the buffer, in number of char.
  */
@@ -251,7 +246,8 @@ void axi_to_stream(
 	  }
 }
 
-/* @brief Loading data from AXI master to stream.
+/* @brief Loading data from AXI master to aligned_width stream.
+ * Lightweight primitives for aligned data.
  *
  * This primitive assumes the width of AXI port is positive integer multiple of alignment width.
  * When input data ptr width is less than AXI port width, the AXI port bandwidth
@@ -270,7 +266,7 @@ void axi_to_stream(
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
  * @tparam _BstLen burst lenth of AXI buffer.
- * @tparam _TStrm data's type.
+ * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width stream.
  *
  * @param rbuf input AXI port.
  * @param ostrm output stream.
