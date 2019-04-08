@@ -76,7 +76,7 @@ public:
 			_blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * (4 << 10));
 		}
 #endif
-		for(int i=0;i<4;i++)
+		for(int i=0;i<NCache;i++)
 		{
 			_index[i] = -1;
 			_state[i] = 0;
