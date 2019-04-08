@@ -34,18 +34,18 @@ void top_align_axi_to_stream(
 
 #ifndef __SYNTHESIS__
 	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
-		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
+		std::cout<<"WARNING:this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
 	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, num, ostrm, e_ostrm ,offset_AXI );
 }
 
 // top functions for general data
 void top_general_axi_to_stream(
-    ap_uint<AXI_WIDTH>* 				rbuf,
+    ap_uint<AXI_WIDTH>* 		rbuf,
 	hls::stream<TYPE_Strm >& 	ostrm,
-    hls::stream<bool>& 					e_ostrm,
-	const int 							len,
-    const int 							offset
+    hls::stream<bool>& 			e_ostrm,
+	const int 					len,
+    const int 					offset
 ){
 #pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
 		  	 offset=slave bundle=gmem_in1 	latency = 8 	\
@@ -56,8 +56,8 @@ void top_general_axi_to_stream(
 #pragma HLS INTERFACE s_axilite port = return bundle = control
 
 #ifndef __SYNTHESIS__
-	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
-		std::cout<<"WARNING::this function is for AXI width is multiple of the align data on ddr"<<std::endl;
+	if(len<=0)
+		std::cout<<"ERROR: len<= 0, testcase can not work!"<<std::endl;
 #endif
 	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm >(rbuf, ostrm, e_ostrm, len, offset);
 }
@@ -211,6 +211,7 @@ int main(int argc, const char* argv[]) {
 		if (err) return err;
 		top_align_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM , 0);
 	}else{
+		//load more data than len, to simulate the ddr data
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, (len+offset+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
 		if (err) return err;
 		top_general_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, len, offset);
@@ -233,18 +234,18 @@ int main(int argc, const char* argv[]) {
         e_ostrm.read(e_TestRow);
 
         row[i].rowIdx  = i;
-        row[i].length  = fixedDataLen;//use decodeRowLenth() instead
+        row[i].length  = fixedDataLen;//may use RowLenth() instead
         *(rowDtmp_ap+i) = tmp;
         row[i].rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
 
         if(e_TestRow){
-        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty! ";
+        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;;
         }
     }
     //read the last
     	e_ostrm.read(e_TestRow);
 		if(!e_TestRow){
-			std::cout << "ERROR: e_TestRow=0 while the data is read empty! ";
+			std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;;
 		}
 
 	    // line-by-line comparison
