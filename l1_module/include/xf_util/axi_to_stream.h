@@ -29,19 +29,19 @@ void read_to_vec(
 
 READ_TO_VEC:
     for (int i = 0; i < nread; i += _BstLen) {
-#pragma HLS PIPELINE II = _BstLen
-//#pragma HLS DATAFLOW
+#pragma HLS loop_tripcount min=1 max=1
+//#pragma HLS PIPELINE II = _BstLen
     int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
     READ_VEC0:
-        for (int j = 0; j < len; ++j) {
+		for (int j = 0; j < len; ++j) {
 #pragma HLS PIPELINE II = 1
             vec_strm.write(vec_ptr[i + j]);
-        }
+        }//This pipeline must be no judgment, otherwise the tool will not be able to derive the correct burst_len
 
     }
 }
 
-template <int _WAxi, typename _TStrm, int scal_vec>
+template <int _WAxi, typename _TStrm, int scal_vec >
 void split_vec(
     hls::stream<ap_uint<_WAxi> >& vec_strm,
     const int nrow,
@@ -49,12 +49,16 @@ void split_vec(
     hls::stream<_TStrm >& r_strm,
     hls::stream<bool>& e_strm) {
 
+	const int WStrm = 8*sizeof(_TStrm);
 	ap_uint<_WAxi> fst_vec = vec_strm.read();
 	int fst_n = (scal_vec-offset_AL) > nrow ? (nrow+offset_AL)  : scal_vec;
+
+SPLIT_FEW_VEC:
 	for (int j = 0; j < scal_vec; ++j) {
+#pragma HLS loop_tripcount min=1 max=1
 #pragma HLS PIPELINE II = 1
-		ap_uint<8 * sizeof(_TStrm)> fst_r0 =
-		fst_vec.range(8 * sizeof(_TStrm) * (j + 1) - 1, 8 * sizeof(_TStrm) * j);
+		ap_uint<WStrm > fst_r0 =
+		fst_vec.range(WStrm * (j + 1) - 1, WStrm * j);
 		if (j < fst_n && j >= offset_AL) {
 			r_strm.write((_TStrm)fst_r0);
 			e_strm.write(false);
@@ -63,13 +67,15 @@ void split_vec(
 
 SPLIT_VEC:
     for (int i = scal_vec - offset_AL; i < nrow; i += scal_vec) {
+#pragma HLS loop_tripcount min=1 max=1
 #pragma HLS PIPELINE II = scal_vec
         ap_uint<_WAxi> vec = vec_strm.read();
         int n = (i + scal_vec) > nrow ? (nrow - i) : scal_vec;
 
         for (int j = 0; j < scal_vec; ++j) {
-            ap_uint<8 * sizeof(_TStrm)> r0 =
-            vec.range(8 * sizeof(_TStrm) * (j + 1) - 1, 8 * sizeof(_TStrm) * j);
+#pragma HLS PIPELINE II = 1
+            ap_uint<WStrm > r0 =
+            vec.range(WStrm * (j + 1) - 1, WStrm * j);
             if (j < n) {
                 r_strm.write((_TStrm)r0);
                 e_strm.write(false);
@@ -81,6 +87,7 @@ SPLIT_VEC:
 }
 
 // ---------------------- burst_read_axi_GeneralData_to_fixedLengthVector_stream ---------------------------------
+
 template <int _WAxi, int _BstLen>
 void read_to_vec(
     ap_uint<_WAxi>* vec_ptr,
@@ -93,18 +100,19 @@ void read_to_vec(
 
 READ_TO_VEC:
     for (int i = 0; i < nread; i += _BstLen) {
-#pragma HLS PIPELINE II = _BstLen
+#pragma HLS loop_tripcount min=1 max=1
+//#pragma HLS PIPELINE II = _BstLen
         int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
 
     READ_VEC0:
-        for (int j = 0; j < len; ++j) {
+	for (int j = 0; j < len; ++j) {
 #pragma HLS PIPELINE II = 1
             vec_strm.write(vec_ptr[i + j]);
-        }
+        }//This pipeline must be no judgment, otherwise the tool will not be able to derive the correct burst_len
     }
 }
 
-template <int _WAxi,  typename _TStrm, int scal_vec>
+template <int _WAxi, typename _TStrm, int scal_vec >
 void split_vec_to_aligned(
     hls::stream<ap_uint<_WAxi> >& vec_strm,
     const int len,
@@ -114,7 +122,7 @@ void split_vec_to_aligned(
     hls::stream<bool>& e_strm
 ){
 
-	//const int size_strm = _WStrm/8;
+	const int WStrm = 8*sizeof(_TStrm);
 	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
 	ap_uint<_WAxi> vec_reg = vec_strm.read();
 	ap_uint<_WAxi> vec_aligned = 0;
@@ -124,6 +132,7 @@ void split_vec_to_aligned(
 		//need read again
 		LOOP_SPLIT_VEC_TO_ALIGNED:
 		  for (int i = 0; i < nwrite; i += scal_vec) {
+		#pragma HLS loop_tripcount min=1 max=1
 		#pragma HLS PIPELINE II = scal_vec
 			  ap_uint<_WAxi> vec = vec_strm.read();
 			  vec_aligned((scal_char-offset<<3)-1, 0) 			   = vec_reg((scal_char<<3)-1, offset<<3);
@@ -131,8 +140,9 @@ void split_vec_to_aligned(
 			  vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
 		      int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
 		      for (int j = 0; j < scal_vec; ++j) {
-		          ap_uint<8*sizeof(_TStrm) > r0 =
-		        	  vec_aligned.range(8*sizeof(_TStrm) * (j + 1) - 1, 8*sizeof(_TStrm)*j);
+		#pragma HLS PIPELINE II = 1
+		          ap_uint<WStrm > r0 =
+		        	  vec_aligned.range(WStrm * (j + 1) - 1, WStrm*j);
 				  if (j < n) {
 					  r_strm.write((_TStrm)r0);
 					  e_strm.write(false);
@@ -143,12 +153,13 @@ void split_vec_to_aligned(
 	}else{
 
 		//no read
-		SPLIT_VEC_TO_ALIGNED:
+		SPLIT_FEW_VEC_TO_ALIGNED:
 		vec_aligned((scal_char-offset)<<3-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
 	    for (int j = 0; j < scal_vec; ++j) {
+		#pragma HLS loop_tripcount min=1 max=1
 		#pragma HLS PIPELINE II = 1
-	        ap_uint<8*sizeof(_TStrm) > r0 =
-	    	    vec_aligned.range(8*sizeof(_TStrm) * (j + 1) - 1, 8*sizeof(_TStrm)*j);
+	        ap_uint<WStrm > r0 =
+	    	    vec_aligned.range(WStrm * (j + 1) - 1, WStrm*j);
 	        if (j < nwrite) {
 	            r_strm.write((_TStrm)r0);
 	            e_strm.write(false);
@@ -159,7 +170,7 @@ void split_vec_to_aligned(
     e_strm.write(true);
 }
 
-template <int _WAxi, typename _TStrm, int scal_vec>
+template <int _WAxi, typename _TStrm, int scal_vec >
 void split_vec(
     hls::stream<ap_uint<_WAxi> >& vec_strm,
     const int len,
@@ -167,16 +178,19 @@ void split_vec(
     hls::stream<bool>& e_strm) {
 
 	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
+	const int WStrm = 8*sizeof(_TStrm);
 
 SPLIT_VEC:
     for (int i = 0; i < nwrite; i += scal_vec) {
+#pragma HLS loop_tripcount min=1 max=1
 #pragma HLS PIPELINE II = scal_vec
         ap_uint<_WAxi> vec = vec_strm.read();
         int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
 
         for (int j = 0; j < scal_vec; ++j) {
-            ap_uint<8 * sizeof(_TStrm)> r0 =
-            vec.range(8 * sizeof(_TStrm) * (j + 1) - 1, 8 * sizeof(_TStrm) * j);
+	#pragma HLS PIPELINE II = 1
+            ap_uint<WStrm > r0 =
+            vec.range(WStrm * (j + 1) - 1, WStrm * j);
             if (j < n) {
                 r_strm.write((_TStrm)r0);
                 e_strm.write(false);
@@ -189,7 +203,7 @@ SPLIT_VEC:
 
 } // details
 
-
+// ---------------------- APIs ---------------------------------
 
 /* @brief Loading data from AXI master to fixed_width stream.
  * This primitive is relatively universal compared with AXI port of aligned data primitives.
@@ -205,6 +219,7 @@ SPLIT_VEC:
  *********************
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
+ * @tparam _BstLen burst length of the AXI port
  * @tparam _TStrm stream's type, e.g. ap_uint<fixed_width> for a fixed_width stream.
  *
  * @param rbuf input AXI port.
@@ -232,15 +247,15 @@ void axi_to_stream(
 #pragma HLS RESOURCE variable= vec_strm core  = FIFO_LUTRAM
 #pragma HLS STREAM  variable = vec_strm depth = fifo_depth
 
-	  details::read_to_vec<_WAxi, _BstLen>(
+	  details::read_to_vec<_WAxi, _BstLen >(
 		  rbuf, len, scal_char, offset,
 	      vec_strm);
 	  if(!offset){
-		  details::split_vec<_WAxi, _TStrm, scal_vec>(
+		  details::split_vec<_WAxi, _TStrm, scal_vec >(
 		      vec_strm, len,
 			  ostrm, e_ostrm);
 	  }else{
-		  details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
+		  details::split_vec_to_aligned<_WAxi, _TStrm , scal_vec>(
 			  vec_strm, len, scal_char, offset,
 			  ostrm, e_ostrm);
 	  }
@@ -265,7 +280,7 @@ void axi_to_stream(
  *********************
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _BstLen burst lenth of AXI buffer.
+ * @tparam _BstLen burst length of AXI buffer.
  * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width stream.
  *
  * @param rbuf input AXI port.
@@ -296,7 +311,7 @@ void axi_to_stream(
 		  rbuf, num, scal_vec,
 	      vec_strm);
 
-	  details::split_vec<_WAxi, _TStrm, scal_vec>(
+	  details::split_vec<_WAxi, _TStrm, scal_vec >(
 	      vec_strm, num, offset_AL,
 		  ostrm, e_ostrm);
 }
@@ -305,7 +320,5 @@ void axi_to_stream(
 } // util
 } // xf
 
-// Implementation
-// TODO
 
 #endif // XF_UTIL_AXI_TO_STRM_H
