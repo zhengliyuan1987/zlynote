@@ -6,9 +6,9 @@
 
 #include "xf_util/axi_to_stream.h"
 
-#define AXI_WIDTH     (64)
+#define AXI_WIDTH     (128)
 #define BURST_LENTH   (32)
-#define SCAL_AXI      (2)
+#define SCAL_AXI      (4)
 #define DATA_NUM      (5120)
 #define LEN_BYCHAR    (4799)
 //just for the l_discount_few.bin test

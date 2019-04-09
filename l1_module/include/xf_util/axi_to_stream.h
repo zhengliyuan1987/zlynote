@@ -127,17 +127,18 @@ void split_vec_to_aligned(
     ap_uint<_WAxi> vec_reg = vec_strm.read();
     ap_uint<_WAxi> vec_aligned = 0;
 
-    if( offset && ((scal_char-offset)<len) ){
+    if( offset ){
 
-        //need read again
         LOOP_SPLIT_VEC_TO_ALIGNED:
           for (int i = 0; i < nwrite; i += scal_vec) {
         #pragma HLS loop_tripcount min=1 max=1
         #pragma HLS PIPELINE II = scal_vec
-              ap_uint<_WAxi> vec = vec_strm.read();
               vec_aligned((scal_char-offset<<3)-1, 0)              = vec_reg((scal_char<<3)-1, offset<<3);
-              vec_aligned((scal_char<<3)-1, (scal_char-offset)<<3) = vec(offset<<3, 0);
-              vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
+        	  if((scal_char-offset)<len){//always need read again
+                  ap_uint<_WAxi> vec = vec_strm.read();
+                  vec_aligned((scal_char<<3)-1, (scal_char-offset)<<3) = vec(offset<<3, 0);
+                  vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
+        	  }//else few cases no read again
               int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
               for (int j = 0; j < scal_vec; ++j) {
         #pragma HLS PIPELINE II = 1
@@ -150,26 +151,11 @@ void split_vec_to_aligned(
               }
           }
 
-    }else if(offset && ((scal_char-offset)>=len)){
+    }
 
-        //no read
-        SPLIT_FEW_VEC_TO_ALIGNED:
-        vec_aligned((scal_char-offset<<3)-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
-        for (int j = 0; j < scal_vec; ++j) {
-        #pragma HLS loop_tripcount min=1 max=1
-        #pragma HLS PIPELINE II = 1
-            ap_uint<WStrm > r0 =
-                vec_aligned.range(WStrm * (j + 1) - 1, WStrm*j);
-            if (j < nwrite) {
-                r_strm.write((_TStrm)r0);
-                e_strm.write(false);
-            }//end if
-        }
-
-    }else if(!offset){
+    if( !offset ){
     	//no read
     	SPLIT_VEC:
-
 		int fst_n =  scal_vec > nwrite ? nwrite  : scal_vec;
 		for (int j = 0; j < scal_vec; ++j) {
 		#pragma HLS PIPELINE II = 1
@@ -200,38 +186,7 @@ void split_vec_to_aligned(
     }
     e_strm.write(true);
 }
-#if 0
-template <int _WAxi, typename _TStrm, int scal_vec >
-void split_vec(
-    hls::stream<ap_uint<_WAxi> >& vec_strm,
-    const int len,
-    hls::stream<_TStrm >& r_strm,
-    hls::stream<bool>& e_strm) {
 
-    const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
-    const int WStrm = 8*sizeof(_TStrm);
-
-SPLIT_VEC:
-    for (int i = 0; i < nwrite; i += scal_vec) {
-#pragma HLS loop_tripcount min=1 max=1
-#pragma HLS PIPELINE II = scal_vec
-        ap_uint<_WAxi> vec = vec_strm.read();
-        int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
-
-        for (int j = 0; j < scal_vec; ++j) {
-    #pragma HLS PIPELINE II = 1
-            ap_uint<WStrm > r0 =
-            vec.range(WStrm * (j + 1) - 1, WStrm * j);
-            if (j < n) {
-                r_strm.write((_TStrm)r0);
-                e_strm.write(false);
-            }
-        }
-
-     }
-     e_strm.write(true);
-}
-#endif
 } // details
 
 // ---------------------- APIs ---------------------------------
@@ -281,15 +236,11 @@ void axi_to_stream(
       details::read_to_vec<_WAxi, _BstLen >(
           rbuf, len, scal_char, offset,
           vec_strm);
-//      if(!offset){
-//          details::split_vec<_WAxi, _TStrm, scal_vec >(
-//              vec_strm, len,
-//              ostrm, e_ostrm);
-//      }else{
-          details::split_vec_to_aligned<_WAxi, _TStrm , scal_vec>(
-              vec_strm, len, scal_char, offset,
-              ostrm, e_ostrm);
-//      }
+
+	  details::split_vec_to_aligned<_WAxi, _TStrm , scal_vec>(
+		  vec_strm, len, scal_char, offset,
+		  ostrm, e_ostrm);
+
 }
 
 /* @brief Loading data from AXI master to aligned_width stream.

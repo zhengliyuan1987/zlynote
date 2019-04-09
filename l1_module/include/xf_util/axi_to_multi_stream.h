@@ -73,6 +73,13 @@ bool non_blocking_onetype_ram_to_stream(
     bool isFinalBlock     = len==pos;
     bool hasDone_blk      = len_ram==pos_ram;
     bool isFull           = false;
+    //reorg and split
+    ap_uint<_WAxi> vec_reg;
+
+//    if(!pos&&(len>1)){
+//    	vec_reg = dat_ram[0];
+//    	pos_ram++;
+//    }
     NON_BLOCKING_LOOP:
     while( isFull==false && hasDone_blk==false ){
 #pragma HLS loop_tripcount min=1 max=32  avg=32
@@ -104,10 +111,10 @@ bool axi_batchdata_to_stream(
         const ap_uint<_WAxi>*   rbuf,
         const int               off_axi,
 		const int               len,
-		int              		pos,
+		int&              		pos,
 		ap_uint<_WAxi>          dat_ram[_BurstLen],
-        int              		len_ram,
-		int              		pos_ram,
+        int&              		len_ram,
+		int&              		pos_ram,
         bool              		is_onetype_fnl,
         hls::stream<_TStrm >&	ostrm,
 		hls::stream<bool>& 		e_ostrm
@@ -199,11 +206,12 @@ void axi_to_multi_stream(
 	 	  int        off_axi [3];
 	ap_uint<_WAxi> 	 dat_ram [3][_BstLen];//local ram depth equals the burst length
 
-#pragma HLS RESOURCE variable=len_vec   core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=pos_vec   core=RAM_1P_LUTRAM
 #pragma HLS RESOURCE variable=dat_ram   core=RAM_2P_BRAM
-#pragma HLS RESOURCE variable=len_ram   core=RAM_1P_LUTRAM
-#pragma HLS RESOURCE variable=pos_ram   core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=len_vec   core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=pos_vec   core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=len_ram   core=RAM_1P_LUTRAM
+//#pragma HLS RESOURCE variable=pos_ram   core=RAM_1P_LUTRAM
+//#pragma HLS ARRAY_PARTITION    variable=pos_ram   complete  dim=1
 
 	int              cnt_alltype_fnl;
 	bool             is_onetype_fnl[3];

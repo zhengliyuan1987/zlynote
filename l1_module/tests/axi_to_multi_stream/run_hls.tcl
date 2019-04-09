@@ -21,7 +21,7 @@ set_part virtexuplus
 create_clock -period 3.33 -name default
 set_clock_uncertainty 1.05
 
-#csim_design -compiler gcc -argv "$host_args"
+csim_design -compiler gcc -argv "$host_args"
 
 csynth_design
 

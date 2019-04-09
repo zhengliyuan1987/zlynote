@@ -31,6 +31,7 @@ struct Test_Row {
   char *rowData;
 } ;
 
+// ------------------------------------------------------------
 // function to read strm and print ii=4
 template< typename _TStrm>
 void readbatchToPrintII4(
@@ -53,19 +54,18 @@ void readbatchToPrintII4(
 			e_ostrm.read(e_TestRow);
 			*(rowDtmp_ap+pos+i/4) = tmp;
 
+#if 0
+//#ifndef __SYNTHESIS__
+        Test_Row row;
+        row.rowIdx  = i/4;
+        row.length  = 8;
+        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/4);
 
-#ifndef __SYNTHESIS__
-//        Test_Row row;
-//        row.rowIdx  = i/4;
-//        row.length  = 8;
-//        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/4);
-//
-//		//print
-//		std::cout << "{ FPGA stream0: ";
-//		for(int j=0; j<row.length; j++){
-//		  std::cout << *(row.rowData+j);
-//		}
-//		std::cout <<"}"<<std::endl;
+		//print
+        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+pos+i/4);
+		std::cout << "{ FPGA stream1: ";
+		std::cout << std::hex<<*tmp;
+		std::cout <<"}"<<std::endl;
 
         if(e_TestRow){
         	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
@@ -76,7 +76,7 @@ void readbatchToPrintII4(
     e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
 	if(!e_TestRow){
-		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+		std::cout << "ERROR: II =4 e_TestRow=0 while the data is read empty!! "<<std::endl;
 	}
 #endif
 
@@ -106,20 +106,20 @@ void readbatchToPrintII2(
 
 //#if 1
 #ifndef __SYNTHESIS__
-		Test_Row row;
-		row.rowIdx  = i/2;
-		row.length  = 8;
-		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/2);
-
-		//print
-		std::cout << "{ FPGA stream0: ";
-		for(int j=0; j<row.length; j++){
-		  std::cout << *(row.rowData+j);
-		}
-		std::cout <<"}"<<std::endl;
+//		Test_Row row;
+//		row.rowIdx  = i/2;
+//		row.length  = 8;
+//		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/2);
+//
+//		//print
+//		std::cout << "{ FPGA stream0: ";
+//		for(int j=0; j<row.length; j++){
+//		  std::cout <<std::dec<< *(row.rowData+j);
+//		}
+//		std::cout <<"}"<<std::endl;
 
         if(e_TestRow){
-        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
+        	std::cout << "ERROR: II =2 e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
     	}
@@ -154,18 +154,17 @@ void readbatchToPrintII8(
         e_ostrm.read(e_TestRow);
         *(rowDtmp_ap+pos+i/8) = tmp;
 
-#if 0
-//#ifndef __SYNTHESIS__
-        Test_Row *row;
-        row[i].rowIdx  = i;
-        row[i].length  = 8;
-        row[i].rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/8);
+//#if 0
+#ifndef __SYNTHESIS__
+        Test_Row row;
+        row.rowIdx  = i;
+        row.length  = 8;
+        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/8);
 
 		//print
+        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+pos+i/8);
 		std::cout << "{ FPGA stream2: ";
-		for(int j=0; j<row[i].length; j++){
-		  std::cout << *(row[i].rowData+j);
-		}
+		std::cout << std::hex<<*tmp;
 		std::cout <<"}"<<std::endl;
 
         if(e_TestRow){
@@ -177,7 +176,7 @@ void readbatchToPrintII8(
     e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
 	if(!e_TestRow){
-		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+		std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
 	}
 #endif
 }
@@ -261,8 +260,8 @@ void top_for_co_sim(
 #pragma HLS STREAM  variable = e_ostrm2 depth = 16
 
     top_axi_to_multi_stream(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-	readbatchToPrintII4(ostrm0, e_ostrm0, rowDtmp_ap0, p0, num0 );
-	readbatchToPrintII2(ostrm1, e_ostrm1, rowDtmp_ap1, p1, num1 );
+	readbatchToPrintII2(ostrm0, e_ostrm0, rowDtmp_ap0, p0, num0 );
+	readbatchToPrintII4(ostrm1, e_ostrm1, rowDtmp_ap1, p1, num1 );
 	readbatchToPrintII8(ostrm2, e_ostrm2, rowDtmp_ap2, p2, num2 );
 }
 
@@ -335,23 +334,6 @@ public:
 private:
   std::vector <std::string> mTokens;
 };
-
-// ------------------------------------------------------------
-// function to align str
-template <class dataType>
-std::string alignStrtodataType (std::string str)
-{
-  // convert string into numeric value
-  dataType data;
-  std::stringstream strStream(str);
-  strStream >> data;
-  // align str
-  char *bytesPtr = reinterpret_cast<char *>(&data);
-  std::string alignString;
-  for(unsigned i = 0; i < sizeof(dataType); i++)
-	  alignString.push_back(*(bytesPtr+i));
-  return alignString;
-}
 
 // function to print
 template< typename _TStrm>
