@@ -31,9 +31,9 @@ struct Test_Row {
   char *rowData;
 } ;
 
-// function to read strm and print ii=1
+// function to read strm and print ii=4
 template< typename _TStrm>
-void readbatchToPrintII1(
+void readbatchToPrintII4(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
 		_TStrm* rowDtmp_ap,
@@ -41,34 +41,47 @@ void readbatchToPrintII1(
 		int& num
 ){
 
-    for(int i=0;i<(num);i++){
+	_TStrm tmp=0;
+	bool e_TestRow=0;
+
+    for(int i=0;i<(4*num);i++){
 #pragma HLS PIPELINE II=1
-    	_TStrm tmp;
-    	bool e_TestRow;
-    	ostrm.read(tmp);
-        e_ostrm.read(e_TestRow);
-        *(rowDtmp_ap+pos+i) = tmp;
+    	if((i&3)!=3){
+    		*(rowDtmp_ap+pos+i/4+1)= 0;
+    	}else{
+			ostrm.read(tmp);
+			e_ostrm.read(e_TestRow);
+			*(rowDtmp_ap+pos+i/4) = tmp;
+
 
 #ifndef __SYNTHESIS__
-        Test_Row *row;
-        row[i].rowIdx  = i;
-        row[i].length  = 8;
-        row[i].rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
-
-		//print
-		std::cout << "{ FPGA stream0: ";
-		for(int j=0; j<row[i].length; j++){
-		  std::cout << *(row[i].rowData+j);
-		}
-		std::cout <<"}"<<std::endl;
+//        Test_Row row;
+//        row.rowIdx  = i/4;
+//        row.length  = 8;
+//        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/4);
+//
+//		//print
+//		std::cout << "{ FPGA stream0: ";
+//		for(int j=0; j<row.length; j++){
+//		  std::cout << *(row.rowData+j);
+//		}
+//		std::cout <<"}"<<std::endl;
 
         if(e_TestRow){
         	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
+    	}//endif
     }
+    e_ostrm.read(e_TestRow);
+#ifndef __SYNTHESIS__
+	if(!e_TestRow){
+		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+	}
+#endif
+
 }
-// function to read strm and print ii=1
+// function to read strm and print ii=2
 template< typename _TStrm>
 void readbatchToPrintII2(
 	    hls::stream<_TStrm >& ostrm,
@@ -78,25 +91,30 @@ void readbatchToPrintII2(
 		int& num
 ){
 
-    for(int i=0;i<(num);i++){
-#pragma HLS PIPELINE II=2
-    	_TStrm tmp;
-    	bool e_TestRow;
+	_TStrm tmp;
+	bool e_TestRow;
+
+    for(int i=0;i<(2*num);i++){
+#pragma HLS PIPELINE II=1
+
+    	if((i&1)!=1){
+    		*(rowDtmp_ap+pos+i/2+1)= 0;
+    	}else{
     	ostrm.read(tmp);
         e_ostrm.read(e_TestRow);
-        *(rowDtmp_ap+pos+i) = tmp;
+        *(rowDtmp_ap+pos+i/2) = tmp;
 
-#if 0
-//#ifndef __SYNTHESIS__
-        Test_Row *row;
-        row[i].rowIdx  = i;
-        row[i].length  = 8;
-        row[i].rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
+//#if 1
+#ifndef __SYNTHESIS__
+		Test_Row row;
+		row.rowIdx  = i/2;
+		row.length  = 8;
+		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/2);
 
 		//print
 		std::cout << "{ FPGA stream0: ";
-		for(int j=0; j<row[i].length; j++){
-		  std::cout << *(row[i].rowData+j);
+		for(int j=0; j<row.length; j++){
+		  std::cout << *(row.rowData+j);
 		}
 		std::cout <<"}"<<std::endl;
 
@@ -104,11 +122,18 @@ void readbatchToPrintII2(
         	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
+    	}
     }
+    e_ostrm.read(e_TestRow);
+#ifndef __SYNTHESIS__
+	if(!e_TestRow){
+		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+	}
+#endif
 }
-// function to read strm and print ii=3
+// function to read strm and print ii=8
 template< typename _TStrm>
-void readbatchToPrintII3(
+void readbatchToPrintII8(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
 		_TStrm* rowDtmp_ap,
@@ -116,20 +141,25 @@ void readbatchToPrintII3(
 		int& num
 ){
 
-    for(int i=0;i<(num);i++){
-#pragma HLS PIPELINE II=3
-    	_TStrm tmp;
-    	bool e_TestRow;
+	_TStrm tmp;
+	bool e_TestRow;
+
+    for(int i=0;i<(8*num);i++){
+#pragma HLS PIPELINE II=1
+
+    	if((i&7)!=7){
+    		*(rowDtmp_ap+pos+i/8+1)= 0;
+    	}else{
     	ostrm.read(tmp);
         e_ostrm.read(e_TestRow);
-        *(rowDtmp_ap+pos+i) = tmp;
+        *(rowDtmp_ap+pos+i/8) = tmp;
 
 #if 0
 //#ifndef __SYNTHESIS__
         Test_Row *row;
         row[i].rowIdx  = i;
         row[i].length  = 8;
-        row[i].rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
+        row[i].rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/8);
 
 		//print
 		std::cout << "{ FPGA stream2: ";
@@ -142,8 +172,16 @@ void readbatchToPrintII3(
         	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
+    	}
     }
+    e_ostrm.read(e_TestRow);
+#ifndef __SYNTHESIS__
+	if(!e_TestRow){
+		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+	}
+#endif
 }
+
 // ------------------------------------------------------------
 
 // top functions for 3 type data
@@ -210,22 +248,22 @@ void top_for_co_sim(
     int num2 = num[2];
 
 #pragma HLS RESOURCE variable= ostrm0 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = ostrm0 depth = 1024
+#pragma HLS STREAM  variable = ostrm0 depth = 16
 #pragma HLS RESOURCE variable= e_ostrm0 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = e_ostrm0 depth = 1024
+#pragma HLS STREAM  variable = e_ostrm0 depth = 16
 #pragma HLS RESOURCE variable= ostrm1 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = ostrm1 depth = 1024
+#pragma HLS STREAM  variable = ostrm1 depth = 16
 #pragma HLS RESOURCE variable= e_ostrm1 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = e_ostrm1 depth = 1024
+#pragma HLS STREAM  variable = e_ostrm1 depth = 16
 #pragma HLS RESOURCE variable= ostrm2 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = ostrm2 depth = 1024
+#pragma HLS STREAM  variable = ostrm2 depth = 16
 #pragma HLS RESOURCE variable= e_ostrm2 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = e_ostrm2 depth = 1024
+#pragma HLS STREAM  variable = e_ostrm2 depth = 16
 
     top_axi_to_multi_stream(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-	readbatchToPrintII1(ostrm0, e_ostrm0, rowDtmp_ap0, p0, num0 );
+	readbatchToPrintII4(ostrm0, e_ostrm0, rowDtmp_ap0, p0, num0 );
 	readbatchToPrintII2(ostrm1, e_ostrm1, rowDtmp_ap1, p1, num1 );
-	readbatchToPrintII3(ostrm2, e_ostrm2, rowDtmp_ap2, p2, num2 );
+	readbatchToPrintII8(ostrm2, e_ostrm2, rowDtmp_ap2, p2, num2 );
 }
 
 //void top_read_to_vec(
@@ -315,6 +353,27 @@ std::string alignStrtodataType (std::string str)
   return alignString;
 }
 
+// function to print
+template< typename _TStrm>
+void PrintRow(
+	_TStrm* rowDtmp_ap,
+	int& num
+){
+	for(int i=0;i<(num);i++){
+		Test_Row row;
+		row.rowIdx  = i;
+		row.length  = 8;
+		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
+
+		//print
+		std::cout << "{ FPGA ap_uint<"<< sizeof(_TStrm)<<"> stream: ";
+		for(int j=0; j<row.length; j++){
+		  std::cout << *(row.rowData+j);
+		}
+		std::cout <<"}"<<std::endl;
+	}
+}
+
 int main(int argc, const char* argv[]) {
 
 	std::cout << "\n------------ Test for axi_to_stream  -------------\n";
@@ -366,8 +425,7 @@ int main(int argc, const char* argv[]) {
 
 	err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all+offset[0]+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
 	if (err) return err;
-//	top_axi_to_multi_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm0, e_ostrm0,
-//			ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
+
 
 	//strm output
     Test_Row row[3][DATA_NUM];
@@ -379,58 +437,62 @@ int main(int argc, const char* argv[]) {
 
     top_for_co_sim((ap_uint<AXI_WIDTH>*)dataInDDR,len, offset,rowDtmp_ap0,rowDtmp_ap1,rowDtmp_ap2,out_num);
 
-//    bool onetype_fnl = false;
-//    while(!onetype_fnl){
-//    	printf("Read %d strm0:\n", num[0]);
-//		readbatchToPrint(ostrm0, e_ostrm0, rowDtmp_ap0, pos[0], num[0] );
-//		printf("Read %d strm1:\n", num[1]);
-//		readbatchToPrint(ostrm1, e_ostrm1, rowDtmp_ap1, pos[1], num[1] );
-//		printf("Read %d strm2:\n", num[2]);
-//		readbatchToPrint(ostrm2, e_ostrm2, rowDtmp_ap2, pos[2], num[2] );
-//		pos[0] += num[0];
-//		pos[1] += num[1];
-//		pos[2] += num[2];
-//		    onetype_fnl = (pos[0]+num[0]>=out_num[0])||(pos[1]+num[1]>=out_num[1])||(pos[2]+num[2]>=out_num[2]);
-//    }
+//    printf("**************************\n");
+//    printf("Read %d strm0:\n", out_num[0]);
+//    PrintRow(rowDtmp_ap0,out_num[0]);
+//    printf("**************************\n");
+//    printf("Read %d strm1:\n", out_num[1]);
+//    PrintRow(rowDtmp_ap1,out_num[1]);
+//    printf("**************************\n");
+//    printf("Read %d strm2:\n", out_num[2]);
+//    PrintRow(rowDtmp_ap2,out_num[2]);
+//    printf("Read all %d vec:\n", (out_num[0]+out_num[1]+out_num[2]));
 
-//    for(int i=0;i<(out_num[0]);i++){
-//    	TYPE_Strm0 tmp;
-//    	ostrm0.read(tmp);
-//        e_ostrm0.read(e_TestRow);
-//
-//        row[0][i].rowIdx  = i;
-//        row[0][i].length  = 8;
-//        *(rowDtmp_ap1+i) = tmp;
-//        row[0][i].rowData = reinterpret_cast<char* >(rowDtmp_ap1+i);
-//
-//        if(e_TestRow){
-//        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
-//        }
-//    }
-//    //read the last
-//	e_ostrm0.read(e_TestRow);
-//	if(!e_TestRow){
-//		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
-//	}
-//
-//	// line-by-line print
-//	int idx=0;
-//	while(idx < out_num[0]){
-//		if(row[0][idx].rowIdx >= out_num[0]) break;
-//
-//		//print
-//		std::cout << "{ FPGA stream: ";
-//		for(int j=0; j<row[0][idx].length; j++){
-//		  std::cout << *(row[0][idx].rowData+j);
-//		}
-//		std::cout <<"}"<<std::endl;
-//		idx++;
-//
-//	}//end while
 //	if(idx == out_num[0]) std::cout << "passed compare!\n ";
 //	else std::cout << "failed compare!\n ";
-//	std::cout <<"idx: "<<idx<< "= number of output data = " << out_num[0]<< "\n";
 
+#if 0
+	top_axi_to_multi_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm0, e_ostrm0,
+			ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
+
+    for(int i=0;i<(out_num[0]);i++){
+    	TYPE_Strm0 tmp;
+    	ostrm0.read(tmp);
+        e_ostrm0.read(e_TestRow);
+
+        row[0][i].rowIdx  = i;
+        row[0][i].length  = 8;
+        *(rowDtmp_ap1+i) = tmp;
+        row[0][i].rowData = reinterpret_cast<char* >(rowDtmp_ap1+i);
+
+        if(e_TestRow){
+        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
+        }
+    }
+    //read the last
+	e_ostrm0.read(e_TestRow);
+	if(!e_TestRow){
+		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+	}
+
+	// line-by-line print
+	int idx=0;
+	while(idx < out_num[0]){
+		if(row[0][idx].rowIdx >= out_num[0]) break;
+
+		//print
+		std::cout << "{ FPGA stream: ";
+		for(int j=0; j<row[0][idx].length; j++){
+		  std::cout << *(row[0][idx].rowData+j);
+		}
+		std::cout <<"}"<<std::endl;
+		idx++;
+
+	}//end while
+	if(idx == out_num[0]) std::cout << "passed compare!\n ";
+	else std::cout << "failed compare!\n ";
+	std::cout <<"idx: "<<idx<< "= number of output data = " << out_num[0]<< "\n";
+#endif
 	free(dataInDDR);
 	free(rowDtmp_ap0);
 	free(rowDtmp_ap1);

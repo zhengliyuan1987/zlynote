@@ -127,7 +127,7 @@ void split_vec_to_aligned(
     ap_uint<_WAxi> vec_reg = vec_strm.read();
     ap_uint<_WAxi> vec_aligned = 0;
 
-    if((scal_char-offset)<len){
+    if( offset && ((scal_char-offset)<len) ){
 
         //need read again
         LOOP_SPLIT_VEC_TO_ALIGNED:
@@ -150,11 +150,11 @@ void split_vec_to_aligned(
               }
           }
 
-    }else{
+    }else if(offset && ((scal_char-offset)>=len)){
 
         //no read
         SPLIT_FEW_VEC_TO_ALIGNED:
-        vec_aligned((scal_char-offset)<<3-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
+        vec_aligned((scal_char-offset<<3)-1, 0) = vec_reg((scal_char<<3)-1, offset<<3);
         for (int j = 0; j < scal_vec; ++j) {
         #pragma HLS loop_tripcount min=1 max=1
         #pragma HLS PIPELINE II = 1
@@ -166,10 +166,41 @@ void split_vec_to_aligned(
             }//end if
         }
 
+    }else if(!offset){
+    	//no read
+    	SPLIT_VEC:
+
+		int fst_n =  scal_vec > nwrite ? nwrite  : scal_vec;
+		for (int j = 0; j < scal_vec; ++j) {
+		#pragma HLS PIPELINE II = 1
+			ap_uint<WStrm > r0 =
+			vec_reg.range(WStrm * (j + 1) - 1, WStrm * j);
+			if (j < fst_n) {
+				r_strm.write((_TStrm)r0);
+				e_strm.write(false);
+			}
+		}
+
+		for (int i = 1; i < nwrite-1; i += scal_vec) {
+		#pragma HLS loop_tripcount min=1 max=1
+		#pragma HLS PIPELINE II = scal_vec
+			ap_uint<_WAxi> vec = vec_strm.read();
+			int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
+
+			for (int j = 0; j < scal_vec; ++j) {
+		#pragma HLS PIPELINE II = 1
+				ap_uint<WStrm > r0 =
+				vec.range(WStrm * (j + 1) - 1, WStrm * j);
+				if (j < n) {
+					r_strm.write((_TStrm)r0);
+					e_strm.write(false);
+				}
+			}
+		 }
     }
     e_strm.write(true);
 }
-
+#if 0
 template <int _WAxi, typename _TStrm, int scal_vec >
 void split_vec(
     hls::stream<ap_uint<_WAxi> >& vec_strm,
@@ -200,7 +231,7 @@ SPLIT_VEC:
      }
      e_strm.write(true);
 }
-
+#endif
 } // details
 
 // ---------------------- APIs ---------------------------------
@@ -250,15 +281,15 @@ void axi_to_stream(
       details::read_to_vec<_WAxi, _BstLen >(
           rbuf, len, scal_char, offset,
           vec_strm);
-      if(!offset){
-          details::split_vec<_WAxi, _TStrm, scal_vec >(
-              vec_strm, len,
-              ostrm, e_ostrm);
-      }else{
+//      if(!offset){
+//          details::split_vec<_WAxi, _TStrm, scal_vec >(
+//              vec_strm, len,
+//              ostrm, e_ostrm);
+//      }else{
           details::split_vec_to_aligned<_WAxi, _TStrm , scal_vec>(
               vec_strm, len, scal_char, offset,
               ostrm, e_ostrm);
-      }
+//      }
 }
 
 /* @brief Loading data from AXI master to aligned_width stream.

@@ -8,8 +8,12 @@
 
 #define AXI_WIDTH     (64)
 #define BURST_LENTH   (32)
-#define DATA_NUM      (5120)
 #define SCAL_AXI      (2)
+#define DATA_NUM      (5120)
+#define LEN_BYCHAR    (4799)
+//just for the l_discount_few.bin test
+//#define DATA_NUM      (1)
+//#define LEN_BYCHAR    (4)
 
 #define STRM_WIDTH     (32)
 typedef ap_uint<32>    TYPE_Strm;
@@ -182,10 +186,16 @@ int main(int argc, const char* argv[]) {
 		std::cout << "WARNING: offset_iszero not specified. Defaulting to " << offset_iszero << std::endl;
 	}
 
+	int offset;
+	if(offset_iszero){
+		offset = 0;//1 in corner test
+	}else{
+		offset = 3;
+	}
 
 	//load data
 	int fixedDataLen  = 4;
-	int DATA_LEN_CHAR = DATA_NUM * fixedDataLen;
+	int DATA_LEN_CHAR = (DATA_NUM+offset) * fixedDataLen;
 	char*       dataInDDR = (char*)malloc(DATA_LEN_CHAR*8*sizeof(char));
 	TYPE_Strm*  rowDtmp_ap= (TYPE_Strm*)malloc(DATA_NUM*8*sizeof(TYPE_Strm));
 	if (!dataInDDR){
@@ -197,19 +207,12 @@ int main(int argc, const char* argv[]) {
 	hls::stream<TYPE_Strm > ostrm;
 	hls::stream<bool>     e_ostrm;
 	int err;
-	const int len	 = 4799;
-
-	int offset;
-	if(offset_iszero){
-		offset = 0;
-	}else{
-		offset = 3;
-	}
+	const int len	 = LEN_BYCHAR;
 
 	if(bin_isaligned){
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, DATA_LEN_CHAR);
 		if (err) return err;
-		top_align_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM , 0);
+		top_align_axi_to_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm, e_ostrm, DATA_NUM , offset);
 	}else{
 		//load more data than len, to simulate the ddr data
 		err = load_dat<char>(dataInDDR, dataFile, in_dir, (len+offset+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));

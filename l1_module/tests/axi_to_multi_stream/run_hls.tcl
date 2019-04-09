@@ -25,7 +25,7 @@ set_clock_uncertainty 1.05
 
 csynth_design
 
-cosim_design -compiler gcc -argv "$host_args"
+#cosim_design -compiler gcc -argv "$host_args"
 
 #export_design -flow impl -rtl verilog -format ip_catalog
 
