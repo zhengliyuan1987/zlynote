@@ -6,61 +6,67 @@
 #include "hls_stream.h"
 #include "xf_util/uram_array.h"
 
+//as reference uram size 4K*256
+// need to NUM_SIZE <= NDATA
+#define NUM_SIZE   (10<<10)
+#define WDATA      64
+#define NDATA      (20<<10)
+#define NCACHE     4
 
-/******************** range as reference *******************
- * WData	1	    16	   64	 128   256	512	 1024
- * NData	294912	16384  4096	 2048  350	80	 20
- * block	1	    1	   1	 2	   4	8	 15
- * *********************************************************/
-
-#define NUM_SIZE     1024
-#define WDATA        128
-#define NDATA        2048
-#define NCACHE       4
-
-void core_test(hls::stream<ap_uint<WDATA> >& ins, hls::stream<ap_uint<WDATA> >& outs)
+void update_logic(ap_uint<WDATA>& out)
 {
-	ap_uint<WDATA> in,out;
+#pragma HLS inline
+	out += out;
+	//out++;
+}
+
+void core_test(hls::stream<ap_uint<WDATA> >& out_stream)
+{
+	ap_uint<WDATA> out;
 	xf::util::level1::uram_array<WDATA,NDATA,NCACHE> uram_array1;
 
-	W_LOOP: for(int i=0;i<NUM_SIZE;i++)
+	LOOP: for(int i=0;i<NUM_SIZE;i++)
 	{
-//#pragma HLS PIPELINE II=1
-		in = ins.read();
-		uram_array1.write(i, in);
-	}
+#pragma HLS PIPELINE II=1
+#pragma HLS DEPENDENCE variable=uram_array1._blocks intra false
+#pragma HLS DEPENDENCE variable=uram_array1._blocks inter false
 
-	R_LOOP:for(int i=0;i<NUM_SIZE;i++)
-	{
-//#pragma HLS PIPELINE II=1
-		out = uram_array1.read(i);
-		outs.write(out);
+			uram_array1.write(i, i);
+			out = uram_array1.read(i);
+			//add your logic
+			update_logic(out);
+			uram_array1.write(i, out);
+			out_stream.write(out);
 	}
 }
 
 int uram_array_test()
 {
-	hls::stream<ap_uint<WDATA> > ins, outs;
-	int in,out;
 	int nerror = 0;
+	ap_uint<WDATA> in, out, tmp;
+	hls::stream<ap_uint<WDATA> > out_stream("ref_output");
+
+	xf::util::level1::uram_array<WDATA,NDATA,NCACHE> uram_array2;
 
 	for(int i=0;i<NUM_SIZE;i++)
 	{
-		ins.write(i+1);
+		tmp=i;
+		update_logic(tmp);
+		uram_array2.write(i, tmp);
 	}
-	core_test(ins,outs);
+
+	core_test(out_stream);
 
 	for(int i=0;i<NUM_SIZE;i++)
 	{
-		if(!outs.empty())
-			out = outs.read();
-
-		if(out != (i+1) )
+		in = uram_array2.read(i);
+		out = out_stream.read();
+		bool cmp = (in == out) ? 1 : 0;
+		if(!cmp)
 		{
-			nerror = 1;
+			nerror++;
+			std::cout<<"The data is incorrect." << std::endl;
 		}
-
-		std::cout<<out<<std::endl;
 	}
 
 	if (nerror)

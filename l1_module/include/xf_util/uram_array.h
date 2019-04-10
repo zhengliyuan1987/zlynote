@@ -40,13 +40,23 @@ namespace level1{
 /*
  * @brief the structure of compute available uram block numbers
  *
- * @tparam total size of one block
- * @tparam one   size of one array
+ * @tparam width width of one data
+ * @tparam depth size of one array
+ * @tparam B condition of W <= 72
  *
  */
-template<int total,int one>
+template<int W,int N, bool B = (W <= 72)>
 struct need_num{
-	static const int value = (total + one -1)/one;
+private:
+	static const int elem_per_line = 72 / W;
+public:
+	static const int value = ((W + 71) / 72) * (( N + (elem_per_line * 4096) - 1) / (elem_per_line * 4096));
+};
+
+template <int W, int N>
+struct need_num<W, N, false> {
+public:
+  static const int value = ((W + 71) / 72) * ((N + 4095) / 4096);
 };
 
 /*
@@ -57,23 +67,23 @@ struct need_num{
  * @tparam NData  the depth of array
  * @tparam NCache the number of cache
  *
- * @param _blocks         the memory of accessing
- * @param _num_uram_block available numbers of uram block
- * @param _elem_per_line  if WData<72,elems of per line,such as WData = 16, _elem_per_line is 4
- * @param _num_index      index numbers of one block
- * @param _num_block      piece of block using one time
+ * @param _blocks          the memory of accessing
+ * @param _num_uram_block  available numbers of uram block
+ * @param _elem_per_line   if WData<72,elems of per line,such as WData = 16, _elem_per_line is 4
+ * @param _index_one_block index numbers of one block
+ * @param _num_one_process piece of block using one time
  *
  */
 
 template<int WData, int NData, int NCache>
 class uram_array{
 public:
-	uram_array():_elem_per_line(72 / WData),_num_index(_elem_per_line*(4<<10)),_num_block((WData + 71)/72){
+	uram_array():_elem_per_line(72 / WData), _num_one_process((WData + 71)/72), _index_one_block(_elem_per_line * 4096){
 #ifndef __SYNTHESIS__
 		//TODO:malloc the array
 		for(int i=0;i<_num_uram_block;i++)
 		{
-			_blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * (4 << 10));
+			_blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * 4096);
 		}
 #endif
 		for(int i=0;i<NCache;i++)
@@ -95,85 +105,93 @@ public:
 	void write(int index, const ap_uint<WData>& d);
 	ap_uint<WData> read(int index);
 private:
+	const int        _elem_per_line;
+	const int        _num_one_process;
+	const int        _index_one_block;
 	static const int _num_uram_block;
-	const int _elem_per_line;
-	const int _num_index;
-	const int _num_block;
-	int _index[NCache];
-	ap_uint<WData> _state[NCache];
+	int              _index[NCache];
+	ap_uint<WData>   _state[NCache];
 
+public:
 #ifndef __SYNTHESIS__
-	ap_uint<72>* _blocks[need_num <72 * (4 << 10), WData * NData>::value];
+	ap_uint<72>*  _blocks[need_num <WData, NData>::value];
 #else
-	ap_uint<72>  _blocks[need_num <72 * (4 << 10), WData * NData>::value][4<<10];
+	ap_uint<72>   _blocks[need_num <WData, NData>::value][4096];
 #endif
 };
 
 template<int WData, int NData, int NCache>
-const int uram_array<WData, NData, NCache>::_num_uram_block = need_num <72 * (4 << 10), WData * NData>::value;
+const int uram_array<WData, NData, NCache>::_num_uram_block = need_num <WData, NData>::value;
 
 // to ensure the array can be updated every cycle.
 template<int WData, int NData, int NCache>
 void uram_array<WData, NData, NCache>::write(int index, const ap_uint<WData>& d)
 {
-#pragma HLS inline off
+#pragma HLS inline
 	int div_block=0,div_index=0;
-	int dec_block=0,dec=0,begin=0;
+	int dec_block=0,dec,begin;
 
 #pragma HLS RESOURCE   variable=_blocks core=XPM_MEMORY uram//core=RAM_T2P_URAM
 #pragma HLS ARRAY_PARTITION variable=_blocks complete dim=1
-#pragma HLS ARRAY_PARTITION variable=_index complete dim=1
-#pragma HLS ARRAY_PARTITION variable=_state complete dim=1
+#pragma HLS ARRAY_PARTITION variable=_index  complete dim=1
+#pragma HLS ARRAY_PARTITION variable=_state  complete dim=1
 
 #ifndef __SYNTHESIS__
-	for(int i=0; i < _num_block; i++)
+	if(WData <= 72)
 	{
-		if(WData <= 72)
-		{
-			div_block = index / _num_index;          //which block to write
-			dec_block = index % _num_index;          //offset of block
-			div_index = dec_block / _elem_per_line;  //which 72bit to write
-			dec       = dec_block % _elem_per_line;  //offset of inner 72bit
-			begin     = dec * WData;                 //the start which you want to write
-			_blocks[div_block][div_index].range(begin+WData-1,begin) = d;
-		}
-		else
+		div_block = index / _index_one_block;          //which block to write
+		dec_block = index % _index_one_block;          //offset of block
+		div_index = dec_block / _elem_per_line;        //which 72bit to write
+		dec       = dec_block % _elem_per_line;        //offset of inner 72bit
+		begin     = dec * WData;                       //the start which you want to write
+		_blocks[div_block][div_index].range(begin+WData-1, begin) = d;
+	}
+	else
+	{
+		for(int i=0; i < _num_one_process; i++)
 		{
 
-			if(i == (_num_block-1) )
+			div_block = index / 4096;
+			dec_block = index % 4096;
+			int ii = i + div_block * _num_one_process;
+			if(i == (_num_one_process - 1) )
 			{
-				_blocks[i][index] = d.range( WData -1, ((i<<6)+(i<<3)));
+				_blocks[ii][dec_block] = d.range( WData -1, ((i<<6)+(i<<3)));
 			}
 			else
-				_blocks[i][index] = d.range( ((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3)));
+				_blocks[ii][dec_block] = d.range( ((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3)));
 		}
 	}
 #else
-	Write_Inner:for(int i=0; i < _num_block; i++)
+	Write_Inner:for(int i=0; i < _num_one_process; i++)
 	{
-	#pragma HLS UNROLL factor=15
+#pragma HLS UNROLL
 		if(WData <= 72)
 		{
-			div_block = index / _num_index;
-			dec_block = index % _num_index;
+			div_block = index / _index_one_block;
+			dec_block = index % _index_one_block;
 			div_index = dec_block / _elem_per_line;
 			dec       = dec_block % _elem_per_line;
 			begin     = dec * WData;
-			_blocks[div_block][div_index].range(begin+WData-1,begin) = d;
+			_blocks[div_block][div_index](begin+WData-1,begin) = d;
 		}
 		else
 		{
-			if(i == (_num_block -1 ))
-				_blocks[i][index] = d.range( WData -1, ((i<<6)+(i<<3)));
+			div_block = index / 4096;
+			dec_block = index % 4096;
+			int ii = i + div_block * _num_one_process;
+
+			if(i == (_num_one_process - 1 ))
+				_blocks[ii][dec_block] = d.range( WData -1, ((i<<6)+(i<<3)));
 			else
-				_blocks[i][index] = d.range( ((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3)));
+				_blocks[ii][dec_block] = d.range( ((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3)));
 		}
 	}
 #endif
 
-	Write_Cache:for(int i=NCache-1;i>=1;i--)
-	{
-#pragma HLS UNROLL factor=3
+Write_Cache:for(int i=NCache-1;i>=1;i--)
+{
+#pragma HLS UNROLL
 #pragma HLS DEPENDENCE variable=_state inter false
 #pragma HLS DEPENDENCE variable=_state intra false
 #pragma HLS DEPENDENCE variable=_index inter false
@@ -185,23 +203,22 @@ void uram_array<WData, NData, NCache>::write(int index, const ap_uint<WData>& d)
 	_index[0] = index;
 }
 
-template<int WData, int NData,int NCache>
+template<int WData, int NData, int NCache>
 ap_uint<WData> uram_array<WData, NData, NCache>::read(int index)
 {
-#pragma HLS inline off
+#pragma HLS inline
 	ap_uint<WData> value;
 	int div_block=0,div_index=0;
-	int dec_block=0,dec=0,begin=0;
-	bool is_InState = false;
+	int dec_block=0, dec, begin;
 
-#pragma HLS RESOURCE variable=_blocks core=XPM_MEMORY uram//core=RAM_T2P_URAM
+#pragma HLS RESOURCE variable=_blocks core=XPM_MEMORY uram
 #pragma HLS ARRAY_PARTITION variable=_blocks complete dim=1
 #pragma HLS ARRAY_PARTITION variable=_index  complete dim=1
 #pragma HLS ARRAY_PARTITION variable=_state  complete dim=1
 
 	Read_Cache:for(int i=0;i<NCache;i++)
 	{
-#pragma HLS UNROLL factor=4
+#pragma HLS UNROLL
 #pragma HLS DEPENDENCE variable=_state inter false
 #pragma HLS DEPENDENCE variable=_state intra false
 #pragma HLS DEPENDENCE variable=_index inter false
@@ -209,55 +226,58 @@ ap_uint<WData> uram_array<WData, NData, NCache>::read(int index)
 		if(index == _index[i])
 		{
 			value = _state[i];
-			is_InState = true;
+			return value;
 		}
 	}
-	if(!is_InState)
-	{
 #ifndef __SYNTHESIS__
-		for(int i=0; i < _num_block; i++)
+	for(int i=0; i < _num_one_process; i++)
+	{
+		if(WData <= 72)
 		{
-			if(WData <= 72)
-			{
-				div_block = index / _num_index;
-				dec_block = index % _num_index;
-				div_index = dec_block / _elem_per_line;
-				dec       = dec_block % _elem_per_line;
-				begin     = dec * WData;
-				value     = _blocks[div_block][div_index].range(begin+WData-1,begin);
-			}
-			else
-			{
-
-				if(i == (_num_block -1 ))
-					value.range( WData -1, ((i<<6)+(i<<3)) ) = _blocks[i][index];
-				else
-					value.range(((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3))) = _blocks[i][index];
-			}
+			div_block = index / _index_one_block;
+			dec_block = index % _index_one_block;
+			div_index = dec_block / _elem_per_line;
+			dec       = dec_block % _elem_per_line;
+			begin     = dec * WData;
+			value     = _blocks[div_block][div_index].range(begin+WData-1,begin);
 		}
-#else
-		Read_Inner:for(int i=0; i < _num_block; i++)
+		else
 		{
-#pragma HLS UNROLL factor=15
-			if(WData <= 72)
-			{
-				div_block = index / _num_index;
-				dec_block = index % _num_index;
-				div_index = dec_block / _elem_per_line;
-				dec       = dec_block % _elem_per_line;
-				begin     = dec * WData;
-				value     = _blocks[div_block][div_index].range(begin+WData-1,begin);
-			}
+			div_block = index / 4096;
+			dec_block = index % 4096;
+			int ii = i + div_block * _num_one_process;
+			if(i == (_num_one_process - 1 ))
+				value.range( WData -1, ((i<<6)+(i<<3)) )           = _blocks[ii][dec_block];
 			else
-			{
-				if(i == (_num_block -1 ))
-					value.range( WData -1, ((i<<6)+(i<<3))) = _blocks[i][index];
-				else
-					value.range( ((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3))) = _blocks[i][index];
-			}
+				value.range(((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3))) = _blocks[ii][dec_block];
 		}
-#endif
 	}
+#else
+	Read_Inner:for(int i=0; i < _num_one_process; i++)
+	{
+#pragma HLS UNROLL
+		if(WData <= 72)
+		{
+			div_block = index / _index_one_block;
+			dec_block = index % _index_one_block;
+			div_index = dec_block / _elem_per_line;
+			dec       = dec_block % _elem_per_line;
+			begin     = dec * WData;
+			value     = _blocks[div_block][div_index].range(begin+WData-1,begin);
+		}
+		else
+		{
+			div_block = index / 4096;
+			dec_block = index % 4096;
+			int ii = i + div_block * _num_one_process;
+
+			if(i == (_num_one_process - 1 ))
+				value.range( WData -1, ((i<<6)+(i<<3)))             = _blocks[ii][dec_block];
+			else
+				value.range( ((i<<6)+(i<<3)) + 71, ((i<<6)+(i<<3))) = _blocks[ii][dec_block];
+		}
+	}
+#endif
 
 	return value;
 }
