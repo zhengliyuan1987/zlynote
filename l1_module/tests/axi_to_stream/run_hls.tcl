@@ -3,7 +3,7 @@
 ## Please DO NOT edit it.
 ## Copyright (C) 1986-2018 Xilinx, Inc. All Rights Reserved.
 ############################################################
-open_project prj_axi_to_stream
+open_project -reset  prj_axi_to_stream
 config_debug
 
 add_files test_axi_to_stream.cpp  -cflags "-std=gnu++0x -g -I ../../include"
@@ -50,6 +50,6 @@ csynth_design
 
 cosim_design -compiler gcc -argv "$host_args"
 
-#export_design -flow impl -rtl verilog -format ip_catalog
+export_design -flow impl -rtl verilog -format ip_catalog
 
 exit

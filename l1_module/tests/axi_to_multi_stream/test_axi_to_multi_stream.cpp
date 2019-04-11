@@ -17,7 +17,7 @@ typedef ap_uint<STRM_WIDTH>    TYPE_Strm;
 
 //for input
 #define STRM_WIDTH0     (64)
-#define STRM_WIDTH1     (64)
+#define STRM_WIDTH1     (32)
 #define STRM_WIDTH2     (64)
 typedef ap_uint<STRM_WIDTH0>    TYPE_Strm0;
 typedef ap_uint<STRM_WIDTH1>    TYPE_Strm1;
@@ -38,31 +38,30 @@ void readbatchToPrintII4(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
 		_TStrm* rowDtmp_ap,
-		int& pos,
-		int& num
+		const int num
 ){
 
-	_TStrm tmp=0;
+	_TStrm dat=0;
 	bool e_TestRow=0;
 
     for(int i=0;i<(4*num);i++){
 #pragma HLS PIPELINE II=1
     	if((i&3)!=3){
-    		*(rowDtmp_ap+pos+i/4+1)= 0;
+    		*(rowDtmp_ap+i/4+1)= 0;
     	}else{
-			ostrm.read(tmp);
+			ostrm.read(dat);
 			e_ostrm.read(e_TestRow);
-			*(rowDtmp_ap+pos+i/4) = tmp;
+			*(rowDtmp_ap+i/4) = dat;
 
 #if 0
 //#ifndef __SYNTHESIS__
         Test_Row row;
         row.rowIdx  = i/4;
         row.length  = 8;
-        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/4);
+        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i/4);
 
 		//print
-        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+pos+i/4);
+        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+i/4);
 		std::cout << "{ FPGA stream1: ";
 		std::cout << std::hex<<*tmp;
 		std::cout <<"}"<<std::endl;
@@ -87,36 +86,34 @@ void readbatchToPrintII2(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
 		_TStrm* rowDtmp_ap,
-		int& pos,
-		int& num
+		const int num
 ){
 
-	_TStrm tmp;
+	_TStrm dat;
 	bool e_TestRow;
 
     for(int i=0;i<(2*num);i++){
 #pragma HLS PIPELINE II=1
 
     	if((i&1)!=1){
-    		*(rowDtmp_ap+pos+i/2+1)= 0;
+    		*(rowDtmp_ap+i/2+1)= 0;
     	}else{
-    	ostrm.read(tmp);
+    	ostrm.read(dat);
         e_ostrm.read(e_TestRow);
-        *(rowDtmp_ap+pos+i/2) = tmp;
+        *(rowDtmp_ap+i/2) = dat;
 
-//#if 1
-#ifndef __SYNTHESIS__
-//		Test_Row row;
-//		row.rowIdx  = i/2;
-//		row.length  = 8;
-//		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/2);
-//
-//		//print
-//		std::cout << "{ FPGA stream0: ";
-//		for(int j=0; j<row.length; j++){
-//		  std::cout <<std::dec<< *(row.rowData+j);
-//		}
-//		std::cout <<"}"<<std::endl;
+#if 0
+//#ifndef __SYNTHESIS__
+		Test_Row row;
+		row.rowIdx  = i/2;
+		row.length  = 8;
+		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i/2);
+
+		//print
+        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+i/2);
+		std::cout << "{ FPGA stream0: ";
+		std::cout << std::hex<<*tmp;
+		std::cout <<"}"<<std::endl;
 
         if(e_TestRow){
         	std::cout << "ERROR: II =2 e_TestRow=1 while the data is not read empty!! "<<std::endl;
@@ -137,32 +134,31 @@ void readbatchToPrintII8(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
 		_TStrm* rowDtmp_ap,
-		int& pos,
-		int& num
+		const int num
 ){
 
-	_TStrm tmp;
+	_TStrm dat;
 	bool e_TestRow;
 
     for(int i=0;i<(8*num);i++){
 #pragma HLS PIPELINE II=1
 
     	if((i&7)!=7){
-    		*(rowDtmp_ap+pos+i/8+1)= 0;
+    		*(rowDtmp_ap+i/8+1)= 0;
     	}else{
-    	ostrm.read(tmp);
+    	ostrm.read(dat);
         e_ostrm.read(e_TestRow);
-        *(rowDtmp_ap+pos+i/8) = tmp;
+        *(rowDtmp_ap+i/8) = dat;
 
 //#if 0
 #ifndef __SYNTHESIS__
         Test_Row row;
         row.rowIdx  = i;
         row.length  = 8;
-        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+pos+i/8);
+        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i/8);
 
 		//print
-        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+pos+i/8);
+        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+i/8);
 		std::cout << "{ FPGA stream2: ";
 		std::cout << std::hex<<*tmp;
 		std::cout <<"}"<<std::endl;
@@ -195,13 +191,13 @@ void top_axi_to_multi_stream(
 			const int len[3],
 		    const int offset[3]
 ){
-//#pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
-//		  	 offset=slave bundle=gmem_in1 	latency = 8 	\
-//		     num_read_outstanding = 32 \
-//		     max_read_burst_length = 32
-//
-//#pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
-//#pragma HLS INTERFACE s_axilite port = return bundle = control
+#pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
+		  	 offset=slave bundle=gmem_in1 	latency = 8 	\
+		     num_read_outstanding = 32 \
+		     max_read_burst_length = 32
+
+#pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
+#pragma HLS INTERFACE s_axilite port = return bundle = control
 
 #ifndef __SYNTHESIS__
 	if(len[0]<=0 ||(len[1]<=0 )|| (len[2]<=0 ) )
@@ -222,47 +218,48 @@ void top_for_co_sim(
 			TYPE_Strm0 rowDtmp_ap0[DATA_NUM],
 			TYPE_Strm1 rowDtmp_ap1[DATA_NUM],
 			TYPE_Strm2 rowDtmp_ap2[DATA_NUM],
-				  int 	num[3]
+			const int 	num[3]
 ){
 	#pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
 			  	 offset=slave bundle=gmem_in1 	latency = 8 	\
 			     num_read_outstanding = 32 \
 			     max_read_burst_length = 32
 
-
 	#pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
 	#pragma HLS INTERFACE s_axilite port = return bundle = control
+
 #pragma HLS DATAFLOW
+#pragma HLS ARRAY_PARTITION    variable=len   dim=1
+#pragma HLS ARRAY_PARTITION    variable=offset   dim=1
+#pragma HLS ARRAY_PARTITION    variable=num   dim=1
+
+
+	hls::stream<bool>      e_ostrm0;
     hls::stream<TYPE_Strm0 > ostrm0;
-    hls::stream<bool> e_ostrm0;
     hls::stream<TYPE_Strm1 > ostrm1;
-    hls::stream<bool> e_ostrm1;
+    hls::stream<bool>      e_ostrm1;
     hls::stream<TYPE_Strm2 > ostrm2;
-    hls::stream<bool> e_ostrm2;
-    int p0 =0;
-    int p1 =0;
-    int p2 =0;
-    int num0 = num[0];
-    int num1 = num[1];
-    int num2 = num[2];
+    hls::stream<bool>      e_ostrm2;
 
-#pragma HLS RESOURCE variable= ostrm0 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = ostrm0 depth = 16
+
+#pragma HLS RESOURCE variable= ostrm0   core  = FIFO_LUTRAM
+#pragma HLS STREAM   variable= ostrm0   depth = 16
 #pragma HLS RESOURCE variable= e_ostrm0 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = e_ostrm0 depth = 16
-#pragma HLS RESOURCE variable= ostrm1 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = ostrm1 depth = 16
+#pragma HLS STREAM   variable= e_ostrm0 depth = 16
+#pragma HLS RESOURCE variable= ostrm1   core  = FIFO_LUTRAM
+#pragma HLS STREAM   variable= ostrm1   depth = 16
 #pragma HLS RESOURCE variable= e_ostrm1 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = e_ostrm1 depth = 16
-#pragma HLS RESOURCE variable= ostrm2 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = ostrm2 depth = 16
+#pragma HLS STREAM   variable= e_ostrm1 depth = 16
+#pragma HLS RESOURCE variable= ostrm2   core  = FIFO_LUTRAM
+#pragma HLS STREAM   variable= ostrm2   depth = 16
 #pragma HLS RESOURCE variable= e_ostrm2 core  = FIFO_LUTRAM
-#pragma HLS STREAM  variable = e_ostrm2 depth = 16
+#pragma HLS STREAM   variable= e_ostrm2 depth = 16
 
-    top_axi_to_multi_stream(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-	readbatchToPrintII2(ostrm0, e_ostrm0, rowDtmp_ap0, p0, num0 );
-	readbatchToPrintII4(ostrm1, e_ostrm1, rowDtmp_ap1, p1, num1 );
-	readbatchToPrintII8(ostrm2, e_ostrm2, rowDtmp_ap2, p2, num2 );
+	xf::util::level1::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
+	(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
+	readbatchToPrintII2(ostrm0, e_ostrm0, rowDtmp_ap0,  num[0] );
+	readbatchToPrintII4(ostrm1, e_ostrm1, rowDtmp_ap1,  num[1] );
+	readbatchToPrintII8(ostrm2, e_ostrm2, rowDtmp_ap2,  num[2] );
 }
 
 //void top_read_to_vec(
@@ -337,23 +334,19 @@ private:
 
 // function to print
 template< typename _TStrm>
-void PrintRow(
+void PrintRowFile(
 	_TStrm* rowDtmp_ap,
 	int& num
 ){
+	std::ofstream fout("file.dat" , std::ios::app );// | std::ios::binary);
+	//fout.write((char *)(&rowDtmp_ap), 8*num);
 	for(int i=0;i<(num);i++){
-		Test_Row row;
-		row.rowIdx  = i;
-		row.length  = 8;
-		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
-
-		//print
-		std::cout << "{ FPGA ap_uint<"<< sizeof(_TStrm)<<"> stream: ";
-		for(int j=0; j<row.length; j++){
-		  std::cout << *(row.rowData+j);
+		char* rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
+		for(int j=0; j<sizeof(_TStrm); j++){
+			fout << *(rowData+j);
 		}
-		std::cout <<"}"<<std::endl;
 	}
+	fout.close();
 }
 
 int main(int argc, const char* argv[]) {
@@ -381,24 +374,18 @@ int main(int argc, const char* argv[]) {
 
 	//load data
 	//int fixedDataLen  = 4;
-	int DATA_LEN_CHAR = DATA_NUM * 12;
-	char*       dataInDDR = (char*)malloc(DATA_LEN_CHAR*8*sizeof(char));
+	int   DATA_LEN_CHAR = DATA_NUM * 12;
+	char* dataInDDR = (char*)malloc(DATA_LEN_CHAR*8*sizeof(char));
 	//TYPE_Strm*  rowDtmp_ap= (TYPE_Strm*)malloc(DATA_NUM*8*sizeof(TYPE_Strm));
-	TYPE_Strm0*  rowDtmp_ap0= (TYPE_Strm0*)malloc(DATA_NUM*8*sizeof(TYPE_Strm0));
-	TYPE_Strm1*  rowDtmp_ap1= (TYPE_Strm1*)malloc(DATA_NUM*8*sizeof(TYPE_Strm1));
-	TYPE_Strm2*  rowDtmp_ap2= (TYPE_Strm2*)malloc(DATA_NUM*8*sizeof(TYPE_Strm2));
+//	TYPE_Strm0*  rowDtmp_ap0= (TYPE_Strm0*)malloc(DATA_NUM*8*sizeof(TYPE_Strm0));
+//	TYPE_Strm1*  rowDtmp_ap1= (TYPE_Strm1*)malloc(DATA_NUM*8*sizeof(TYPE_Strm1));
+//	TYPE_Strm2*  rowDtmp_ap2= (TYPE_Strm2*)malloc(DATA_NUM*8*sizeof(TYPE_Strm2));
 	if (!dataInDDR){
 		printf("Alloc dataInDDR failed!\n");
 		return 1;
 	}
 
 	//call top
-	hls::stream<TYPE_Strm0 > ostrm0;
-	hls::stream<bool>     e_ostrm0;
-	hls::stream<TYPE_Strm1 > ostrm1;
-	hls::stream<bool>     e_ostrm1;
-	hls::stream<TYPE_Strm2 > ostrm2;
-	hls::stream<bool>     e_ostrm2;
 	int err;
 	int len[3]	 = {4799, 5092, 7040};//{4799, 1273, 5120};
 	int len_all = len[0]+1+len[1]+len[2];
@@ -412,28 +399,46 @@ int main(int argc, const char* argv[]) {
 	//strm output
     Test_Row row[3][DATA_NUM];
     bool e_TestRow;
-    int out_num[3],pos[3]={0},num[3]={32,16,14} ;
+    int out_num[3];
+    int pos[3] = {0};
+    int num[3] = {32,16,14} ;
     out_num[0] = (len[0]+STRM_WIDTH0/8-1)/(STRM_WIDTH0/8);
     out_num[1] = (len[1]+STRM_WIDTH1/8-1)/(STRM_WIDTH1/8);
     out_num[2] = (len[2]+STRM_WIDTH2/8-1)/(STRM_WIDTH2/8);
 
-    top_for_co_sim((ap_uint<AXI_WIDTH>*)dataInDDR,len, offset,rowDtmp_ap0,rowDtmp_ap1,rowDtmp_ap2,out_num);
+	TYPE_Strm0 rowDtmp_ap0[DATA_NUM];
+	TYPE_Strm1 rowDtmp_ap1[DATA_NUM];
+	TYPE_Strm2 rowDtmp_ap2[DATA_NUM];
+	char z=0x00;
+	int test_num =2;
+    top_for_co_sim((ap_uint<AXI_WIDTH>*)dataInDDR,len, offset,
+    				rowDtmp_ap0, rowDtmp_ap1, rowDtmp_ap2,
+					out_num);
 
-//    printf("**************************\n");
-//    printf("Read %d strm0:\n", out_num[0]);
-//    PrintRow(rowDtmp_ap0,out_num[0]);
-//    printf("**************************\n");
-//    printf("Read %d strm1:\n", out_num[1]);
-//    PrintRow(rowDtmp_ap1,out_num[1]);
-//    printf("**************************\n");
-//    printf("Read %d strm2:\n", out_num[2]);
-//    PrintRow(rowDtmp_ap2,out_num[2]);
-//    printf("Read all %d vec:\n", (out_num[0]+out_num[1]+out_num[2]));
+    printf("**************************\n");
+    printf("Read %d strm0:\n", out_num[0]);
+    PrintRowFile(rowDtmp_ap0,out_num[0]);
+    printf("**************************\n");
+    printf("Read %d strm1:\n", out_num[1]);
+    PrintRowFile(rowDtmp_ap1,out_num[1]);
+    //PrintRowFile(&z         ,test_num);
+    printf("**************************\n");
+    printf("Read %d strm2:\n", out_num[2]);
+    PrintRowFile(rowDtmp_ap2,out_num[2]);
+    printf("Read all %d vec:\n", (out_num[0]+out_num[1]+out_num[2]));
 
 //	if(idx == out_num[0]) std::cout << "passed compare!\n ";
 //	else std::cout << "failed compare!\n ";
 
 #if 0
+	//call top
+	hls::stream<TYPE_Strm0 > ostrm0;
+	hls::stream<bool>     e_ostrm0;
+	hls::stream<TYPE_Strm1 > ostrm1;
+	hls::stream<bool>     e_ostrm1;
+	hls::stream<TYPE_Strm2 > ostrm2;
+	hls::stream<bool>     e_ostrm2;
+
 	top_axi_to_multi_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm0, e_ostrm0,
 			ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
 
@@ -476,8 +481,8 @@ int main(int argc, const char* argv[]) {
 	std::cout <<"idx: "<<idx<< "= number of output data = " << out_num[0]<< "\n";
 #endif
 	free(dataInDDR);
-	free(rowDtmp_ap0);
-	free(rowDtmp_ap1);
-	free(rowDtmp_ap2);
+//	free(rowDtmp_ap0);
+//	free(rowDtmp_ap1);
+//	free(rowDtmp_ap2);
 }
 #endif

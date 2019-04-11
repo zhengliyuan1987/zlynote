@@ -167,7 +167,7 @@ void split_vec_to_aligned(
 			}
 		}
 
-		for (int i = 1; i < nwrite-1; i += scal_vec) {
+		for (int i = scal_vec; i < nwrite; i += scal_vec) {
 		#pragma HLS loop_tripcount min=1 max=1
 		#pragma HLS PIPELINE II = scal_vec
 			ap_uint<_WAxi> vec = vec_strm.read();
