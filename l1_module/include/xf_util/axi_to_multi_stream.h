@@ -8,6 +8,7 @@
 #ifndef __SYNTHESIS__
 int cnt_test=0;
 #endif
+const int  NONBLOCK_DEPTH  =  (256);
 
 namespace xf {
 namespace util {
@@ -144,8 +145,8 @@ void read_to_vec_stream(
     hls::stream<ap_uint<_WAxi> >& vec_strm1,
     hls::stream<ap_uint<_WAxi> >& vec_strm2,
 	const int len    [3],
-    const int offset [3],
-		  int off_ali[3]
+    const int offset [3]
+		  //,int off_ali[3]
 ){
 	const int        numType = 3;
 	const int 	   scal_char = _WAxi/8;
@@ -153,20 +154,22 @@ void read_to_vec_stream(
 	 	  int        pos_vec [3];//current position for one type vec, by width of Axi
 	 	  int        len_ram [3];//length for one type vector loaded in local ram
 	 	  int        pos_ram [3];//current position need to be read
-	 	  //int        off_ali [3];//the first row offset aligned to Axi port by char
+	 	  int        off_ali [3];//the first row offset aligned to Axi port by char
 	 	  int        off_axi [3];
 	ap_uint<_WAxi> 	 dat_ram [3][_BstLen];//local ram depth equals the burst length
 
+	      int        cnt_alltype_fnl;
+	      bool       is_onetype_fnl[3];
 #pragma HLS RESOURCE variable=dat_ram   core=RAM_2P_BRAM
-//#pragma HLS RESOURCE variable=len_vec   core=RAM_1P_LUTRAM
-//#pragma HLS RESOURCE variable=pos_vec   core=RAM_1P_LUTRAM
-//#pragma HLS RESOURCE variable=len_ram   core=RAM_1P_LUTRAM
-//#pragma HLS RESOURCE variable=pos_ram   core=RAM_1P_LUTRAM
-//#pragma HLS ARRAY_PARTITION    variable=pos_ram   complete  dim=1
-
-	int              cnt_alltype_fnl;
-	bool             is_onetype_fnl[3];
-
+#pragma HLS ARRAY_PARTITION    variable=len       complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=offset    complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=off_ali   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=len_vec   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=pos_vec   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=len_ram   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=off_axi   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=dat_ram   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=is_onetype_fnl   complete  dim=1
 	/////////////// init ///////////////
 	INIT0:
 	for(int t=0; t<numType; t++){
@@ -381,13 +384,20 @@ void axi_to_multi_stream(
 	const int      scal_vec1 = _WAxi/(8*sizeof(_TStrm1));
 	const int      scal_vec2 = _WAxi/(8*sizeof(_TStrm2));
 #pragma HLS ARRAY_PARTITION    variable=off_ali complete
+#pragma HLS ARRAY_PARTITION    variable=len     complete
+#pragma HLS ARRAY_PARTITION    variable=offset  complete
 #pragma HLS RESOURCE variable= vec_strm0   core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= vec_strm0   depth = 32
+#pragma HLS STREAM   variable= vec_strm0   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= vec_strm1   core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= vec_strm1   depth = 32
+#pragma HLS STREAM   variable= vec_strm1   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= vec_strm2   core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= vec_strm2   depth = 32
-	details::read_to_vec_stream<_WAxi,_BstLen,_TStrm0,_TStrm1,_TStrm2>(rbuf, vec_strm0 , vec_strm1 , vec_strm2, len, offset, off_ali);
+#pragma HLS STREAM   variable= vec_strm2   depth = NONBLOCK_DEPTH
+	for(int t=0; t<3; t++){
+#pragma HLS LOOP_TRIPCOUNT min=1 max=1
+#pragma HLS PIPELINE II=1
+		off_ali[t] =(offset[t])&(scal_char-1);//scal_char is always 2^N
+	}
+	details::read_to_vec_stream<_WAxi,_BstLen,_TStrm0,_TStrm1,_TStrm2>(rbuf, vec_strm0 , vec_strm1 , vec_strm2, len, offset);
 	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm0 , scal_vec0>(
 			  vec_strm0, len[0], scal_char, off_ali[0],
 			  ostrm0, e_ostrm0);

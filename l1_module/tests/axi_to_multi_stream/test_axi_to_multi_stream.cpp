@@ -9,7 +9,7 @@
 #define AXI_WIDTH     (64)
 #define BURST_LENTH   (32)
 #define DATA_NUM      (5120)
-#define SCAL_AXI      (2)
+#define SCAL_AXI      (1)
 
 //Simulation of data on DDR, form the DDT ptr
 #define STRM_WIDTH     (32)
@@ -24,6 +24,7 @@ typedef ap_uint<STRM_WIDTH1>    TYPE_Strm1;
 typedef ap_uint<STRM_WIDTH2>    TYPE_Strm2;
 const int  DDR_DEPTH   =  (DATA_NUM/SCAL_AXI);
 
+
 // ------------------------------------------------------------
 struct Test_Row {
   int rowIdx;
@@ -34,7 +35,7 @@ struct Test_Row {
 // ------------------------------------------------------------
 // function to read strm and print ii=4
 template< typename _TStrm>
-void readbatchToPrintII4(
+void readbatchToPrintII1(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
 		_TStrm* rowDtmp_ap,
@@ -44,38 +45,24 @@ void readbatchToPrintII4(
 	_TStrm dat=0;
 	bool e_TestRow=0;
 
-    for(int i=0;i<(4*num);i++){
+    for(int i=0;i<(num);i++){
 #pragma HLS PIPELINE II=1
-    	if((i&3)!=3){
-    		*(rowDtmp_ap+i/4+1)= 0;
-    	}else{
-			ostrm.read(dat);
-			e_ostrm.read(e_TestRow);
-			*(rowDtmp_ap+i/4) = dat;
 
-#if 0
-//#ifndef __SYNTHESIS__
-        Test_Row row;
-        row.rowIdx  = i/4;
-        row.length  = 8;
-        row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i/4);
+		ostrm.read(dat);
+		e_ostrm.read(e_TestRow);
+		*(rowDtmp_ap+i) = dat;
 
-		//print
-        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+i/4);
-		std::cout << "{ FPGA stream1: ";
-		std::cout << std::hex<<*tmp;
-		std::cout <<"}"<<std::endl;
-
+#ifndef __SYNTHESIS__
         if(e_TestRow){
         	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
-    	}//endif
+
     }
     e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
 	if(!e_TestRow){
-		std::cout << "ERROR: II =4 e_TestRow=0 while the data is read empty!! "<<std::endl;
+		std::cout << "ERROR: II =1 e_TestRow=0 while the data is read empty!! "<<std::endl;
 	}
 #endif
 
@@ -102,19 +89,7 @@ void readbatchToPrintII2(
         e_ostrm.read(e_TestRow);
         *(rowDtmp_ap+i/2) = dat;
 
-#if 0
-//#ifndef __SYNTHESIS__
-		Test_Row row;
-		row.rowIdx  = i/2;
-		row.length  = 8;
-		row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i/2);
-
-		//print
-        uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+i/2);
-		std::cout << "{ FPGA stream0: ";
-		std::cout << std::hex<<*tmp;
-		std::cout <<"}"<<std::endl;
-
+#ifndef __SYNTHESIS__
         if(e_TestRow){
         	std::cout << "ERROR: II =2 e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
@@ -127,6 +102,7 @@ void readbatchToPrintII2(
 		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
 	}
 #endif
+
 }
 // function to read strm and print ii=8
 template< typename _TStrm>
@@ -150,8 +126,8 @@ void readbatchToPrintII8(
         e_ostrm.read(e_TestRow);
         *(rowDtmp_ap+i/8) = dat;
 
-//#if 0
 #ifndef __SYNTHESIS__
+ #if 0
         Test_Row row;
         row.rowIdx  = i;
         row.length  = 8;
@@ -162,7 +138,7 @@ void readbatchToPrintII8(
 		std::cout << "{ FPGA stream2: ";
 		std::cout << std::hex<<*tmp;
 		std::cout <<"}"<<std::endl;
-
+ #endif
         if(e_TestRow){
         	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
@@ -178,7 +154,7 @@ void readbatchToPrintII8(
 }
 
 // ------------------------------------------------------------
-
+#if 0
 // top functions for 3 type data
 void top_axi_to_multi_stream(
 		    ap_uint<AXI_WIDTH>* rbuf,
@@ -207,7 +183,7 @@ void top_axi_to_multi_stream(
 	(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
 
 }
-
+#endif
 // ------------------------------------------------------------
 
 // top functions for co-sim
@@ -218,8 +194,11 @@ void top_for_co_sim(
 			TYPE_Strm0 rowDtmp_ap0[DATA_NUM],
 			TYPE_Strm1 rowDtmp_ap1[DATA_NUM],
 			TYPE_Strm2 rowDtmp_ap2[DATA_NUM],
-			const int 	num[3]
+			const int 	num0,
+			const int 	num1,
+			const int 	num2
 ){
+#pragma HLS DATAFLOW
 	#pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
 			  	 offset=slave bundle=gmem_in1 	latency = 8 	\
 			     num_read_outstanding = 32 \
@@ -228,11 +207,10 @@ void top_for_co_sim(
 	#pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
 	#pragma HLS INTERFACE s_axilite port = return bundle = control
 
-#pragma HLS DATAFLOW
-#pragma HLS ARRAY_PARTITION    variable=len   dim=1
-#pragma HLS ARRAY_PARTITION    variable=offset   dim=1
-#pragma HLS ARRAY_PARTITION    variable=num   dim=1
 
+#pragma HLS ARRAY_PARTITION    variable=len      dim=1
+#pragma HLS ARRAY_PARTITION    variable=offset   dim=1
+//#pragma HLS ARRAY_PARTITION    variable=num      dim=1
 
 	hls::stream<bool>      e_ostrm0;
     hls::stream<TYPE_Strm0 > ostrm0;
@@ -241,37 +219,26 @@ void top_for_co_sim(
     hls::stream<TYPE_Strm2 > ostrm2;
     hls::stream<bool>      e_ostrm2;
 
-
 #pragma HLS RESOURCE variable= ostrm0   core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= ostrm0   depth = 16
+#pragma HLS STREAM   variable= ostrm0   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= e_ostrm0 core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= e_ostrm0 depth = 16
+#pragma HLS STREAM   variable= e_ostrm0 depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= ostrm1   core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= ostrm1   depth = 16
+#pragma HLS STREAM   variable= ostrm1   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= e_ostrm1 core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= e_ostrm1 depth = 16
+#pragma HLS STREAM   variable= e_ostrm1 depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= ostrm2   core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= ostrm2   depth = 16
+#pragma HLS STREAM   variable= ostrm2   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= e_ostrm2 core  = FIFO_LUTRAM
-#pragma HLS STREAM   variable= e_ostrm2 depth = 16
+#pragma HLS STREAM   variable= e_ostrm2 depth = NONBLOCK_DEPTHS
 
 	xf::util::level1::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
 	(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-	readbatchToPrintII2(ostrm0, e_ostrm0, rowDtmp_ap0,  num[0] );
-	readbatchToPrintII4(ostrm1, e_ostrm1, rowDtmp_ap1,  num[1] );
-	readbatchToPrintII8(ostrm2, e_ostrm2, rowDtmp_ap2,  num[2] );
+	readbatchToPrintII1(ostrm0, e_ostrm0, rowDtmp_ap0,  num0 );
+	readbatchToPrintII1(ostrm1, e_ostrm1, rowDtmp_ap1,  num1 );
+	readbatchToPrintII1(ostrm2, e_ostrm2, rowDtmp_ap2,  num2 );
 }
 
-//void top_read_to_vec(
-//    ap_uint<AXI_WIDTH>* 		rbuf,
-//	const int 					scal_vec,
-//    const int 					num,
-//	hls::stream<ap_uint<AXI_WIDTH> >& vec_strm
-//){
-//	xf::util::level1::details::read_to_vec<AXI_WIDTH, BURST_LENTH>(
-//			rbuf, num, scal_vec,
-//	      vec_strm);
-//}
 
 #ifndef __SYNTHESIS__
 // ------------------------------------------------------------
@@ -413,7 +380,7 @@ int main(int argc, const char* argv[]) {
 	int test_num =2;
     top_for_co_sim((ap_uint<AXI_WIDTH>*)dataInDDR,len, offset,
     				rowDtmp_ap0, rowDtmp_ap1, rowDtmp_ap2,
-					out_num);
+					out_num[0],out_num[1],out_num[2]);
 
     printf("**************************\n");
     printf("Read %d strm0:\n", out_num[0]);
@@ -427,8 +394,14 @@ int main(int argc, const char* argv[]) {
     PrintRowFile(rowDtmp_ap2,out_num[2]);
     printf("Read all %d vec:\n", (out_num[0]+out_num[1]+out_num[2]));
 
-//	if(idx == out_num[0]) std::cout << "passed compare!\n ";
-//	else std::cout << "failed compare!\n ";
+//**************
+// vim compare
+// csim:  vimdiff l_orderkey_veint.bin ./prj_axi_to_multi_stream/solution1/csim/build/file.dat
+// cosim: vimdiff l_orderkey_veint.bin ./prj_axi_to_multi_stream/solution1/sim/wrapc/file.dat
+// If all characters are the same before the "0a" character in the "file.dat", the test passed!
+//**************
+
+
 
 #if 0
 	//call top
