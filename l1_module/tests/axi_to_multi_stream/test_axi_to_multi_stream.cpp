@@ -8,7 +8,8 @@
 
 #define AXI_WIDTH     (512)
 #define BURST_LENTH   (32)
-#define DATA_NUM      (5120)
+//#define DATA_NUM      (5120)
+#define DATA_NUM      (500000)
 #define SCAL_AXI      (1)
 
 //Simulation of data on DDR, form the DDT ptr
@@ -16,7 +17,7 @@
 typedef ap_uint<STRM_WIDTH>    TYPE_Strm;
 
 //for input
-#define STRM_WIDTH0     (64)
+#define STRM_WIDTH0     (32)
 #define STRM_WIDTH1     (32)
 #define STRM_WIDTH2     (64)
 typedef ap_uint<STRM_WIDTH0>    TYPE_Strm0;
@@ -364,7 +365,7 @@ int main(int argc, const char* argv[]) {
 
 	//load data
 	//int fixedDataLen  = 4;
-	int   DATA_LEN_CHAR = DATA_NUM * 12;
+	const int   DATA_LEN_CHAR = DATA_NUM * 12;
 	char* dataInDDR = (char*)malloc(DATA_LEN_CHAR*8*sizeof(char));
 	//TYPE_Strm*  rowDtmp_ap= (TYPE_Strm*)malloc(DATA_NUM*8*sizeof(TYPE_Strm));
 //	TYPE_Strm0*  rowDtmp_ap0= (TYPE_Strm0*)malloc(DATA_NUM*8*sizeof(TYPE_Strm0));
@@ -377,28 +378,28 @@ int main(int argc, const char* argv[]) {
 
 	//call top
 	int err;
-	int len[3]	 = {4799, 5092, 7040};//{4799, 1273, 5120};
-	int offset[3]={0, 4800,  9892};
+//	int len[3]	 = {4799, 5092, 7040};//{4799, 1273, 5120};
+//	int offset[3]= {0, 4800,  9892};
+	int len[3]	 = {721747, 499696, 1062500};//{4799, 124924, 500000};
+	int offset[3]= {0, 721748,  1221444};
 
 
 	int len_all = len[0]+1+len[1]+len[2];
-	err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all+offset[0]+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
+	//err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all+offset[0]+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
+	err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all));
 	if (err) return err;
 
 
 	//strm output
-    Test_Row row[3][DATA_NUM];
-    bool e_TestRow;
     int out_num[3];
-    int pos[3] = {0};
-    int num[3] = {32,16,14} ;
+
     out_num[0] = (len[0]+STRM_WIDTH0/8-1)/(STRM_WIDTH0/8);
     out_num[1] = (len[1]+STRM_WIDTH1/8-1)/(STRM_WIDTH1/8);
     out_num[2] = (len[2]+STRM_WIDTH2/8-1)/(STRM_WIDTH2/8);
 
-	TYPE_Strm0 rowDtmp_ap0[DATA_NUM];
-	TYPE_Strm1 rowDtmp_ap1[DATA_NUM];
-	TYPE_Strm2 rowDtmp_ap2[DATA_NUM];
+//	TYPE_Strm0 rowDtmp_ap0[DATA_NUM];
+//	TYPE_Strm1 rowDtmp_ap1[DATA_NUM];
+//	TYPE_Strm2 rowDtmp_ap2[DATA_NUM];
 	hls::stream<TYPE_Strm0 > r_strm0;
 	hls::stream<TYPE_Strm1 > r_strm1;
 	hls::stream<TYPE_Strm2 > r_strm2;
@@ -435,58 +436,6 @@ int main(int argc, const char* argv[]) {
 // If all characters are the same before the "0a" character in the "file.dat", the test passed!
 //**************
 
-
-
-#if 0
-	//call top
-	hls::stream<TYPE_Strm0 > ostrm0;
-	hls::stream<bool>     e_ostrm0;
-	hls::stream<TYPE_Strm1 > ostrm1;
-	hls::stream<bool>     e_ostrm1;
-	hls::stream<TYPE_Strm2 > ostrm2;
-	hls::stream<bool>     e_ostrm2;
-
-	top_axi_to_multi_stream((ap_uint<AXI_WIDTH>*)dataInDDR, ostrm0, e_ostrm0,
-			ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-
-    for(int i=0;i<(out_num[0]);i++){
-    	TYPE_Strm0 tmp;
-    	ostrm0.read(tmp);
-        e_ostrm0.read(e_TestRow);
-
-        row[0][i].rowIdx  = i;
-        row[0][i].length  = 8;
-        *(rowDtmp_ap1+i) = tmp;
-        row[0][i].rowData = reinterpret_cast<char* >(rowDtmp_ap1+i);
-
-        if(e_TestRow){
-        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
-        }
-    }
-    //read the last
-	e_ostrm0.read(e_TestRow);
-	if(!e_TestRow){
-		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
-	}
-
-	// line-by-line print
-	int idx=0;
-	while(idx < out_num[0]){
-		if(row[0][idx].rowIdx >= out_num[0]) break;
-
-		//print
-		std::cout << "{ FPGA stream: ";
-		for(int j=0; j<row[0][idx].length; j++){
-		  std::cout << *(row[0][idx].rowData+j);
-		}
-		std::cout <<"}"<<std::endl;
-		idx++;
-
-	}//end while
-	if(idx == out_num[0]) std::cout << "passed compare!\n ";
-	else std::cout << "failed compare!\n ";
-	std::cout <<"idx: "<<idx<< "= number of output data = " << out_num[0]<< "\n";
-#endif
 	free(dataInDDR);
 //	free(rowDtmp_ap0);
 //	free(rowDtmp_ap1);
