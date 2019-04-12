@@ -26,7 +26,6 @@ void axi_onetype_batch_to_ram(
         int&             		len_ram,
         int&             		pos_ram
 ){
-//#pragma HLS INLINE
     if(pos == len)
         return ;
     if(len_ram!=pos_ram)
@@ -52,7 +51,7 @@ void axi_onetype_batch_to_ram(
     }
 }
 
-template<int _WAxi, int _BurstLen, typename _TStrm>
+template<int _WAxi, int _BurstLen >
 bool non_blocking_onetype_ram_to_stream(
         bool                    is_onetype_fnl,
         const int               len,
@@ -61,9 +60,7 @@ bool non_blocking_onetype_ram_to_stream(
         const int              	len_ram,
         int&              		pos_ram,
 hls::stream<ap_uint<_WAxi> >&   vec_strm
-//		£¬hls::stream<bool>& 		e_ostrm
-        )
-{
+){
 
     if(is_onetype_fnl){
         return is_onetype_fnl;
@@ -79,9 +76,10 @@ hls::stream<ap_uint<_WAxi> >&   vec_strm
 #pragma HLS loop_tripcount min=1 max=32  avg=32
 #pragma HLS PIPELINE II=1
     	ap_uint<_WAxi> rd = 0;
+    	isFull         = vec_strm.full();
     	            rd = dat_ram[pos_ram];
 
-    	isFull         = vec_strm.full();
+
         is_onetype_fnl = (!isFull)&(isFinalBlock)& (((pos_ram+1)==len_ram))?true:false;
         hasDone_blk    = (!isFull)&                (((pos_ram+1)==len_ram))?true:false;
         if(!isFull){
@@ -99,7 +97,7 @@ hls::stream<ap_uint<_WAxi> >&   vec_strm
     return is_onetype_fnl;
 }
 
-template<int _WAxi, int _BurstLen, typename _TStrm>
+template<int _WAxi, int _BurstLen >
 bool axi_batchdata_to_stream(
         const ap_uint<_WAxi>*   rbuf,
         const int               off_axi,
@@ -110,9 +108,7 @@ bool axi_batchdata_to_stream(
 		int&              		pos_ram,
         bool              		is_onetype_fnl,
 hls::stream<ap_uint<_WAxi> >&	vec_strm
-		//hls::stream<bool>& 		e_ostrm
 ){
-//#pragma HLS DATAFLOW
 	/////////////// load data to local ram  ///////////////
 	details::axi_onetype_batch_to_ram<_WAxi, _BurstLen>(
 	           rbuf,
@@ -124,7 +120,7 @@ hls::stream<ap_uint<_WAxi> >&	vec_strm
 	           pos_ram);
 
 	/////////////// nonblocking write one type data form ram to strm  ///////////////
-	bool is_fnl = details::non_blocking_onetype_ram_to_stream<_WAxi, _BurstLen, _TStrm >(
+	bool is_fnl = details::non_blocking_onetype_ram_to_stream<_WAxi, _BurstLen >(
         is_onetype_fnl,
         len,
         pos,
@@ -132,53 +128,52 @@ hls::stream<ap_uint<_WAxi> >&	vec_strm
         len_ram,
         pos_ram,
 		vec_strm
-        //,e_ostrm
 		);
 	return is_fnl;
 
 }
 
-template <int _WAxi, int _BstLen, typename _TStrm0, typename _TStrm1, typename _TStrm2>
+template <int _WAxi, int _BstLen, int _NT >
 void read_to_vec_stream(
     ap_uint<_WAxi>* rbuf,
-    hls::stream<ap_uint<_WAxi> >& vec_strm0,
-    hls::stream<ap_uint<_WAxi> >& vec_strm1,
-    hls::stream<ap_uint<_WAxi> >& vec_strm2,
-	const int len    [3],
-    const int offset [3]
-		  //,int off_ali[3]
+	hls::stream<ap_uint<_WAxi> > vec_strm[_NT],
+	const int len    [_NT],
+    const int offset [_NT]
 ){
 	const int        numType = 3;
 	const int 	   scal_char = _WAxi/8;
-	  	  int        len_vec [3];//length for one type vector, by width of Axi
-	 	  int        pos_vec [3];//current position for one type vec, by width of Axi
-	 	  int        len_ram [3];//length for one type vector loaded in local ram
-	 	  int        pos_ram [3];//current position need to be read
-	 	  int        off_ali [3];//the first row offset aligned to Axi port by char
-	 	  int        off_axi [3];
-	ap_uint<_WAxi> 	 dat_ram [3][_BstLen];//local ram depth equals the burst length
-
+	  	  int        len_vec [_NT];//length for one type vector, by width of Axi
+	 	  int        pos_vec [_NT];//current position for one type vec, by width of Axi
+	 	  int        len_ram [_NT];//length for one type vector loaded in local ram
+	 	  int        pos_ram [_NT];//current position need to be read
+	 	  int        off_ali [_NT];//the first row offset aligned to Axi port by char
+	 	  int        off_axi [_NT];
+	//ap_uint<_WAxi> 	 dat_ram [_NT][_BstLen];//local ram depth equals the burst length
+	ap_uint<_WAxi> 	 dat_ram [_NT][_BstLen];//local ram depth equals the burst length
 	      int        cnt_alltype_fnl;
 	      bool       is_onetype_fnl[3];
 #pragma HLS RESOURCE variable=dat_ram   core=RAM_2P_BRAM
-#pragma HLS ARRAY_PARTITION    variable=len       complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=offset    complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=off_ali   complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=len_vec   complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=pos_vec   complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=len_ram   complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=off_axi   complete  dim=1
+
+#pragma HLS ARRAY_PARTITION    variable=vec_strm  complete
+
+#pragma HLS ARRAY_PARTITION    variable=len       complete
+#pragma HLS ARRAY_PARTITION    variable=offset    complete
+#pragma HLS ARRAY_PARTITION    variable=off_ali   complete
+#pragma HLS ARRAY_PARTITION    variable=len_vec   complete
+#pragma HLS ARRAY_PARTITION    variable=pos_vec   complete
+#pragma HLS ARRAY_PARTITION    variable=len_ram   complete
+#pragma HLS ARRAY_PARTITION    variable=off_axi   complete
 #pragma HLS ARRAY_PARTITION    variable=dat_ram   complete  dim=1
-#pragma HLS ARRAY_PARTITION    variable=is_onetype_fnl   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=is_onetype_fnl   complete
 	/////////////// init ///////////////
 	INIT0:
-	for(int t=0; t<numType; t++){
+	for(int t=0; t<_NT; t++){
 #pragma HLS LOOP_TRIPCOUNT min=1 max=1
 #pragma HLS PIPELINE II=1
 		off_ali[t] =(offset[t])&(scal_char-1);//scal_char is always 2^N
 	}
 	INIT1:
-	for(int t=0; t<numType; t++){
+	for(int t=0; t<_NT; t++){
 #pragma HLS LOOP_TRIPCOUNT min=1 max=1
 #pragma HLS PIPELINE II=1
 		len_vec[t] =(len[t]+off_ali[t]+scal_char-1)/scal_char;
@@ -186,7 +181,7 @@ void read_to_vec_stream(
 		pos_vec[t] =0;
 		len_ram[t] =0;
 		pos_ram[t] =0;
-		if(t<numType)
+		if(t<_NT)
 			is_onetype_fnl[t] =(len[t]==0);
 		else
 			is_onetype_fnl[t] = true;
@@ -199,51 +194,27 @@ void read_to_vec_stream(
 #pragma HLS LOOP_TRIPCOUNT min=1 max=1
 		cnt_alltype_fnl=0;
 
-		is_onetype_fnl[0]=details::axi_batchdata_to_stream<_WAxi, _BstLen, _TStrm0>(
+		for(int t=0; t<_NT; t++){
+#pragma HLS UNROLL
+		is_onetype_fnl[t]=details::axi_batchdata_to_stream<_WAxi, _BstLen >(
 		   rbuf,
-		   off_axi [0],
-		   len_vec [0],
-		   pos_vec [0],
-		   dat_ram [0],
-		   len_ram [0],
-		   pos_ram [0],
-		   is_onetype_fnl[0],
-		   vec_strm0
+		   off_axi [t],
+		   len_vec [t],
+		   pos_vec [t],
+		   dat_ram [t],
+		   len_ram [t],
+		   pos_ram [t],
+		   is_onetype_fnl[t],
+		   vec_strm[t]
 		   );
-		cnt_alltype_fnl+=(is_onetype_fnl[0]==true);
+		cnt_alltype_fnl+=(is_onetype_fnl[t]==true);
+		}
 
-		is_onetype_fnl[1]=details::axi_batchdata_to_stream<_WAxi, _BstLen, _TStrm1>(
-		   rbuf,
-		   off_axi [1],
-		   len_vec [1],
-		   pos_vec [1],
-		   dat_ram [1],
-		   len_ram [1],
-		   pos_ram [1],
-		   is_onetype_fnl[1],
-		   vec_strm1);
-		cnt_alltype_fnl+=(is_onetype_fnl[1]==true);
-
-		is_onetype_fnl[2]=details::axi_batchdata_to_stream<_WAxi, _BstLen, _TStrm2>(
-		   rbuf,
-		   off_axi [2],
-		   len_vec [2],
-		   pos_vec [2],
-		   dat_ram [2],
-		   len_ram [2],
-		   pos_ram [2],
-		   is_onetype_fnl[2],
-		   vec_strm2);
-		cnt_alltype_fnl+=(is_onetype_fnl[2]==true);
-
-
-
-	}while( cnt_alltype_fnl != numType);
+	}while( cnt_alltype_fnl != _NT);
 #ifndef __SYNTHESIS__
 	printf("cnt_test=%d\n",cnt_test);
 #endif
 }
-
 
 template <int _WAxi, typename _TStrm, int scal_vec >
 void split_vec_to_aligned_duplicate(
@@ -283,7 +254,6 @@ void split_vec_to_aligned_duplicate(
                   }//end if
               }
           }
-
     }
 
     if( !offset ){
@@ -306,9 +276,6 @@ void split_vec_to_aligned_duplicate(
 			ap_uint<_WAxi> vec = vec_strm.read();
 			int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
 
-//			if(i==599){
-//				printf("test");
-//			}
 			for (int j = 0; j < scal_vec; ++j) {
 		#pragma HLS PIPELINE II = 1
 				ap_uint<WStrm > r0 =
@@ -378,6 +345,11 @@ void axi_to_multi_stream(
     hls::stream<ap_uint<_WAxi> > vec_strm0;
     hls::stream<ap_uint<_WAxi> > vec_strm1;
     hls::stream<ap_uint<_WAxi> > vec_strm2;
+    hls::stream<ap_uint<_WAxi> > vec_strm[3];
+#pragma HLS ARRAY_PARTITION    variable=vec_strm complete
+#pragma HLS RESOURCE variable= vec_strm   core  = FIFO_LUTRAM
+#pragma HLS STREAM   variable= vec_strm   depth = NONBLOCK_DEPTH
+
     int off_ali[3];
 	const int 	   scal_char = _WAxi/8;
 	const int      scal_vec0 = _WAxi/(8*sizeof(_TStrm0));
@@ -386,27 +358,42 @@ void axi_to_multi_stream(
 #pragma HLS ARRAY_PARTITION    variable=off_ali complete
 #pragma HLS ARRAY_PARTITION    variable=len     complete
 #pragma HLS ARRAY_PARTITION    variable=offset  complete
+
 #pragma HLS RESOURCE variable= vec_strm0   core  = FIFO_LUTRAM
 #pragma HLS STREAM   variable= vec_strm0   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= vec_strm1   core  = FIFO_LUTRAM
 #pragma HLS STREAM   variable= vec_strm1   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= vec_strm2   core  = FIFO_LUTRAM
 #pragma HLS STREAM   variable= vec_strm2   depth = NONBLOCK_DEPTH
+
+	//Copy parameter to local
 	for(int t=0; t<3; t++){
 #pragma HLS LOOP_TRIPCOUNT min=1 max=1
 #pragma HLS PIPELINE II=1
 		off_ali[t] =(offset[t])&(scal_char-1);//scal_char is always 2^N
 	}
-	details::read_to_vec_stream<_WAxi,_BstLen,_TStrm0,_TStrm1,_TStrm2>(rbuf, vec_strm0 , vec_strm1 , vec_strm2, len, offset);
+//	details::read_to_vec_stream_v0<_WAxi,_BstLen >(rbuf, vec_strm0 , vec_strm1 , vec_strm2, len, offset);
+//	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm0 , scal_vec0>(
+//			  vec_strm0, len[0], scal_char, off_ali[0],
+//			  ostrm0, e_ostrm0);
+//	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm1 , scal_vec1>(
+//			  vec_strm1, len[1], scal_char, off_ali[1],
+//			  ostrm1, e_ostrm1);
+//	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm2 , scal_vec2>(
+//			  vec_strm2, len[2], scal_char, off_ali[2],
+//			  ostrm2, e_ostrm2);
+
+	details::read_to_vec_stream<_WAxi,_BstLen, 3>(rbuf, vec_strm, len, offset );
 	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm0 , scal_vec0>(
-			  vec_strm0, len[0], scal_char, off_ali[0],
+			  vec_strm[0], len[0], scal_char, off_ali[0],
 			  ostrm0, e_ostrm0);
 	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm1 , scal_vec1>(
-			  vec_strm1, len[1], scal_char, off_ali[1],
+			  vec_strm[1], len[1], scal_char, off_ali[1],
 			  ostrm1, e_ostrm1);
 	details::split_vec_to_aligned_duplicate<_WAxi, _TStrm2 , scal_vec2>(
-			  vec_strm2, len[2], scal_char, off_ali[2],
+			  vec_strm[2], len[2], scal_char, off_ali[2],
 			  ostrm2, e_ostrm2);
+
 }
 
 
@@ -418,6 +405,108 @@ void axi_to_multi_stream(
 } // xf
 
 // Implementation
-// TODO
+#if 0
+template <int _WAxi, int _BstLen >
+void read_to_vec_stream_v0(
+    ap_uint<_WAxi>* rbuf,
+    hls::stream<ap_uint<_WAxi> >& vec_strm0,
+    hls::stream<ap_uint<_WAxi> >& vec_strm1,
+    hls::stream<ap_uint<_WAxi> >& vec_strm2,
+	const int len    [3],
+    const int offset [3]
+){
+	const int        numType = 3;
+	const int 	   scal_char = _WAxi/8;
+	  	  int        len_vec [3];//length for one type vector, by width of Axi
+	 	  int        pos_vec [3];//current position for one type vec, by width of Axi
+	 	  int        len_ram [3];//length for one type vector loaded in local ram
+	 	  int        pos_ram [3];//current position need to be read
+	 	  int        off_ali [3];//the first row offset aligned to Axi port by char
+	 	  int        off_axi [3];
+	ap_uint<_WAxi> 	 dat_ram [3][_BstLen];//local ram depth equals the burst length
+
+	      int        cnt_alltype_fnl;
+	      bool       is_onetype_fnl[3];
+#pragma HLS RESOURCE variable=dat_ram   core=RAM_2P_BRAM
+
+#pragma HLS ARRAY_PARTITION    variable=len       complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=offset    complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=off_ali   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=len_vec   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=pos_vec   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=len_ram   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=off_axi   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=dat_ram   complete  dim=1
+#pragma HLS ARRAY_PARTITION    variable=is_onetype_fnl   complete  dim=1
+	/////////////// init ///////////////
+	INIT0:
+	for(int t=0; t<numType; t++){
+#pragma HLS LOOP_TRIPCOUNT min=1 max=1
+#pragma HLS PIPELINE II=1
+		off_ali[t] =(offset[t])&(scal_char-1);//scal_char is always 2^N
+	}
+	INIT1:
+	for(int t=0; t<numType; t++){
+#pragma HLS LOOP_TRIPCOUNT min=1 max=1
+#pragma HLS PIPELINE II=1
+		len_vec[t] =(len[t]+off_ali[t]+scal_char-1)/scal_char;
+		off_axi[t] =(offset[t]+scal_char-1)/scal_char-((off_ali[t])?1:0);
+		pos_vec[t] =0;
+		len_ram[t] =0;
+		pos_ram[t] =0;
+		if(t<numType)
+			is_onetype_fnl[t] =(len[t]==0);
+		else
+			is_onetype_fnl[t] = true;
+	}
+
+	/////////////// round robin to write ///////////////
+	ROUND_ROBIN:
+	do{
+#pragma HLS PIPELINE off
+#pragma HLS LOOP_TRIPCOUNT min=1 max=1
+		cnt_alltype_fnl=0;
+
+		is_onetype_fnl[0]=details::axi_batchdata_to_stream<_WAxi, _BstLen >(
+		   rbuf,
+		   off_axi [0],
+		   len_vec [0],
+		   pos_vec [0],
+		   dat_ram [0],
+		   len_ram [0],
+		   pos_ram [0],
+		   is_onetype_fnl[0],
+		   vec_strm0
+		   );
+		cnt_alltype_fnl+=(is_onetype_fnl[0]==true);
+
+		is_onetype_fnl[1]=details::axi_batchdata_to_stream<_WAxi, _BstLen >(
+		   rbuf,
+		   off_axi [1],
+		   len_vec [1],
+		   pos_vec [1],
+		   dat_ram [1],
+		   len_ram [1],
+		   pos_ram [1],
+		   is_onetype_fnl[1],
+		   vec_strm1);
+		cnt_alltype_fnl+=(is_onetype_fnl[1]==true);
+
+		is_onetype_fnl[2]=details::axi_batchdata_to_stream<_WAxi, _BstLen >(
+		   rbuf,
+		   off_axi [2],
+		   len_vec [2],
+		   pos_vec [2],
+		   dat_ram [2],
+		   len_ram [2],
+		   pos_ram [2],
+		   is_onetype_fnl[2],
+		   vec_strm2);
+		cnt_alltype_fnl+=(is_onetype_fnl[2]==true);
+
+	}while( cnt_alltype_fnl != numType);
+
+}
+#endif
 
 #endif // XF_UTIL_AXI_TO_MULTI_STRM_H

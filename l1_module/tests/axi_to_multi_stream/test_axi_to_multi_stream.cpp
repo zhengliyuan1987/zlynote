@@ -6,7 +6,7 @@
 
 #include "xf_util/axi_to_multi_stream.h"
 
-#define AXI_WIDTH     (64)
+#define AXI_WIDTH     (512)
 #define BURST_LENTH   (32)
 #define DATA_NUM      (5120)
 #define SCAL_AXI      (1)
@@ -72,7 +72,8 @@ template< typename _TStrm>
 void readbatchToPrintII2(
 	    hls::stream<_TStrm >& ostrm,
 	    hls::stream<bool>& e_ostrm,
-		_TStrm* rowDtmp_ap,
+		//_TStrm* rowDtmp_ap,
+		 hls::stream<_TStrm >& r_strm,
 		const int num
 ){
 
@@ -83,11 +84,12 @@ void readbatchToPrintII2(
 #pragma HLS PIPELINE II=1
 
     	if((i&1)!=1){
-    		*(rowDtmp_ap+i/2+1)= 0;
+    		//*(rowDtmp_ap+i/2+1)= 0;
     	}else{
     	ostrm.read(dat);
         e_ostrm.read(e_TestRow);
-        *(rowDtmp_ap+i/2) = dat;
+        //*(rowDtmp_ap+i/2) = dat;
+        r_strm.write(dat);
 
 #ifndef __SYNTHESIS__
         if(e_TestRow){
@@ -191,9 +193,12 @@ void top_for_co_sim(
 		    ap_uint<AXI_WIDTH>* rbuf,
 			const int 	len[3],
 		    const int 	offset[3],
-			TYPE_Strm0 rowDtmp_ap0[DATA_NUM],
-			TYPE_Strm1 rowDtmp_ap1[DATA_NUM],
-			TYPE_Strm2 rowDtmp_ap2[DATA_NUM],
+//			TYPE_Strm0 rowDtmp_ap0[DATA_NUM],
+//			TYPE_Strm1 rowDtmp_ap1[DATA_NUM],
+//			TYPE_Strm2 rowDtmp_ap2[DATA_NUM],
+			hls::stream<TYPE_Strm0 >& r_strm0,
+			hls::stream<TYPE_Strm1 >& r_strm1,
+			hls::stream<TYPE_Strm2 >& r_strm2,
 			const int 	num0,
 			const int 	num1,
 			const int 	num2
@@ -208,9 +213,9 @@ void top_for_co_sim(
 	#pragma HLS INTERFACE s_axilite port = return bundle = control
 
 
-#pragma HLS ARRAY_PARTITION    variable=len      dim=1
-#pragma HLS ARRAY_PARTITION    variable=offset   dim=1
-//#pragma HLS ARRAY_PARTITION    variable=num      dim=1
+#pragma HLS ARRAY_PARTITION    variable=len
+#pragma HLS ARRAY_PARTITION    variable=offset
+//#pragma HLS ARRAY_PARTITION    variable=num
 
 	hls::stream<bool>      e_ostrm0;
     hls::stream<TYPE_Strm0 > ostrm0;
@@ -234,9 +239,12 @@ void top_for_co_sim(
 
 	xf::util::level1::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
 	(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-	readbatchToPrintII1(ostrm0, e_ostrm0, rowDtmp_ap0,  num0 );
-	readbatchToPrintII1(ostrm1, e_ostrm1, rowDtmp_ap1,  num1 );
-	readbatchToPrintII1(ostrm2, e_ostrm2, rowDtmp_ap2,  num2 );
+//	readbatchToPrintII2(ostrm0, e_ostrm0, rowDtmp_ap0,  num0 );
+//	readbatchToPrintII2(ostrm1, e_ostrm1, rowDtmp_ap1,  num1 );
+//	readbatchToPrintII2(ostrm2, e_ostrm2, rowDtmp_ap2,  num2 );
+	readbatchToPrintII2(ostrm0, e_ostrm0, r_strm0,  num0 );
+	readbatchToPrintII2(ostrm1, e_ostrm1, r_strm1,  num1 );
+	readbatchToPrintII2(ostrm2, e_ostrm2, r_strm2,  num2 );
 }
 
 
@@ -299,16 +307,31 @@ private:
   std::vector <std::string> mTokens;
 };
 
+// ------------------------------------------------------------
 // function to print
 template< typename _TStrm>
 void PrintRowFile(
 	_TStrm* rowDtmp_ap,
 	int& num
 ){
-	std::ofstream fout("file.dat" , std::ios::app );// | std::ios::binary);
-	//fout.write((char *)(&rowDtmp_ap), 8*num);
+	std::ofstream fout("file.dat" , std::ios::app );
 	for(int i=0;i<(num);i++){
 		char* rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
+		for(int j=0; j<sizeof(_TStrm); j++){
+			fout << *(rowData+j);
+		}
+	}
+	fout.close();
+}
+template< typename _TStrm>
+void PrintStrmRowFile(
+	hls::stream<_TStrm >& r_strm,
+	int& num
+){
+	std::ofstream fout("file.dat" , std::ios::app );
+	for(int i=0;i<(num);i++){
+		_TStrm tmp = r_strm.read();
+		char* rowData = reinterpret_cast<char* >(&tmp);
 		for(int j=0; j<sizeof(_TStrm); j++){
 			fout << *(rowData+j);
 		}
@@ -355,10 +378,10 @@ int main(int argc, const char* argv[]) {
 	//call top
 	int err;
 	int len[3]	 = {4799, 5092, 7040};//{4799, 1273, 5120};
-	int len_all = len[0]+1+len[1]+len[2];
-
 	int offset[3]={0, 4800,  9892};
 
+
+	int len_all = len[0]+1+len[1]+len[2];
 	err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all+offset[0]+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));
 	if (err) return err;
 
@@ -376,23 +399,34 @@ int main(int argc, const char* argv[]) {
 	TYPE_Strm0 rowDtmp_ap0[DATA_NUM];
 	TYPE_Strm1 rowDtmp_ap1[DATA_NUM];
 	TYPE_Strm2 rowDtmp_ap2[DATA_NUM];
-	char z=0x00;
-	int test_num =2;
+	hls::stream<TYPE_Strm0 > r_strm0;
+	hls::stream<TYPE_Strm1 > r_strm1;
+	hls::stream<TYPE_Strm2 > r_strm2;
+
     top_for_co_sim((ap_uint<AXI_WIDTH>*)dataInDDR,len, offset,
-    				rowDtmp_ap0, rowDtmp_ap1, rowDtmp_ap2,
+    				//rowDtmp_ap0, rowDtmp_ap1, rowDtmp_ap2,
+    				r_strm0,r_strm1,r_strm2,
 					out_num[0],out_num[1],out_num[2]);
 
+//    printf("**************************\n");
+//    printf("Read %d strm0:\n", out_num[0]);
+//    PrintRowFile(rowDtmp_ap0,out_num[0]);
+//    printf("**************************\n");
+//    printf("Read %d strm1:\n", out_num[1]);
+//    PrintRowFile(rowDtmp_ap1,out_num[1]);
+//    printf("**************************\n");
+//    printf("Read %d strm2:\n", out_num[2]);
+//    PrintRowFile(rowDtmp_ap2,out_num[2]);
     printf("**************************\n");
     printf("Read %d strm0:\n", out_num[0]);
-    PrintRowFile(rowDtmp_ap0,out_num[0]);
+    PrintStrmRowFile(r_strm0, out_num[0]);
     printf("**************************\n");
     printf("Read %d strm1:\n", out_num[1]);
-    PrintRowFile(rowDtmp_ap1,out_num[1]);
-    //PrintRowFile(&z         ,test_num);
+    PrintStrmRowFile(r_strm1, out_num[1]);
     printf("**************************\n");
     printf("Read %d strm2:\n", out_num[2]);
-    PrintRowFile(rowDtmp_ap2,out_num[2]);
-    printf("Read all %d vec:\n", (out_num[0]+out_num[1]+out_num[2]));
+    PrintStrmRowFile(r_strm2, out_num[2]);
+    printf("Read all %d vec\n", (out_num[0]+out_num[1]+out_num[2]));
 
 //**************
 // vim compare

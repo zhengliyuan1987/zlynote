@@ -16,7 +16,8 @@ set_top top_for_co_sim
 
 set host_args "-dataFile l_orderkey_veint.bin "
 
-open_solution -reset "solution1"
+#open_solution -reset "solution1"
+open_solution -reset "sol_axi512"
 set_part virtexuplus
 create_clock -period 3.33 -name default
 set_clock_uncertainty 1.05
@@ -25,8 +26,8 @@ csim_design -compiler gcc -argv "$host_args"
 
 csynth_design
 
-cosim_design -compiler gcc -argv "$host_args"
-#cosim_design -wave_debug -trace_level all -argv "$host_args" -tool xsim
+#cosim_design -compiler gcc -argv "$host_args"
+cosim_design -wave_debug -trace_level all -argv "$host_args" -tool xsim
 
 #export_design -flow impl -rtl verilog -format ip_catalog
 
