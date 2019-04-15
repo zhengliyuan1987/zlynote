@@ -122,24 +122,29 @@ void split_vec_to_aligned(
     hls::stream<bool>& e_strm
 ){
 
+	const int nread = (len + offset+ scal_char - 1) / scal_char ;
+	//n read times except the first read, n_read+1 = total read times
+	      int cnt_r = nread -1;
+	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
     const int WStrm = 8*sizeof(_TStrm);
-    const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
+    //first read is specific
     ap_uint<_WAxi> vec_reg = vec_strm.read();
     ap_uint<_WAxi> vec_aligned = 0;
 
     if( offset ){
 
         LOOP_SPLIT_VEC_TO_ALIGNED:
-          for (int i = 0; i < nwrite; i += scal_vec) {
+        for (int i = 0; i < nwrite; i += scal_vec) {
         #pragma HLS loop_tripcount min=1 max=1
         #pragma HLS PIPELINE II = scal_vec
               vec_aligned((scal_char-offset<<3)-1, 0)              = vec_reg((scal_char<<3)-1, offset<<3);
-        	  if((scal_char-offset)<len){//always need read again
+        	  if((scal_char-offset)<len&&(cnt_r!=0)){//always need read again
                   ap_uint<_WAxi> vec = vec_strm.read();
                   vec_aligned((scal_char<<3)-1, (scal_char-offset)<<3) = vec(offset<<3, 0);
                   vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
+                  cnt_r--;
         	  }//else few cases no read again
-              int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
+        	  int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
               for (int j = 0; j < scal_vec; ++j) {
         #pragma HLS PIPELINE II = 1
                   ap_uint<WStrm > r0 =
@@ -149,8 +154,7 @@ void split_vec_to_aligned(
                       e_strm.write(false);
                   }//end if
               }
-          }
-
+          }//end loop
     }
 
     if( !offset ){
@@ -197,11 +201,11 @@ void split_vec_to_aligned(
  * AXI port is assumed to have width as multiple of 8-bit char.
  * The data width cloud be unaligned or aligned, e.g. compressed binary files.
  *********************
- *DDR   ->  AXI_BUS                          ->  FIFO  ->   strm
- *XXX1     XXX1234567323334_3536373839646566    XXX12345    1234
- *...      ...                                  67323334    5673
- *                                              ...         ...
- *32XX     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX
+ * DDR   ->  AXI_BUS                          ->  FIFO  ->   strm
+ * XXX1     XXX1234567323334_3536373839646566    XXX12345    1234
+ * ...      ...                                  67323334    5673
+ *                                               ...         ...
+ * 32XX     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX
  *********************
  *
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.

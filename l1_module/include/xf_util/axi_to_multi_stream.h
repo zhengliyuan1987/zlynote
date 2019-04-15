@@ -5,9 +5,8 @@
 #include "xf_util/enums.h"
 
 // Forward decl
-// The depth of FIFO in the circuit
-// which is only related to the ability to buffer data,
-// but not to the speed of the circuit.
+// The depth of FIFO in the circuit which is only related to the ability to buffer data,
+// but not to the speed of the circuit. when NONBLOCK_DEPTH>1024, usage of bram will increase
 const int  NONBLOCK_DEPTH  =  (256);
 
 namespace xf {
@@ -220,8 +219,9 @@ void split_vec_to_aligned_duplicate(
     hls::stream<bool>& e_strm
 ){
 
-	//n read times except the first read, n_read+1 = total read
-	const int nread = (len + offset+ scal_char - 1) / scal_char - 1;
+	const int nread = (len + offset+ scal_char - 1) / scal_char ;
+	//n read times except the first read, n_read+1 = total read times
+	      int cnt_r = nread -1;
 	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
     const int WStrm = 8*sizeof(_TStrm);
     //first read is specific
@@ -231,17 +231,16 @@ void split_vec_to_aligned_duplicate(
     if( offset ){
 
         LOOP_SPLIT_VEC_TO_ALIGNED:
-          for (int i = 0; i < nwrite; i += scal_vec) {
+        for (int i = 0; i < nwrite; i += scal_vec) {
         #pragma HLS loop_tripcount min=1 max=1
         #pragma HLS PIPELINE II = scal_vec
               vec_aligned((scal_char-offset<<3)-1, 0)              = vec_reg((scal_char<<3)-1, offset<<3);
-        	  if((scal_char-offset)<len&&(nread!=0)){//always need read again
+        	  if((scal_char-offset)<len&&(cnt_r!=0)){//always need read again
                   ap_uint<_WAxi> vec = vec_strm.read();
                   vec_aligned((scal_char<<3)-1, (scal_char-offset)<<3) = vec(offset<<3, 0);
                   vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
-                  nread--;
+                  cnt_r--;
         	  }//else few cases no read again
-              //int n = ((i+1)* scal_vec) > nwrite ? (nwrite - i*scal_vec) : scal_vec;
         	  int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
               for (int j = 0; j < scal_vec; ++j) {
         #pragma HLS PIPELINE II = 1
@@ -253,21 +252,7 @@ void split_vec_to_aligned_duplicate(
                   }//end if
               }
           }//end loop
-//          if((nwrite-nread*sizeof(_TStrm))){
-//              vec_aligned((scal_char-offset<<3)-1, 0)              = vec_reg((scal_char<<3)-1, offset<<3);
-//        	  int n = ((nread+1)* scal_vec) > nwrite ? (nwrite - nread*scal_vec) : scal_vec;
-//				for (int j = 0; j < scal_vec; ++j) {
-//		  #pragma HLS PIPELINE II = 1
-//					ap_uint<WStrm > r0 =
-//						vec_aligned.range(WStrm * (j + 1) - 1, WStrm*j);
-//					if (j < n) {
-//						r_strm.write((_TStrm)r0);
-//						e_strm.write(false);
-//					}//end if
-//				}
-//          }
-
-    }
+    }//end if
 
     if( !offset ){
     	//no read
@@ -299,7 +284,8 @@ void split_vec_to_aligned_duplicate(
 				}
 			}
 		 }
-    }
+    }//end if
+
     e_strm.write(true);
 }
 
