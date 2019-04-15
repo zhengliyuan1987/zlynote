@@ -1,3 +1,27 @@
+/*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @file axi_to_multi_stream.h
+ * @brief This file is a template implement of loading data from AXI master to multi stream.
+ * Xilinx.
+ *
+ * This file is part of XF UTIL LIBRARY.
+ */
+
 #ifndef XF_UTIL_AXI_TO_MULTI_STRM_H
 #define XF_UTIL_AXI_TO_MULTI_STRM_H
 

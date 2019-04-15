@@ -1,4 +1,26 @@
+/*
+ * Copyright 2019 Xilinx, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+/**
+ * @file axi_to_stream.h
+ * @brief This file is a template implement of loading data from AXI master to stream.
+ * Xilinx.
+ *
+ * This file is part of XF UTIL LIBRARY.
+ */
 
 #ifndef XF_UTIL_AXI_TO_STREAM_H
 #define XF_UTIL_AXI_TO_STREAM_H
@@ -250,12 +272,14 @@ void axi_to_stream(
 /* @brief Loading data from AXI master to aligned_width stream.
  * Lightweight primitives for aligned data.
  *
- * This primitive assumes the width of AXI port is positive integer multiple of alignment width.
+ * This primitive assumes the data in DDR is aligned.
+ * which means the width of AXI port is positive integer multiple of alignment width
+ * and the stream's width just equals the aligned width.
  * When input data ptr width is less than AXI port width, the AXI port bandwidth
  * will not be fully used. So, AXI port width should be minimized while meeting
  * performance requirements of application.
  *
- * Both AXI port and alignment width are assumed to be multiple of 8.
+ * Both AXI port and alignment width are assumed to be multiple of 8-bit char.
  * The data width must be no greater than its alignment width.
  *********************
  *DDR->  AXI_BUS   ->  FIFO  ->     strm(aligned to dd)
@@ -273,7 +297,7 @@ void axi_to_stream(
  * @param ostrm output stream.
  * @param e_ostrm end flag for output stream.
  * @param num number of data to load from AXI port.
- * @param offset_AXI offset from the beginning of the buffer, by AXI port width.
+ * @param offset_AL offset from the beginning of the buffer, by aligned width width.
  */
 template <int _WAxi, int _BstLen,  typename _TStrm>
 void axi_to_stream(
