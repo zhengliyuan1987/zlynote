@@ -9,7 +9,7 @@ void dut(
     hls::stream<bool> ein[4],
     hls::stream<ap_uint<32 * 4> >& out,
     hls::stream<bool>& eout) {
-  xf::util::level1::stream_combine(cfg, in, ein, out, eout, xf::util::combine_left_t());
+  xf::common::utils_hw::stream_combine(cfg, in, ein, out, eout, xf::common::utils_hw::combine_left_t());
 }
 
 int main(int argc, const char *argv[]) {

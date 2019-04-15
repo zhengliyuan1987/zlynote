@@ -40,7 +40,7 @@ void top_align_axi_to_stream(
 	if(AXI_WIDTH<8*sizeof(TYPE_Strm))
 		std::cout<<"WARNING:this function is for AXI width is multiple of the align data on ddr"<<std::endl;
 #endif
-	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, num, ostrm, e_ostrm ,offset_AXI );
+	xf::common::utils_hw::axi_to_stream<AXI_WIDTH, BURST_LENTH,   TYPE_Strm >(rbuf, num, ostrm, e_ostrm ,offset_AXI );
 }
 
 // top functions for general data
@@ -63,7 +63,7 @@ void top_general_axi_to_stream(
 	if(len<=0)
 		std::cout<<"ERROR: len<= 0, testcase can not work!"<<std::endl;
 #endif
-	xf::util::level1::axi_to_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm >(rbuf, ostrm, e_ostrm, len, offset);
+	xf::common::utils_hw::axi_to_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm >(rbuf, ostrm, e_ostrm, len, offset);
 }
 
 #ifndef __SYNTHESIS__

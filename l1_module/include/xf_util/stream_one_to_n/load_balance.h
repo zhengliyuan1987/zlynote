@@ -7,8 +7,8 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
 /* @brief stream distribute, using load-balancing algorithm.
  *
@@ -40,8 +40,8 @@ void strm_one_to_n(hls::stream<_TIn>& istrm,
                    hls::stream<bool> e_ostrms[_NStrm],
                    load_balance_t _op);
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 // Implementation

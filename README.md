@@ -1,6 +1,6 @@
-# XF Utility Library
+# XF Hardware Utility Library
 
-XF Utility Library is an SDx library of common patterns of streaming and storage access.
+XF Hardware Utility Library is an SDx library of common patterns of streaming and storage access.
 
 ## Comprehensive Documentation
 

@@ -34,11 +34,11 @@
 #endif
 
 namespace xf {
-namespace util {
-namespace level1 {
-namespace details{
-// ---------------------- burst_read_axi_alignedData_to_vec ---------------------------------
+namespace common {
+namespace utils_hw {
+namespace details {
 
+// ---------------------- burst_read_axi_alignedData_to_vec ---------------------------------
 template <int _WAxi, int _BstLen>
 void read_to_vec(
     ap_uint<_WAxi>* vec_ptr,
@@ -326,8 +326,8 @@ void axi_to_stream(
           ostrm, e_ostrm);
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 

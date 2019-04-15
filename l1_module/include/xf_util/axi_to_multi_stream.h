@@ -34,8 +34,8 @@
 const int  NONBLOCK_DEPTH  =  (256);
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 namespace details{
 
 // ---------------------- details ---------------------------------
@@ -405,8 +405,8 @@ void axi_to_multi_stream(
 
 // TODO for 2 and for 4
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 
