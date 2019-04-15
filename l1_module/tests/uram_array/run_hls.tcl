@@ -4,7 +4,7 @@
 ## Copyright (C) 1986-2018 Xilinx, Inc. All Rights Reserved.
 ############################################################
 open_project uram_array.prj
-set_top core_test1
+set_top core_test
 add_files test.cpp -cflags "-I../../include"
 add_files -tb test.cpp -cflags "-I../../include"
 open_solution "solution1"
