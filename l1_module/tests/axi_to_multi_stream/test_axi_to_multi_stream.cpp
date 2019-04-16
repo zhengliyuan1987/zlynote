@@ -29,15 +29,15 @@ const int  DDR_DEPTH   =  (DATA_NUM/SCAL_AXI);
  * XXX1     XXX1234567323334      XXX1234567323334      1234
  * ...   ptr Round Robin jump           ...             ...
  * 32TT     8123456732INT_IN      8123456732INT_IN      32
- * 							    Non-Blocking Ram1  ->
- * TTTT		T_INT_INT_INT_IN      8123456732INT_IN 				INT_
- * ...	ptr Round Robin jump	  T_INT_INT_INT...				INT_
- * 								  T_INT12345673233
- * 								Non-Blocking Ram2  ->
+ *                              Non-Blocking Ram1  ->
+ * TTTT     T_INT_INT_INT_IN      8123456732INT_IN              INT_
+ * ...  ptr Round Robin jump      T_INT_INT_INT...              INT_
+ *                                T_INT12345673233
+ *                              Non-Blocking Ram2  ->
  * T123     T_INT12345673233      T_INT12345673233                       1234
  * 4567     3435363738396465      3435363738396465                       ...
  * ...  ptr Round Robin jump
- * ...      ...					  ...									 ...
+ * ...      ...                   ...                                    ...
 *********************
 */
 
@@ -52,93 +52,93 @@ struct Test_Row {
 // function to read strm and print ii=1, Stream Consumer
 template< typename _TStrm>
 void readbatchToPrintII1(
-	    hls::stream<_TStrm >& ostrm,
-	    hls::stream<bool>&    e_ostrm,
-		hls::stream<_TStrm >& r_strm,
-		const int num
+        hls::stream<_TStrm >& ostrm,
+        hls::stream<bool>&    e_ostrm,
+        hls::stream<_TStrm >& r_strm,
+        const int num
 ){
 
-	_TStrm dat=0;
-	bool e_TestRow=0;
+    _TStrm dat=0;
+    bool e_TestRow=0;
 
     for(int i=0;i<(num);i++){
 #pragma HLS PIPELINE II=1
 
-    	ostrm.read(dat);
+        ostrm.read(dat);
         e_ostrm.read(e_TestRow);
         r_strm.write(dat);
 
 #ifndef __SYNTHESIS__
         if(e_TestRow){
-        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
+            std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
 
     }
     e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
-	if(!e_TestRow){
-		std::cout << "ERROR: II =1 e_TestRow=0 while the data is read empty!! "<<std::endl;
-	}
+    if(!e_TestRow){
+        std::cout << "ERROR: II =1 e_TestRow=0 while the data is read empty!! "<<std::endl;
+    }
 #endif
 
 }
 // function to read strm and print ii=2, Stream Consumer
 template< typename _TStrm>
 void readbatchToPrintII2(
-	    hls::stream<_TStrm >& ostrm,
-	    hls::stream<bool>&    e_ostrm,
-		hls::stream<_TStrm >& r_strm,
-		const int num
+        hls::stream<_TStrm >& ostrm,
+        hls::stream<bool>&    e_ostrm,
+        hls::stream<_TStrm >& r_strm,
+        const int num
 ){
 
-	_TStrm dat;
-	bool e_TestRow;
+    _TStrm dat;
+    bool e_TestRow;
 
     for(int i=0;i<(2*num);i++){
 #pragma HLS PIPELINE II=1
 
-    	if((i&1)!=1){
-    		//*(rowDtmp_ap+i/2+1)= 0;
-    	}else{
-    	ostrm.read(dat);
+        if((i&1)!=1){
+            //*(rowDtmp_ap+i/2+1)= 0;
+        }else{
+        ostrm.read(dat);
         e_ostrm.read(e_TestRow);
         r_strm.write(dat);
 
 #ifndef __SYNTHESIS__
         if(e_TestRow){
-        	std::cout << "ERROR: II =2 e_TestRow=1 while the data is not read empty!! "<<std::endl;
+            std::cout << "ERROR: II =2 e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
-    	}
+        }
     }
     e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
-	if(!e_TestRow){
-		std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
-	}
+    if(!e_TestRow){
+        std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
+    }
 #endif
 
 }
 // function to read strm and print ii=8, Stream Consumer
 template< typename _TStrm>
 void readbatchToPrintII8(
-	    hls::stream<_TStrm >& ostrm,
-	    hls::stream<bool>&    e_ostrm,
-		hls::stream<_TStrm >& r_strm,
-		const int num
+        hls::stream<_TStrm >& ostrm,
+        hls::stream<bool>&    e_ostrm,
+        hls::stream<_TStrm >& r_strm,
+        const int num
 ){
 
-	_TStrm dat;
-	bool e_TestRow;
+    _TStrm dat;
+    bool e_TestRow;
 
     for(int i=0;i<(8*num);i++){
 #pragma HLS PIPELINE II=1
 
-    	if((i&7)!=7){
-    		//*(rowDtmp_ap+i/8+1)= 0;
-    	}else{
-    	ostrm.read(dat);
+        if((i&7)!=7){
+            //*(rowDtmp_ap+i/8+1)= 0;
+        }else{
+        ostrm.read(dat);
         e_ostrm.read(e_TestRow);
         r_strm.write(dat);
 
@@ -149,23 +149,23 @@ void readbatchToPrintII8(
         row.length  = 8;
         row.rowData = reinterpret_cast<char* >(rowDtmp_ap+i/8);
 
-		//print
+        //print
         uint64_t *tmp=reinterpret_cast<uint64_t* >(rowDtmp_ap+i/8);
-		std::cout << "{ FPGA stream2: ";
-		std::cout << std::hex<<*tmp;
-		std::cout <<"}"<<std::endl;
+        std::cout << "{ FPGA stream2: ";
+        std::cout << std::hex<<*tmp;
+        std::cout <<"}"<<std::endl;
  #endif
         if(e_TestRow){
-        	std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
+            std::cout << "ERROR: e_TestRow=1 while the data is not read empty!! "<<std::endl;
         }
 #endif
-    	}
+        }
     }
     e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
-	if(!e_TestRow){
-		std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
-	}
+    if(!e_TestRow){
+        std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
+    }
 #endif
 }
 
@@ -173,30 +173,30 @@ void readbatchToPrintII8(
 #if 0
 // top functions for 3 type data
 void top_axi_to_multi_stream(
-		    ap_uint<AXI_WIDTH>* rbuf,
-		    hls::stream<TYPE_Strm0 >& ostrm0,
-		    hls::stream<bool>& e_ostrm0,
-		    hls::stream<TYPE_Strm1 >& ostrm1,
-		    hls::stream<bool>& e_ostrm1,
-		    hls::stream<TYPE_Strm2 >& ostrm2,
-		    hls::stream<bool>& e_ostrm2,
-			const int len[3],
-		    const int offset[3]
+            ap_uint<AXI_WIDTH>* rbuf,
+            hls::stream<TYPE_Strm0 >& ostrm0,
+            hls::stream<bool>& e_ostrm0,
+            hls::stream<TYPE_Strm1 >& ostrm1,
+            hls::stream<bool>& e_ostrm1,
+            hls::stream<TYPE_Strm2 >& ostrm2,
+            hls::stream<bool>& e_ostrm2,
+            const int len[3],
+            const int offset[3]
 ){
 #pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
-		  	 offset=slave bundle=gmem_in1 	latency = 8 	\
-		     num_read_outstanding = 32 \
-		     max_read_burst_length = 32
+             offset=slave bundle=gmem_in1   latency = 8     \
+             num_read_outstanding = 32 \
+             max_read_burst_length = 32
 
 #pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
 #pragma HLS INTERFACE s_axilite port = return bundle = control
 
 #ifndef __SYNTHESIS__
-	if(len[0]<=0 ||(len[1]<=0 )|| (len[2]<=0 ) )
-		std::cout<<"ERROR: len<= 0, testcase can not work!"<<std::endl;
+    if(len[0]<=0 ||(len[1]<=0 )|| (len[2]<=0 ) )
+        std::cout<<"ERROR: len<= 0, testcase can not work!"<<std::endl;
 #endif
-	xf::common::utils_hw::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
-	(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
+    xf::common::utils_hw::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
+    (rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
 
 }
 #endif
@@ -205,30 +205,30 @@ void top_axi_to_multi_stream(
 // top functions for co-sim
 // to test the co-sim, there must be a Stream Consumers which dataflow with Axi_to_multi_stream module.
 void top_for_co_sim(
-		    ap_uint<AXI_WIDTH>* 		rbuf,
-			const int 					len[3],
-		    const int 					offset[3],
-			hls::stream<TYPE_Strm0 >& r_strm0,
-			hls::stream<TYPE_Strm1 >& r_strm1,
-			hls::stream<TYPE_Strm2 >& r_strm2,
-			const int 					num0,
-			const int 					num1,
-			const int 					num2
+            ap_uint<AXI_WIDTH>*         rbuf,
+            const int                   len[3],
+            const int                   offset[3],
+            hls::stream<TYPE_Strm0 >& r_strm0,
+            hls::stream<TYPE_Strm1 >& r_strm1,
+            hls::stream<TYPE_Strm2 >& r_strm2,
+            const int                   num0,
+            const int                   num1,
+            const int                   num2
 ){
 #pragma HLS DATAFLOW
-	#pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
-			  	 offset=slave bundle=gmem_in1 	latency = 8 	\
-			     num_read_outstanding = 32 \
-			     max_read_burst_length = 32
+    #pragma HLS INTERFACE m_axi port=rbuf       depth=DDR_DEPTH  \
+                 offset=slave bundle=gmem_in1   latency = 8     \
+                 num_read_outstanding = 32 \
+                 max_read_burst_length = 32
 
-	#pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
-	#pragma HLS INTERFACE s_axilite port = return bundle = control
+    #pragma HLS INTERFACE s_axilite port = rbuf   bundle=control
+    #pragma HLS INTERFACE s_axilite port = return bundle = control
 
 
 #pragma HLS ARRAY_PARTITION    variable=len
 #pragma HLS ARRAY_PARTITION    variable=offset
 
-	hls::stream<bool>      e_ostrm0;
+    hls::stream<bool>      e_ostrm0;
     hls::stream<TYPE_Strm0 > ostrm0;
     hls::stream<TYPE_Strm1 > ostrm1;
     hls::stream<bool>      e_ostrm1;
@@ -248,12 +248,12 @@ void top_for_co_sim(
 #pragma HLS RESOURCE variable= e_ostrm2 core  = FIFO_LUTRAM
 #pragma HLS STREAM   variable= e_ostrm2 depth = NONBLOCK_DEPTHS
 
-	xf::common::utils_hw::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
-	(rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
-	//Stream Consumers
-	readbatchToPrintII1(ostrm0, e_ostrm0, r_strm0,  num0 );
-	readbatchToPrintII1(ostrm1, e_ostrm1, r_strm1,  num1 );
-	readbatchToPrintII1(ostrm2, e_ostrm2, r_strm2,  num2 );
+    xf::common::utils_hw::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
+    (rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
+    //Stream Consumers
+    readbatchToPrintII1(ostrm0, e_ostrm0, r_strm0,  num0 );
+    readbatchToPrintII1(ostrm1, e_ostrm1, r_strm1,  num1 );
+    readbatchToPrintII1(ostrm2, e_ostrm2, r_strm2,  num2 );
 }
 
 
@@ -320,87 +320,87 @@ private:
 // function to print
 template< typename _TStrm>
 void PrintRowFile(
-	_TStrm* rowDtmp_ap,
-	int& num
+    _TStrm* rowDtmp_ap,
+    int& num
 ){
-	std::ofstream fout("file.dat" , std::ios::app );
-	for(int i=0;i<(num);i++){
-		char* rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
-		for(int j=0; j<sizeof(_TStrm); j++){
-			fout << *(rowData+j);
-		}
-	}
-	fout.close();
+    std::ofstream fout("file.dat" , std::ios::app );
+    for(int i=0;i<(num);i++){
+        char* rowData = reinterpret_cast<char* >(rowDtmp_ap+i);
+        for(int j=0; j<sizeof(_TStrm); j++){
+            fout << *(rowData+j);
+        }
+    }
+    fout.close();
 }
 template< typename _TStrm>
 void PrintStrmRowFile(
-	hls::stream<_TStrm >& r_strm,
-	int& num
+    hls::stream<_TStrm >& r_strm,
+    int& num
 ){
-	std::ofstream fout("file.dat" , std::ios::app );
-	for(int i=0;i<(num);i++){
-		_TStrm tmp = r_strm.read();
-		char* rowData = reinterpret_cast<char* >(&tmp);
-		for(int j=0; j<sizeof(_TStrm); j++){
-			fout << *(rowData+j);
-		}
-	}
-	fout.close();
+    std::ofstream fout("file.dat" , std::ios::app );
+    for(int i=0;i<(num);i++){
+        _TStrm tmp = r_strm.read();
+        char* rowData = reinterpret_cast<char* >(&tmp);
+        for(int j=0; j<sizeof(_TStrm); j++){
+            fout << *(rowData+j);
+        }
+    }
+    fout.close();
 }
 
 int main(int argc, const char* argv[]) {
 
-	std::cout << "\n------------ Test for axi_to_stream  -------------\n";
-	std::string optValue;
-	std::string dataFile;
-	std::string in_dir  ="./";//no use by now
+    std::cout << "\n------------ Test for axi_to_stream  -------------\n";
+    std::string optValue;
+    std::string dataFile;
+    std::string in_dir  ="./";//no use by now
 
-	// cmd arg parser.
-	ArgParser parser(argc, argv);
+    // cmd arg parser.
+    ArgParser parser(argc, argv);
 
-	if (parser.getCmdOption("-dataFile",optValue)){
-		dataFile = optValue;
-	}else{
-		std::cout << "WARNING: data file not specified for this test. use '-datafile' to specified it. \n";
-	}
+    if (parser.getCmdOption("-dataFile",optValue)){
+        dataFile = optValue;
+    }else{
+        std::cout << "WARNING: data file not specified for this test. use '-datafile' to specified it. \n";
+    }
 
-	//load data
-	const int   DATA_LEN_CHAR = DATA_NUM * 12;
-	char* dataInDDR = (char*)malloc(DATA_LEN_CHAR*8*sizeof(char));
+    //load data
+    const int   DATA_LEN_CHAR = DATA_NUM * 12;
+    char* dataInDDR = (char*)malloc(DATA_LEN_CHAR*8*sizeof(char));
 
-	if (!dataInDDR){
-		printf("Alloc dataInDDR failed!\n");
-		return 1;
-	}
+    if (!dataInDDR){
+        printf("Alloc dataInDDR failed!\n");
+        return 1;
+    }
 
-	//call top
-	int err;
+    //call top
+    int err;
 #if(DATA_NUM == 5120)
-	int len[3]	 = {5092, 4799, 7040};//{4799, 1273, };//16932
-	int offset[3]= {0,    5092, 9892};//{    4800, 9892};
+    int len[3]   = {5092, 4799, 7040};//{4799, 1273, };//16932
+    int offset[3]= {0,    5092, 9892};//{    4800, 9892};
 #else
-	int len[3]	 = {721747, 499696, 1062500};//{4799, 124924, };//2283944
-	int offset[3]= {0,      721748, 1221444};
+    int len[3]   = {721747, 499696, 1062500};//{4799, 124924, };//2283944
+    int offset[3]= {0,      721748, 1221444};
 #endif
 
 
-	int len_all = len[0]+1+len[1]+len[2];
-	//err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all+offset[0]+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));//16960
-	err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all));
-	if (err) return err;
+    int len_all = len[0]+1+len[1]+len[2];
+    //err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all+offset[0]+AXI_WIDTH/8-1)/(AXI_WIDTH/8)*(AXI_WIDTH/8));//16960
+    err = load_dat<char>(dataInDDR, dataFile, in_dir, (len_all));
+    if (err) return err;
 
-	//strm output
+    //strm output
     int out_num[3];
     out_num[0] = (len[0]+STRM_WIDTH0/8-1)/(STRM_WIDTH0/8);
     out_num[1] = (len[1]+STRM_WIDTH1/8-1)/(STRM_WIDTH1/8);
     out_num[2] = (len[2]+STRM_WIDTH2/8-1)/(STRM_WIDTH2/8);
-	hls::stream<TYPE_Strm0 > r_strm0;
-	hls::stream<TYPE_Strm1 > r_strm1;
-	hls::stream<TYPE_Strm2 > r_strm2;
+    hls::stream<TYPE_Strm0 > r_strm0;
+    hls::stream<TYPE_Strm1 > r_strm1;
+    hls::stream<TYPE_Strm2 > r_strm2;
 
     top_for_co_sim((ap_uint<AXI_WIDTH>*)dataInDDR, len,       offset,
-    									r_strm0,   r_strm1,   r_strm2,
-										out_num[0],out_num[1],out_num[2]);
+                                        r_strm0,   r_strm1,   r_strm2,
+                                        out_num[0],out_num[1],out_num[2]);
 
     printf("**************************\n");
     printf("Read %d strm0:\n", out_num[0]);
@@ -415,11 +415,11 @@ int main(int argc, const char* argv[]) {
 
 //**************
 // vim compare
-// csim:  vimdiff l_orderkey_veint.bin ./prj_axi_to_multi_stream/solution1/csim/build/file.dat
-// cosim: vimdiff l_orderkey_veint.bin ./prj_axi_to_multi_stream/solution1/sim/wrapc_pc/file.dat
+// csim:  vimdiff l_orderkey_xilinx.bin ./prj_axi_to_multi_stream/solution1/csim/build/file.dat
+// cosim: vimdiff l_orderkey_xilinx.bin ./prj_axi_to_multi_stream/solution1/sim/wrapc_pc/file.dat
 // If all characters are the same before the "0a" character in the "file.dat", the test passed!
 //**************
 
-	free(dataInDDR);
+    free(dataInDDR);
 }
 #endif

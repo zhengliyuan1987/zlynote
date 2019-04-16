@@ -144,10 +144,10 @@ void split_vec_to_aligned(
     hls::stream<bool>& e_strm
 ){
 
-	const int nread = (len + offset+ scal_char - 1) / scal_char ;
-	//n read times except the first read, n_read+1 = total read times
-	      int cnt_r = nread -1;
-	const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
+    const int nread = (len + offset+ scal_char - 1) / scal_char ;
+    //n read times except the first read, n_read+1 = total read times
+          int cnt_r = nread -1;
+    const int nwrite = (len + sizeof(_TStrm) - 1) / sizeof(_TStrm);
     const int WStrm = 8*sizeof(_TStrm);
     //first read is specific
     ap_uint<_WAxi> vec_reg = vec_strm.read();
@@ -160,13 +160,13 @@ void split_vec_to_aligned(
         #pragma HLS loop_tripcount min=1 max=1
         #pragma HLS PIPELINE II = scal_vec
               vec_aligned((scal_char-offset<<3)-1, 0)              = vec_reg((scal_char<<3)-1, offset<<3);
-        	  if((scal_char-offset)<len&&(cnt_r!=0)){//always need read again
+              if((scal_char-offset)<len&&(cnt_r!=0)){//always need read again
                   ap_uint<_WAxi> vec = vec_strm.read();
                   vec_aligned((scal_char<<3)-1, (scal_char-offset)<<3) = vec(offset<<3, 0);
                   vec_reg    ((scal_char<<3)-1, offset<<3)             = vec((scal_char<<3)-1, offset<<3);
                   cnt_r--;
-        	  }//else few cases no read again
-        	  int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
+              }//else few cases no read again
+              int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
               for (int j = 0; j < scal_vec; ++j) {
         #pragma HLS PIPELINE II = 1
                   ap_uint<WStrm > r0 =
@@ -180,35 +180,35 @@ void split_vec_to_aligned(
     }
 
     if( !offset ){
-    	//no read
-    	SPLIT_VEC:
-		int fst_n =  scal_vec > nwrite ? nwrite  : scal_vec;
-		for (int j = 0; j < scal_vec; ++j) {
-		#pragma HLS PIPELINE II = 1
-			ap_uint<WStrm > r0 =
-			vec_reg.range(WStrm * (j + 1) - 1, WStrm * j);
-			if (j < fst_n) {
-				r_strm.write((_TStrm)r0);
-				e_strm.write(false);
-			}
-		}
+        //no read
+        SPLIT_VEC:
+        int fst_n =  scal_vec > nwrite ? nwrite  : scal_vec;
+        for (int j = 0; j < scal_vec; ++j) {
+        #pragma HLS PIPELINE II = 1
+            ap_uint<WStrm > r0 =
+            vec_reg.range(WStrm * (j + 1) - 1, WStrm * j);
+            if (j < fst_n) {
+                r_strm.write((_TStrm)r0);
+                e_strm.write(false);
+            }
+        }
 
-		for (int i = scal_vec; i < nwrite; i += scal_vec) {
-		#pragma HLS loop_tripcount min=1 max=1
-		#pragma HLS PIPELINE II = scal_vec
-			ap_uint<_WAxi> vec = vec_strm.read();
-			int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
+        for (int i = scal_vec; i < nwrite; i += scal_vec) {
+        #pragma HLS loop_tripcount min=1 max=1
+        #pragma HLS PIPELINE II = scal_vec
+            ap_uint<_WAxi> vec = vec_strm.read();
+            int n = (i + scal_vec) > nwrite ? (nwrite - i) : scal_vec;
 
-			for (int j = 0; j < scal_vec; ++j) {
-		#pragma HLS PIPELINE II = 1
-				ap_uint<WStrm > r0 =
-				vec.range(WStrm * (j + 1) - 1, WStrm * j);
-				if (j < n) {
-					r_strm.write((_TStrm)r0);
-					e_strm.write(false);
-				}
-			}
-		 }
+            for (int j = 0; j < scal_vec; ++j) {
+        #pragma HLS PIPELINE II = 1
+                ap_uint<WStrm > r0 =
+                vec.range(WStrm * (j + 1) - 1, WStrm * j);
+                if (j < n) {
+                    r_strm.write((_TStrm)r0);
+                    e_strm.write(false);
+                }
+            }
+         }
     }
     e_strm.write(true);
 }
@@ -263,9 +263,9 @@ void axi_to_stream(
           rbuf, len, scal_char, offset,
           vec_strm);
 
-	  details::split_vec_to_aligned<_WAxi, _TStrm , scal_vec>(
-		  vec_strm, len, scal_char, offset,
-		  ostrm, e_ostrm);
+      details::split_vec_to_aligned<_WAxi, _TStrm , scal_vec>(
+          vec_strm, len, scal_char, offset,
+          ostrm, e_ostrm);
 
 }
 
@@ -280,7 +280,6 @@ void axi_to_stream(
  * performance requirements of application.
  *
  * Both AXI port and alignment width are assumed to be multiple of 8-bit char.
- * The data width must be no greater than its alignment width.
  *********************
  *DDR->  AXI_BUS   ->  FIFO  ->     strm(aligned to dd)
  *
