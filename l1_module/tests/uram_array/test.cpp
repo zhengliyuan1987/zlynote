@@ -7,69 +7,105 @@
 #include "xf_util/uram_array.h"
 
 // as reference uram size 4K*256
-// need to NUM_SIZE <= NDATA
-#define NUM_SIZE (20 << 10)
-#define WDATA 16
+#define WDATA (16)
 #define NDATA (20 << 10)
-#define NCACHE 4
+#define NCACHE (4)
 
-void update_logic(ap_uint<WDATA>& out) {
-#pragma HLS inline
-  out += out;
-  // out++;
-}
+#define NUM_SIZE (20 << 10)
 
 void core_test(hls::stream<ap_uint<WDATA> >& out_stream) {
-  ap_uint<WDATA> out;
   xf::util::level1::uram_array<WDATA, NDATA, NCACHE> uram_array1;
 
-Loop1:
+l_init_value:
+  for (int i = 0; i < NDATA; ++i) {
+#pragma HLS PIPELINE II = 1
+    uram_array1.write(i, 0);
+  }
+
+l_read_after_write_test:
   for (int i = 0; i < NUM_SIZE; i++) {
 #pragma HLS PIPELINE II = 1
+    // TODO: is it proper to use both inter and intra here?
 #pragma HLS DEPENDENCE variable = uram_array1._blocks intra false
 #pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
     if ((i & 1) == 0) {
       uram_array1.write(i, i);
     } else {
-      uram_array1.write(i, i);
-      out = uram_array1.read(i - 1);
-      // add your logic
-      update_logic(out);
-      out_stream.write(out);
+      ap_uint<WDATA> t = uram_array1.read(i - 1);
+      out_stream.write(t);
     }
+  }
+
+l_update_value_with_1_II:
+  for (int i = 0; i < NUM_SIZE; i++) {
+#pragma HLS PIPELINE II = 1
+    // TODO: is it proper to use both inter and intra here?
+#pragma HLS DEPENDENCE variable = uram_array1._blocks intra false
+#pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
+    ap_uint<WDATA> t = uram_array1.read(i);
+    ap_uint<WDATA> u = (t & 1) ? 1 : 0;
+    uram_array1.write(i, u);
+  }
+
+l_dump_value:
+  for (int i = 0; i < NDATA; ++i) {
+#pragma HLS PIPELINE II = 1
+    ap_uint<WDATA> t = uram_array1.read(i);
+    out_stream.write(t);
   }
 }
 
+
 int uram_array_test() {
   int nerror = 0;
-  ap_uint<WDATA> in, out, tmp;
-  hls::stream<ap_uint<WDATA> > out_stream("ref_output");
 
-  xf::util::level1::uram_array<WDATA, NDATA, NCACHE> uram_array1;
-
-  for (int i = 0; i < NUM_SIZE; i++) {
+  hls::stream<ap_uint<WDATA> > ref_stream("reference");
+  ap_uint<WDATA> ref_array[NDATA];
+  for (int i = 0; i < NDATA; ++i) {
+    ref_array[i] = 0;
+  }
+  for (int i = 0; i < NUM_SIZE; ++i) {
     if ((i & 1) == 0) {
-      tmp = i;
-      update_logic(tmp);
-      uram_array1.write(i, tmp);
+      ref_array[i] = i;
+    } else {
+      ap_uint<WDATA> t = ref_array[i - 1];
+      ref_stream.write(t);
     }
   }
+  for (int i = 0; i < NUM_SIZE; i++) {
+    ap_uint<WDATA> t = ref_array[i];
+    ap_uint<WDATA> u = (t & 1) ? 1 : 0;
+    ref_array[i] = u;
+  }
+  for (int i = 0; i < NDATA; ++i) {
+    ap_uint<WDATA> t = ref_array[i];
+    ref_stream.write(t);
+  }
 
+  hls::stream<ap_uint<WDATA> > out_stream("output");
   core_test(out_stream);
 
-  for (int i = 0; i < NUM_SIZE / 2; i++) {
-    in = uram_array1.read(i * 2);
-    out = out_stream.read();
-    bool cmp = (in == out) ? 1 : 0;
-    if (!cmp) {
+  while(true) {
+    ap_uint<WDATA> r = ref_stream.read();
+    ap_uint<WDATA> o = out_stream.read();
+    if (r != o) {
+      if (!nerror)
+        std::cout << "The data is incorrect, check implementation." << std::endl;
       nerror++;
-      std::cout << "The data is incorrect." << std::endl;
     }
-    // std::cout<<in<<"  " <<out<< std::endl;
+    if (ref_stream.size() == 0) {
+      if (out_stream.size() == 0) {
+        break;
+      } else {
+        std::cout << "The number of data is incorrect, check test case" << std::endl;
+      }
+    } else if (out_stream.size() == 0) {
+      std::cout << "The number of data is incorrect, check test case" << std::endl;
+    }
   }
 
   if (nerror) {
-    std::cout << "\nFAIL: " << nerror << "the result is wrong.\n";
+    std::cout << "\nFAIL: " << nerror << " elements are wrong.\n";
   } else {
     std::cout << "\nPASS: no error found.\n";
   }
@@ -77,9 +113,5 @@ int uram_array_test() {
 }
 
 int main() {
-  int inteval = 0;
-
-  inteval = uram_array_test();
-
-  return inteval;
+  return uram_array_test();
 }
