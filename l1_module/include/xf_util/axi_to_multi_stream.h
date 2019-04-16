@@ -242,6 +242,8 @@ void split_vec_to_aligned_duplicate(
     hls::stream<_TStrm >& r_strm,
     hls::stream<bool>& e_strm
 ){
+//    if(len== 0)//explanatory note for len == 0 case
+//        return ;
 
     const int nread = (len + offset+ scal_char - 1) / scal_char ;
     //n read times except the first read, n_read+1 = total read times
