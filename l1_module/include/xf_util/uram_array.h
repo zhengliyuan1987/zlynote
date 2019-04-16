@@ -65,7 +65,7 @@ template <int WData, int NData, int NCache> class uram_array {
 public:
   uram_array()
       : _elem_per_line(72 / WData), _num_one_process((WData + 71) / 72),
-        _index_one_block(_elem_per_line * 4096), _cache(0) {
+        _index_one_block(_elem_per_line * 4096) {
 #pragma HLS RESOURCE variable = _blocks core = XPM_MEMORY uram
 #ifndef __SYNTHESIS__
     // TODO:malloc the array
@@ -117,9 +117,6 @@ private:
   /// the cache for saving latest value.
   ap_uint<WData> _state[NCache];
 
-  /// save temporary value
-  ap_uint<72> _cache;
-
 public:
 /// the memory of accessing,one block's fixed width is 72 and the depth is 4K.
 #ifndef __SYNTHESIS__
@@ -152,8 +149,9 @@ Write_Inner:
       div_index = dec_block / _elem_per_line;
       dec = dec_block % _elem_per_line;
       begin = dec * WData;
-      _cache(begin + WData - 1, begin) = d;
-      _blocks[div_block][div_index] = _cache;
+      ap_uint<72> tmp = _blocks[div_block][div_index];
+      tmp(begin + WData - 1, begin) = d;
+      _blocks[div_block][div_index] = tmp;
     } else {
       div_block = index / 4096;
       dec_block = index % 4096;
@@ -170,9 +168,8 @@ Write_Inner:
 Write_Cache:
   for (int i = NCache - 1; i >= 1; i--) {
 #pragma HLS DEPENDENCE variable = _state inter false
-#pragma HLS DEPENDENCE variable = _state intra false
 #pragma HLS DEPENDENCE variable = _index inter false
-#pragma HLS DEPENDENCE variable = _index intra false
+
     _state[i] = _state[i - 1];
     _index[i] = _index[i - 1];
   }
@@ -193,10 +190,6 @@ ap_uint<WData> uram_array<WData, NData, NCache>::read(int index) {
 
 Read_Cache:
   for (int i = 0; i < NCache; i++) {
-#pragma HLS DEPENDENCE variable = _state inter false
-#pragma HLS DEPENDENCE variable = _state intra false
-#pragma HLS DEPENDENCE variable = _index inter false
-#pragma HLS DEPENDENCE variable = _index intra false
     if (index == _index[i]) {
       value = _state[i];
       return value;
@@ -211,7 +204,8 @@ Read_Inner:
       div_index = dec_block / _elem_per_line;
       dec = dec_block % _elem_per_line;
       begin = dec * WData;
-      value = _blocks[div_block][div_index].range(begin + WData - 1, begin);
+      ap_uint<72> tmp = _blocks[div_block][div_index];
+      value = tmp.range(begin + WData - 1, begin);
     } else {
       div_block = index / 4096;
       dec_block = index % 4096;

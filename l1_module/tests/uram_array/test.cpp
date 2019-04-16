@@ -7,7 +7,7 @@
 #include "xf_util/uram_array.h"
 
 // as reference uram size 4K*256
-#define WDATA (16)
+#define WDATA (64)
 #define NDATA (20 << 10)
 #define NCACHE (4)
 
@@ -25,8 +25,6 @@ l_init_value:
 l_read_after_write_test:
   for (int i = 0; i < NUM_SIZE; i++) {
 #pragma HLS PIPELINE II = 1
-    // TODO: is it proper to use both inter and intra here?
-#pragma HLS DEPENDENCE variable = uram_array1._blocks intra false
 #pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
     if ((i & 1) == 0) {
       uram_array1.write(i, i);
@@ -39,12 +37,10 @@ l_read_after_write_test:
 l_update_value_with_1_II:
   for (int i = 0; i < NUM_SIZE; i++) {
 #pragma HLS PIPELINE II = 1
-    // TODO: is it proper to use both inter and intra here?
 #pragma HLS DEPENDENCE variable = uram_array1._blocks intra false
-#pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
     ap_uint<WDATA> t = uram_array1.read(i);
     ap_uint<WDATA> u = (t & 1) ? 1 : 0;
-    uram_array1.write(i, u);
+    uram_array1.write(i, u + i);
   }
 
 l_dump_value:
@@ -54,7 +50,6 @@ l_dump_value:
     out_stream.write(t);
   }
 }
-
 
 int uram_array_test() {
   int nerror = 0;
@@ -75,7 +70,7 @@ int uram_array_test() {
   for (int i = 0; i < NUM_SIZE; i++) {
     ap_uint<WDATA> t = ref_array[i];
     ap_uint<WDATA> u = (t & 1) ? 1 : 0;
-    ref_array[i] = u;
+    ref_array[i] = u + i;
   }
   for (int i = 0; i < NDATA; ++i) {
     ap_uint<WDATA> t = ref_array[i];
@@ -85,22 +80,25 @@ int uram_array_test() {
   hls::stream<ap_uint<WDATA> > out_stream("output");
   core_test(out_stream);
 
-  while(true) {
+  while (true) {
     ap_uint<WDATA> r = ref_stream.read();
     ap_uint<WDATA> o = out_stream.read();
     if (r != o) {
       if (!nerror)
-        std::cout << "The data is incorrect, check implementation." << std::endl;
+        std::cout << "The data is incorrect, check implementation."
+                  << std::endl;
       nerror++;
     }
     if (ref_stream.size() == 0) {
       if (out_stream.size() == 0) {
         break;
       } else {
-        std::cout << "The number of data is incorrect, check test case" << std::endl;
+        std::cout << "The number of data is incorrect, check test case"
+                  << std::endl;
       }
     } else if (out_stream.size() == 0) {
-      std::cout << "The number of data is incorrect, check test case" << std::endl;
+      std::cout << "The number of data is incorrect, check test case"
+                << std::endl;
     }
   }
 
@@ -112,6 +110,4 @@ int uram_array_test() {
   return nerror;
 }
 
-int main() {
-  return uram_array_test();
-}
+int main() { return uram_array_test(); }
