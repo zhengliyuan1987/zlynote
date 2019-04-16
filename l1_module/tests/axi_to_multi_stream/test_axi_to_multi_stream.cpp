@@ -75,12 +75,14 @@ void readbatchToPrintII1(
 #endif
 
     }
-    e_ostrm.read(e_TestRow);
+    if(num != 0){
+		e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
-    if(!e_TestRow){
-        std::cout << "ERROR: II =1 e_TestRow=0 while the data is read empty!! "<<std::endl;
-    }
+		if(!e_TestRow){
+			std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
+		}
 #endif
+    }
 
 }
 // function to read strm and print ii=2, Stream Consumer
@@ -112,12 +114,14 @@ void readbatchToPrintII2(
 #endif
         }
     }
-    e_ostrm.read(e_TestRow);
+    if(num != 0){
+		e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
-    if(!e_TestRow){
-        std::cout << "ERROR: e_TestRow=0 while the data is read empty!! "<<std::endl;
-    }
+		if(!e_TestRow){
+			std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
+		}
 #endif
+    }
 
 }
 // function to read strm and print ii=8, Stream Consumer
@@ -161,12 +165,14 @@ void readbatchToPrintII8(
 #endif
         }
     }
-    e_ostrm.read(e_TestRow);
+    if(num != 0){
+		e_ostrm.read(e_TestRow);
 #ifndef __SYNTHESIS__
-    if(!e_TestRow){
-        std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
-    }
+		if(!e_TestRow){
+			std::cout << "ERROR: II =8 e_TestRow=0 while the data is read empty!! "<<std::endl;
+		}
 #endif
+    }
 }
 
 // ------------------------------------------------------------
@@ -378,6 +384,8 @@ int main(int argc, const char* argv[]) {
 #if(DATA_NUM == 5120)
     int len[3]   = {5092, 4799, 7040};//{4799, 1273, };//16932
     int offset[3]= {0,    5092, 9892};//{    4800, 9892};
+//    int len[3]   = {4799, 0, 0};
+//    int offset[3]= {0,    0, 0};
 #else
     int len[3]   = {721747, 499696, 1062500};//{4799, 124924, };//2283944
     int offset[3]= {0,      721748, 1221444};
