@@ -23,7 +23,7 @@ open_solution -reset "solution1"
 #open_solution -reset "sol_axi512"
 set_part virtexuplus
 create_clock -period 3.33 -name default
-set_clock_uncertainty 1.05
+set_clock_uncertainty 27.000000%
 
 csim_design -compiler gcc -argv "$host_args"
 
