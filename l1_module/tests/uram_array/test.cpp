@@ -8,10 +8,10 @@
 
 // as reference uram size 4K*256
 #define WDATA (64)
-#define NDATA (20 << 10)
+#define NDATA (4 << 10)
 #define NCACHE (4)
 
-#define NUM_SIZE (20 << 10)
+#define NUM_SIZE (4 << 10)
 
 void core_test(hls::stream<ap_uint<WDATA> >& out_stream) {
   xf::util::level1::uram_array<WDATA, NDATA, NCACHE> uram_array1;
@@ -29,6 +29,7 @@ l_read_after_write_test:
     if ((i & 1) == 0) {
       uram_array1.write(i, i);
     } else {
+      uram_array1.write(i, i);
       ap_uint<WDATA> t = uram_array1.read(i - 1);
       out_stream.write(t);
     }
@@ -63,6 +64,7 @@ int uram_array_test() {
     if ((i & 1) == 0) {
       ref_array[i] = i;
     } else {
+      ref_array[i] = i;
       ap_uint<WDATA> t = ref_array[i - 1];
       ref_stream.write(t);
     }
