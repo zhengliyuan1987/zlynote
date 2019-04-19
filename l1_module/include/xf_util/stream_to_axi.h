@@ -42,7 +42,12 @@ namespace level1 {
 template <int WAxi, int WStrm, int NBurst = 16>
 void stream_to_axi(ap_uint<WAxi>* wbuf,
                    hls::stream<ap_uint<WStrm> >& istrm,
-                   hls::stream<bool>& e_istrm) {
+                   hls::stream<bool>& e_istrm)
+
+{
+#ifndef __SYNTHESIS__
+  assert(WAxi % WStrm == 0);
+#endif
   const int N = WAxi / WStrm;
   ap_uint<WAxi>* pbuf = wbuf;
   ap_uint<WAxi> tmp;
@@ -60,7 +65,9 @@ doing_loop:
         ap_uint<WStrm> t = istrm.read();
         tmp(offset + WStrm - 1, offset) = t(WStrm - 1, 0);
       } else {
-        tmp(offset + WStrm - 1, offset) = 0;
+        tmp(WAxi - 1, bs * WStrm) = 0;
+        pbuf[i / N] = tmp;
+        w_num++;
         break;
       }
       if (bs == (N - 1)) {
@@ -75,8 +82,5 @@ doing_loop:
 } // level1
 } // util
 } // xf
-
-// Implementation
-// TODO
 
 #endif // XF_UTIL_STRM_TO_AXI_H
