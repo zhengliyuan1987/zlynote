@@ -24,9 +24,6 @@
 #ifndef XF_UTIL_STRM_TO_AXI_H
 #define XF_UTIL_STRM_TO_AXI_H
 
-//#include "xf_util/enums.h"
-//#include "xf_util/types.h"
-
 // Forward decl
 
 namespace xf {
@@ -43,35 +40,44 @@ namespace level1 {
 /// @param istrm   input stream.
 /// @param e_istrm end flag for input stream
 template <int WAxi, int WStrm, int NBurst = 16>
-void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm>> &istrm,
-                   hls::stream<bool> &e_istrm) {
-  const int N = WAxi / WStrm;
-  ap_uint<WAxi> *pbuf = wbuf;
-  ap_uint<WAxi> tmp;
-  bool isLast = false;
+void stream_to_axi(
+				   ap_uint<WAxi>* wbuf,
+                   hls::stream<ap_uint<WStrm> >& istrm,
+				   hls::stream<bool>& e_istrm)
+{
+	const int N = WAxi/WStrm;
+	ap_uint<WAxi>* pbuf = wbuf;
+	ap_uint<WAxi> tmp;
+	bool isLast = false;
+	int w_num = 0;
 
-doing_loop:
-  for (int i = 0; i < NBurst * N; i++) {
-#pragma HLS PIPELINE II = 1
-    int bs = i % N;
-    int begin = bs * WStrm;
-    isLast = e_istrm.read();
-    if (!isLast) {
-      ap_uint<WStrm> t = istrm.read();
-      tmp(begin + WStrm - 1, begin) = t(WStrm - 1, 0);
-    } else
-      tmp(begin + WStrm - 1, begin) = 0;
-    if (bs == N - 1) {
-      pbuf[i / N] = tmp;
-    }
-  }
-#ifndef __SYNTHESIS__
-  std::cout << "the hls data is:" << std::endl;
-check_value_loop:
-  for (int i = 0; i < NBurst; i++) {
-    std::cout << "wbuf[" << i << "]=" << pbuf[i] << std::endl;
-  }
-#endif
+	doing_loop:
+	while(!isLast)
+	{
+		for(int i=0;i<NBurst*N;i++)
+		{
+	#pragma HLS PIPELINE II=1
+			int bs = i % N;
+			int offset = bs*WStrm;
+			isLast = e_istrm.read();
+			if(!isLast)
+			{
+				ap_uint<WStrm> t = istrm.read();
+				tmp(offset+WStrm-1, offset) = t(WStrm - 1, 0);
+			}
+			else
+			{
+				tmp(offset+WStrm-1, offset) = 0;
+				break;
+			}
+			if(bs == (N-1))
+			{
+				pbuf[i/N] = tmp;
+				w_num++;
+			}
+		}
+		pbuf += NBurst;
+	}
 }
 
 } // level1
