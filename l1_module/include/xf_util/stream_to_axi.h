@@ -65,7 +65,7 @@ doing_loop:
         ap_uint<WStrm> t = istrm.read();
         tmp(offset + WStrm - 1, offset) = t(WStrm - 1, 0);
       } else {
-        tmp(WAxi - 1, bs * WStrm) = 0;
+        tmp(WAxi - 1, offset) = 0;
         pbuf[i / N] = tmp;
         w_num++;
         break;
