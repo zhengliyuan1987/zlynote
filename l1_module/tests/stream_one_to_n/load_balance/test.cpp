@@ -178,7 +178,7 @@ void test_core_1_n(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
                          c_strms, e_c_strms,
                          xf::common::utils_hw::load_balance_t());
                         
-   consume_2(
+   consume_1(
                          c_strms,  e_c_strms,
                          data_ostrms, e_data_ostrms
           );

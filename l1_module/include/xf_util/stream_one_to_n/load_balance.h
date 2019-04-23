@@ -196,6 +196,8 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
    int rn2       = 0;//_NStrm;
    int ld        = 0;
    int ld2       = 0;
+   int ld3       = 0;
+   int dflds     = 0;
    bool wb       = true;
    bool high     = true;//false;
    bool be       = e_buf_n_strm.read();
@@ -263,22 +265,38 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
  * */
    //ld = ld-rn2 ;
     int tc=0;
-    if(bak_full!=all_full && ld  < mult_nstrm) {
+    if(bak_full!=all_full && ld  < mult_nstrm && dflds < _NStrm) {
    //  read new data when left data is not enough
          be     = e_buf_n_strm.read();
          buff_r = buf_n_strm.read();
          high   = !high;
          tc     = _NStrm;
       }
-    //  buff_r2=buff_r;
+
       ld2      = ld - rn2;
+      ld       = ld - rn2 + tc;
+      ld3      = ld3 - rn2;
+      if( ld3 < _NStrm ) {
+        wb = true;
+        buff_r2= buff_r;
+        ld3 += _NStrm;
+      }
+      else
+        wb=false;
+     if ( wb )
+     {
+       buff_q   = high ? buff_r2:buff_q;
+       buff_p   = high ? buff_p:buff_r2;  
+     }
+     dflds = ld -ld3; 
+/*      ld2      = ld - rn2;
       buff_r2  = ld2 <= _NStrm ? buff_r: buff_r2;
       wb       = ld2 <= _NStrm ? true:false; //   moved buff_r to buff_r2 or not , this flag is useful when quit this LOOP.
       
       ld       = ld - rn2 + tc;
          
       buff_q   = high ? buff_r2:buff_q;
-      buff_p   = high ? buff_p:buff_r2;
+      buff_p   = high ? buff_p:buff_r2;  */
       // compute the index that  deq[i] read the data in buf_arr
       pos[0]   = base;
       for(int i=1; i< _NStrm;  ++i) {
