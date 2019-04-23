@@ -244,11 +244,11 @@ int test_1_n(){
   for(int i=0; i<NS; ++i)
      if(td[i]!=1)
      {
-     //  nerror=0;
+       nerror=1;
        std::cout<<"erro "<< "i= "<<i <<"  "<<"td[i]"<<td[i]<<std::endl;
     }
    
-  //nerror= (count == NS) ? nerror:1;
+  nerror= (count == NS) ? nerror:1;
    std::cout<<"count= "<< count <<"  "<<"NS= "<< NS<<std::endl;
   // nerror=0;
    for(int id=0; id< NSTRM;id++)

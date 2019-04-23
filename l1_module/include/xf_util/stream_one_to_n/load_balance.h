@@ -55,8 +55,6 @@ void strm_one_to_n(hls::stream<_TIn>& istrm,
 } // common
 } // xf
 
-// Implementation
-// TODO
 
 namespace xf {
 namespace common {
@@ -65,6 +63,22 @@ namespace utils_hw {
 // support ap_uint<>
 namespace details {
 
+
+
+
+
+/* @brief  buffer data to solve different input and output width.
+ *
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrm input data stream.
+ * @param e_istrm end flag stream for input data.
+ * @param buf_lcm_strm output data streams.
+ * @param left_lcm the number of useful data(_WInStrm) in last output data.
+ * @param e_buf_lcm_ostrms end flag streams
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_one_to_n_read(hls::stream<ap_uint<_WInStrm> >& istrm,
                    hls::stream<bool>& e_istrm,
@@ -77,7 +91,6 @@ void strm_one_to_n_read(hls::stream<ap_uint<_WInStrm> >& istrm,
   const int num_in        = buf_width/_WInStrm;
   ap_uint<buf_width> buff = 0;
 #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
-//#ifndef __SYNTHESIS_
  std::cout << "lcm(" <<_WInStrm <<", " << _WOutStrm << ")="<< buf_width << std::endl;
  std::cout << "_WInStrm =" << _WInStrm << "," << "num_in =" << num_in <<std::endl;
  std::cout << "_WOutStrm =" << _WOutStrm << "," << "num_out =" << num_out <<std::endl;
@@ -91,17 +104,32 @@ void strm_one_to_n_read(hls::stream<ap_uint<_WInStrm> >& istrm,
        buff.range( (p+1)*_WInStrm -1, p*_WInStrm ) =d;
        last = e_istrm.read();
        if( p+1>=num_in) {
+         // collect num_in input data and output them together
           buf_lcm_strm.write(buff);
           e_buf_lcm_strm.write(false);
        }
        p= (p+1) >= num_in ? 0: p+1;
   }
+ // output buff which has p useful data, that is to say, others in buff are unuseful but output.
   buf_lcm_strm.write(buff);
   e_buf_lcm_strm.write(true);
   left_lcm.write(p);
 }
 
 
+/* @brief convert the input data with multiple _WOutStrm width to  output with _WOutStrm width.
+ *
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param buf_lcm_strm input data stream.
+ * @param e_buf_lcm_strm end flag stream for input data.
+ * @param left_lcm the number of useful data(_WInStrm) in last input data.
+ * @param left_n the number of useful data(_WOutStrm) in last output. 
+ * @param buf_n_strm  output stream. 
+ * @param e_buf_n_strm  end flag stream. 
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm,_WOutStrm*_NStrm>::value>  >& buf_lcm_strm,
                    hls::stream<bool>& e_buf_lcm_strm,
@@ -111,10 +139,8 @@ void strm_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm,_WOutStrm*_NStrm>::va
                    hls::stream<bool>& e_buf_n_strm ) {
   
   const int buf_width = lcm<_WInStrm, _NStrm*_WOutStrm>::value;
-  const int num_in    = buf_width/_WInStrm;
   const int num_out   = buf_width/_WOutStrm;
   const int count_out = num_out/_NStrm;
-  const int max = num_in > count_out ? num_in  : count_out;
   ap_uint<buf_width> inner_buf=0;
   while(!e_buf_lcm_strm.read()) { 
   // FIX  
@@ -125,6 +151,7 @@ void strm_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm,_WOutStrm*_NStrm>::va
       e_buf_n_strm.write(false);
     } 
    }
+  // when end of input stream, pick up the useful data from the last input data
   int ln_in = left_lcm.read();
   inner_buf = buf_lcm_strm.read();
   int flg=0;
@@ -139,6 +166,7 @@ void strm_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm,_WOutStrm*_NStrm>::va
       flg=i+1;
      }
   }
+  // output  the remaining data  when the above for-loop quits.
   buf_n_strm.write(inner_buf.range((flg+1)*_NStrm*_WOutStrm-1, flg*_NStrm*_WOutStrm));
   int tmp_ln_out= ln_in * _WInStrm / _WOutStrm - flg*_NStrm; 
   int ln_out = tmp_ln_out<0? 0: tmp_ln_out;
@@ -149,7 +177,20 @@ void strm_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm,_WOutStrm*_NStrm>::va
     std::cout << "ln_out =  " <<std::dec <<ln_out<< std::endl;
    #endif
 }
-/////////////////////////////////////////////////////////////////     
+
+
+/* @brief ditribution of the input data.
+ *
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param buf_n_strm  output stream. 
+ * @param e_buf_n_strm  end flag stream. 
+ * @param left_n the number of useful data(_WOutStrm) in last input. 
+ * @param ostrms the output streams. 
+ * @param e_ostrms the end flags. 
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
  void strm_one_to_n_distribute(hls::stream<ap_uint<_NStrm*_WOutStrm> >& buf_n_strm,
                     hls::stream<bool>& e_buf_n_strm,
@@ -159,7 +200,7 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
                    )
  {
 
-   const int buf_width = _NStrm*_WOutStrm;//lcm<_WInStrm, _NStrm*_WOutStrm>::value;
+   const int buf_width = _NStrm*_WOutStrm;
    const int num_in    = buf_width/_WInStrm;
    const int num_out   = buf_width/_WOutStrm;
    const int count_out = num_out/_NStrm;
@@ -184,7 +225,6 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
    ap_uint<_NStrm> all_full     = ~full;
    ap_uint<_NStrm> bak_full     = 0;
    ap_uint<_NStrm> bak_full1    = 0;
-   ap_uint<_NStrm> bak_full2    = 0;
    ap_uint<_NStrm> inv_bak_full = 0;
    ap_uint<_NStrm> last_full    = 0;
    const int mult_nstrm         = _NStrm * 2;
@@ -193,13 +233,12 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
    int bs_n      = 0;
    int p         = 0;
    int rn        = 0;
-   int rn2       = 0;//_NStrm;
+   int rn2       = 0;
    int ld        = 0;
    int ld2       = 0;
-   int ld3       = 0;
    int dflds     = 0;
    bool wb       = true;
-   bool high     = true;//false;
+   bool high     = true;
    bool be       = e_buf_n_strm.read();
   /**********************************************************************************
  *  iterator  1      2       3
@@ -228,7 +267,6 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
      #pragma HLS unroll
     bak_full1[i]= ostrms[i].full();
    }
-   //  bak_full2=bak_full1;
    LOOP_core:
    while(!be) {
      #pragma HLS pipeline II=1
@@ -255,7 +293,6 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
      //bak_full= full;
      bak_full     = bak_full1;
      inv_bak_full = ~bak_full1;
-     bak_full2    = bak_full1;
      bak_full1    = full;
     
      base         = next_base;
@@ -272,32 +309,24 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
          high   = !high;
          tc     = _NStrm;
       }
-
-      ld2      = ld - rn2;
+      // ld is the number of input data ,including data in buf_arr and buff_r
+      // ld2 is the number of input data stored in buf_arr
+      ld2      = ld2 - rn2;
       ld       = ld - rn2 + tc;
-      ld3      = ld3 - rn2;
-      if( ld3 < _NStrm ) {
+      // get data when the  data in buf_arr is not enough
+      if( ld2 < _NStrm ) {
         wb = true;
         buff_r2= buff_r;
-        ld3 += _NStrm;
+        ld2 += _NStrm;
+        buff_q   = high ? buff_r2:buff_q;
+        buff_p   = high ? buff_p:buff_r2;  
       }
       else
         wb=false;
-     if ( wb )
-     {
-       buff_q   = high ? buff_r2:buff_q;
-       buff_p   = high ? buff_p:buff_r2;  
-     }
-     dflds = ld -ld3; 
-/*      ld2      = ld - rn2;
-      buff_r2  = ld2 <= _NStrm ? buff_r: buff_r2;
-      wb       = ld2 <= _NStrm ? true:false; //   moved buff_r to buff_r2 or not , this flag is useful when quit this LOOP.
+     // if the data in buff_r are move to buff_r2, ld is equals to ld2 and buff_r is free and could store new data 
+     dflds = ld -ld2; 
       
-      ld       = ld - rn2 + tc;
-         
-      buff_q   = high ? buff_r2:buff_q;
-      buff_p   = high ? buff_p:buff_r2;  */
-      // compute the index that  deq[i] read the data in buf_arr
+     // compute the index that  deq[i] read the data in buf_arr
       pos[0]   = base;
       for(int i=1; i< _NStrm;  ++i) {
         #pragma HLS unroll
@@ -305,7 +334,6 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
         // the number of not full streams befor the i-th streams ( i.e, among the first i-1 streams).
         int c  = count_ones<up_nstrm>(bf);
         // no-blockings
-        //int nb= i-c;
         int nb = c;
         int mv = nb + base;
         pos[i] = (mv>=mult_nstrm) ? (mv-mult_nstrm) : mv;
@@ -322,8 +350,6 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
       }
       last_full = bak_full;
        // the numbers of data which are written to deq from buf_arr in this iteration
-       //rn= count_ones<up_nstrm>(last_full);
-       //rn2=_NStrm - rn ;//count_zeros_loop<_NStrm>(bak_full); // how many streams are full 
       rn2 = count_ones<up_nstrm>(inv_bak_full);
       #ifndef __SYNTHESIS_
          std::cout << "last_full =  " <<std::hex << last_full<< std::endl;
@@ -333,15 +359,9 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
      // deq should read data from the position in buf_arr in next time
      int temp  = bs_n+rn2;
      int temp2 = base+rn2;
-     //next_base = temp<0? base+rn2:temp;
-     //next_base = base+rn2 >= 2*_NStrm ? base+rn2-2*_NStrm:base+rn2;//temp;
-     //next_base = base+rn2 >= mult_nstrm ? bs_n+rn2:base+rn2;//temp;
-     next_base = temp2 >= mult_nstrm ? temp:temp2;//temp;
+     next_base = temp2 >= mult_nstrm ? temp:temp2;
      bs_n      = next_base - mult_nstrm;
-     //int temp= base-rn-_NStrm;
-    // int temp2= base+ _NStrm-rn;
-    // next_base = temp<0? temp2:temp;
-     // write data to deq from buf_arr 
+     // write to deq
      for(int i=0; i< _NStrm;  ++i) {
          #pragma HLS unroll
          int ps = pos[i]; 
@@ -382,10 +402,8 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
     }  // for
   
  // sequentially  output the remaining data in buf_arr 
-    ld    = ld - rn2;
-  //  wb means whether the last read data from input in while-loop are written to buf_arr. when not written, ld counts additional _NStrm.  
-    ld2   = wb? ld: ld - _NStrm; 
-    base  = next_base;
+   ld2 -= rn2; 
+   base  = next_base;
    int pb = base>0?base:0;
    while( ld2>0 ) {
      #pragma HLS pipeline II=1
@@ -435,14 +453,27 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
  }
 
 
+/* @brief stream distribute, using load-balancing algorithm.
+ *
+ * The input stream is assumed to be conpact data to be splitted into
+ * _WOutStrm wide data into output streams.
+ *
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrm input data stream.
+ * @param e_istrm end flag stream for input data.
+ * @param ostrms output data streams.
+ * @param e_ostrms end flag streams, one for each output data stream.
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_one_to_n_load_balance(hls::stream<ap_uint<_WInStrm> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
                    hls::stream<bool> e_ostrms[_NStrm]) {
-
-
-  #pragma HLS dataflow
+  
+#pragma HLS dataflow
   // least common multiple of _WInStrm and _WOutStrm as the width of inner buffer
   hls::stream<ap_uint<lcm<_WInStrm,_NStrm*_WOutStrm>::value>  > buf_lcm_strm;
 #pragma HLS stream variable = buf_lcm_strm depth = 32
@@ -454,8 +485,13 @@ void strm_one_to_n_load_balance(hls::stream<ap_uint<_WInStrm> >& istrm,
 #pragma HLS stream variable = buf_n_strm depth = 32
   hls::stream<bool> e_buf_n_strm;
 #pragma HLS stream variable = e_buf_n_strm depth = 32
-
-
+/* there are 3 steps:
+ *    collect input data     |         solve different widths  |  dipatch to _NStrm streams    
+ *connected streams and their widths:
+ *   istrms  --->       buf_lcm_strm    ---->             buf_n_strm       ---->  ostrms 
+ * _WInStrm       lcm(_WInStrm, _WOutStrm * _NStrm)   _WOutStrm * _NStrm         _WOutStrm
+*
+*/
 strm_one_to_n_read<_WInStrm,_WOutStrm,_NStrm> (
                    istrm,
                    e_istrm,
@@ -487,6 +523,21 @@ strm_one_to_n_distribute<_WInStrm,_WOutStrm,_NStrm> (
 } // details
 
 
+/* @brief stream distribute, using load-balancing algorithm.
+ *
+ * The input stream is assumed to be conpact data to be splitted into
+ * _WOutStrm wide data into output streams.
+ *
+ * @tparam _WInStrm input stream width.
+ * @tparam _WOutStrm output stream width.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrm input data stream.
+ * @param e_istrm end flag stream for input data.
+ * @param ostrms output data streams.
+ * @param e_ostrms end flag streams, one for each output data stream.
+ * @param _op algorithm selector.
+ */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void strm_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
                    hls::stream<bool>& e_istrm,
@@ -504,6 +555,16 @@ void strm_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
 // support  _TIn
 namespace details {
 
+/* @brief stream distribute, using load-balancing algorithm.
+ *
+ * @tparam _TIn the type of input stream.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrm input data stream.
+ * @param e_istrm end flag stream for input data.
+ * @param ostrms output data streams.
+ * @param e_ostrms end flag streams, one for each output data stream.
+ */
 template <typename _TIn, int _NStrm>
 void strm_one_to_n_load_balance_type(hls::stream<_TIn>& istrm,
                    hls::stream<bool>& e_istrm,
@@ -530,6 +591,17 @@ void strm_one_to_n_load_balance_type(hls::stream<_TIn>& istrm,
 
 } // details
 
+/* @brief stream distribute, using load-balancing algorithm.
+ *
+ * @tparam _TIn the type of input stream.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrm input data stream.
+ * @param e_istrm end flag stream for input data.
+ * @param ostrms output data streams.
+ * @param e_ostrms end flag streams, one for each output data stream.
+ * @param _op algorithm selector.
+ */
 template <typename _TIn, int _NStrm>
 void strm_one_to_n(hls::stream<_TIn>& istrm,
                    hls::stream<bool>& e_istrm,
