@@ -172,7 +172,7 @@ void strm_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm,_WOutStrm*_NStrm>::va
   int ln_out = tmp_ln_out<0? 0: tmp_ln_out;
   e_buf_n_strm.write(true);
   left_n.write(ln_out);
-  #ifndef __SYNTHESIS_
+   #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
     std::cout << "ln_in =  " <<std::dec <<ln_in<< std::endl;
     std::cout << "ln_out =  " <<std::dec <<ln_out<< std::endl;
    #endif
@@ -204,7 +204,8 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
    const int num_in    = buf_width/_WInStrm;
    const int num_out   = buf_width/_WOutStrm;
    const int count_out = num_out/_NStrm;
-   const int up_nstrm  = _NStrm;
+   //const int up_nstrm  = _NStrm;
+   const int up_nstrm  = up_bound<_NStrm>::up ;
    const int deq_depth = 32;
    ap_uint<buf_width> buff_r  = 0;
    ap_uint<buf_width> buff_r2 = 0;
@@ -283,7 +284,7 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
              e_ostrms[i].write(false);
              frt[i]=(f+1)== deq_depth ? 0: (f+1);
            }
-         #ifndef __SYNTHESIS_
+        #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
           std::cout << "i =  " <<std::dec << i<< std::endl;
           std::cout << "d =  " <<std::hex << d<< std::endl;
          #endif
@@ -337,7 +338,7 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
         int nb = c;
         int mv = nb + base;
         pos[i] = (mv>=mult_nstrm) ? (mv-mult_nstrm) : mv;
-        #ifndef __SYNTHESIS_
+        #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
          std::cout << "bf =  " <<std::hex << bf<< std::endl;
          std::cout << "c =  " <<std::dec << c<< std::endl;
         #endif
@@ -351,7 +352,7 @@ template <int _WInStrm, int _WOutStrm, int _NStrm>
       last_full = bak_full;
        // the numbers of data which are written to deq from buf_arr in this iteration
       rn2 = count_ones<up_nstrm>(inv_bak_full);
-      #ifndef __SYNTHESIS_
+      #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
          std::cout << "last_full =  " <<std::hex << last_full<< std::endl;
          std::cout << "full =  " <<std::hex << full<< std::endl;
          std::cout << "rn2 =  " <<std::dec << rn2<< std::endl;

@@ -20,14 +20,14 @@ template<int a,int b> struct lcm{
 template<int NStrm>
 struct up_bound
 {
-  static const int up= (NStrm >=128) ? 128: 
-                   NStrm > 64 ? 128 :
-                    NStrm > 32 ? 64 :
-                      NStrm > 16 ? 32:
-                       NStrm > 8 ?  16:
-                         NStrm > 4 ? 8:
-                           NStrm > 2? 4:
-                            NStrm> 1 ? 2:1;                               
+  static const int up= (NStrm >=128) ? 128 : 
+                        NStrm > 64   ? 128 :
+                        NStrm > 32   ? 64  :
+                        NStrm > 16   ? 32  :
+                        NStrm > 8    ? 16  :
+                        NStrm > 4    ? 8   :
+                        NStrm > 2    ? 4   :
+                        NStrm> 1     ? 2   : 1 ;                               
 };
 
 template<int N>
