@@ -8,19 +8,16 @@
 
 // as reference uram size 4K*256
 #define WDATA (64)
-#define NDATA (4 << 10)
+#define NDATA (1 << 10)
 #define NCACHE (4)
 
-#define NUM_SIZE (4 << 10)
+#define NUM_SIZE (1 << 10)
 
-void core_test(hls::stream<ap_uint<WDATA> >& out_stream) {
+void core_test(ap_uint<WDATA> ii, hls::stream<ap_uint<WDATA> >& out_stream) {
   xf::util::level1::uram_array<WDATA, NDATA, NCACHE> uram_array1;
 
 l_init_value:
-  for (int i = 0; i < NDATA; ++i) {
-#pragma HLS PIPELINE II = 1
-    uram_array1.write(i, 0);
-  }
+  int num = uram_array1.calloc_uram(ii);
 
 l_read_after_write_test:
   for (int i = 0; i < NUM_SIZE; i++) {
@@ -29,19 +26,19 @@ l_read_after_write_test:
     if ((i & 1) == 0) {
       uram_array1.write(i, i);
     } else {
-      uram_array1.write(i, i);
       ap_uint<WDATA> t = uram_array1.read(i - 1);
       out_stream.write(t);
     }
   }
 
+// test case need to WData > 36£¬if not Cosim fail
 l_update_value_with_1_II:
   for (int i = 0; i < NUM_SIZE; i++) {
 #pragma HLS PIPELINE II = 1
-#pragma HLS DEPENDENCE variable = uram_array1._blocks intra false
+#pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
     ap_uint<WDATA> t = uram_array1.read(i);
     ap_uint<WDATA> u = (t & 1) ? 1 : 0;
-    uram_array1.write(i, u + i);
+    uram_array1.write(i, u);
   }
 
 l_dump_value:
@@ -58,13 +55,12 @@ int uram_array_test() {
   hls::stream<ap_uint<WDATA> > ref_stream("reference");
   ap_uint<WDATA> ref_array[NDATA];
   for (int i = 0; i < NDATA; ++i) {
-    ref_array[i] = 0;
+    ref_array[i] = 1;
   }
   for (int i = 0; i < NUM_SIZE; ++i) {
     if ((i & 1) == 0) {
       ref_array[i] = i;
     } else {
-      ref_array[i] = i;
       ap_uint<WDATA> t = ref_array[i - 1];
       ref_stream.write(t);
     }
@@ -72,19 +68,21 @@ int uram_array_test() {
   for (int i = 0; i < NUM_SIZE; i++) {
     ap_uint<WDATA> t = ref_array[i];
     ap_uint<WDATA> u = (t & 1) ? 1 : 0;
-    ref_array[i] = u + i;
+    ref_array[i] = u;
   }
   for (int i = 0; i < NDATA; ++i) {
     ap_uint<WDATA> t = ref_array[i];
     ref_stream.write(t);
   }
 
+  ap_uint<WDATA> ii = 1;
   hls::stream<ap_uint<WDATA> > out_stream("output");
-  core_test(out_stream);
+  core_test(ii, out_stream);
 
   while (true) {
     ap_uint<WDATA> r = ref_stream.read();
     ap_uint<WDATA> o = out_stream.read();
+    std::cout << r << "  " << o << std::endl;
     if (r != o) {
       if (!nerror)
         std::cout << "The data is incorrect, check implementation."
