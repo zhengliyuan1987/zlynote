@@ -7,13 +7,13 @@
 #include "xf_util/uram_array.h"
 
 // as reference uram size 4K*256
-#define WDATA (128)
+#define WDATA (64)
 #define NDATA (1 << 10)
 #define NCACHE (4)
 
 #define NUM_SIZE (1 << 10)
 
-void core_test(ap_uint<WDATA> ii, hls::stream<ap_uint<WDATA>> &out_stream) {
+void core_test(ap_uint<WDATA> ii, hls::stream<ap_uint<WDATA> > &out_stream) {
   xf::util::level1::uram_array<WDATA, NDATA, NCACHE> uram_array1;
 
 l_init_value:
@@ -52,7 +52,7 @@ l_dump_value:
 int uram_array_test() {
   int nerror = 0;
 
-  hls::stream<ap_uint<WDATA>> ref_stream("reference");
+  hls::stream<ap_uint<WDATA> > ref_stream("reference");
   ap_uint<WDATA> ref_array[NDATA];
   for (int i = 0; i < NDATA; ++i) {
     ref_array[i] = 1;
@@ -76,7 +76,7 @@ int uram_array_test() {
   }
 
   ap_uint<WDATA> ii = 1;
-  hls::stream<ap_uint<WDATA>> out_stream("output");
+  hls::stream<ap_uint<WDATA> > out_stream("output");
   core_test(ii, out_stream);
 
   while (true) {

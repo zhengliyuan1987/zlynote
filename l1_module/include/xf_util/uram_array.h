@@ -29,8 +29,6 @@
 #endif
 
 #include <ap_int.h>
-#include <iostream>
-#include <math.h>
 
 namespace xf {
 namespace util {
@@ -41,18 +39,19 @@ namespace level1 {
 /// @tparam width width of one data.
 /// @tparam depth size of one array.
 /// @tparam B     condition of W <= 72.
-template <int W, int N, bool B = (W <= 72)> struct need_num {
+template <int total, int one, bool B = (total <= 72)> struct need_num {
 private:
-  static const int elem_per_line = 72 / W;
+  static const int elem_per_line = 72 / total;
 
 public:
-  static const int value = ((W + 71) / 72) * ((N + (elem_per_line * 4096) - 1) /
-                                              (elem_per_line * 4096));
+  static const int value =
+      ((total + 71) / 72) *
+      ((one + (elem_per_line * 4096) - 1) / (elem_per_line * 4096));
 };
 
-template <int W, int N> struct need_num<W, N, false> {
+template <int total, int one> struct need_num<total, one, false> {
 public:
-  static const int value = ((W + 71) / 72) * ((N + 4095) / 4096);
+  static const int value = ((total + 71) / 72) * ((one + 4095) / 4096);
 };
 
 /// @brief URAMs are 72 bit fixed, and currently very large buffers,
