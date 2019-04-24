@@ -132,7 +132,6 @@ doing_burst:
 template <int WAxi, int WStrm, int NBurst = 16>
 void strm_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
                  hls::stream<bool> &e_istrm)
-
 {
 #ifndef __SYNTHESIS__
   assert(WAxi % WStrm == 0);
