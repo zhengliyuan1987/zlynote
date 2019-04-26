@@ -3,7 +3,7 @@
 ## Please DO NOT edit it.
 ## Copyright (C) 1986-2018 Xilinx, Inc. All Rights Reserved.
 ############################################################
-open_project -reset  prj_axi_to_stream
+open_project -reset  axi_to_stream.prj
 config_debug
 
 add_files test_axi_to_stream.cpp  -cflags "-std=gnu++0x -g -I ../../include"
