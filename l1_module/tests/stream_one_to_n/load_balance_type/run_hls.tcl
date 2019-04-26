@@ -15,7 +15,8 @@ csim_design -compiler gcc
 csynth_design
 
 
-cosim_design -wave_debug -tool xsim -trace_level all
+cosim_design 
+#cosim_design -wave_debug -tool xsim -trace_level all
 
 #cosim_design -trace_level all -wave_debug
 

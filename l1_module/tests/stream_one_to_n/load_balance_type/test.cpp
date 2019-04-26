@@ -14,9 +14,9 @@
 
 // no pause
 void consume_one_s0 (
-                   hls::stream<ap_uint<WOUT_STRM> >& c_istrm,
+                   hls::stream<float>& c_istrm,
                    hls::stream<bool>& e_c_istrm,
-                   hls::stream<ap_uint<WOUT_STRM> >& c_ostrm,
+                   hls::stream<float>& c_ostrm,
                    hls::stream<bool>& e_c_ostrm)
 {
 
@@ -26,7 +26,7 @@ void consume_one_s0 (
         bool em= c_istrm.empty();
         if ( false == em) 
         {  
-              ap_uint<WOUT_STRM> d = c_istrm.read();
+              float d = c_istrm.read();
               c_ostrm.write(d);
               e_c_ostrm.write(false);
               last = e_c_istrm.read();
@@ -40,9 +40,9 @@ void consume_one_s0 (
 void consume_one_s2 (
                    bool f_sw,
                    int sw_l,
-                   hls::stream<ap_uint<WOUT_STRM> >& c_istrm,
+                   hls::stream<float>& c_istrm,
                    hls::stream<bool>& e_c_istrm,
-                   hls::stream<ap_uint<WOUT_STRM> >& c_ostrm,
+                   hls::stream<float>& c_ostrm,
                    hls::stream<bool>& e_c_ostrm)
 {
 
@@ -55,7 +55,7 @@ void consume_one_s2 (
         bool em= c_istrm.empty();
         if ( false==sw && false == em) 
         {  
-              ap_uint<WOUT_STRM> d = c_istrm.read();
+              float d = c_istrm.read();
               c_ostrm.write(d);
               e_c_ostrm.write(false);
               last = e_c_istrm.read();
@@ -69,9 +69,9 @@ void consume_one_s2 (
 }
 // case0
 void  consume_0( 
-                   hls::stream<ap_uint<WOUT_STRM> > c_istrms[NSTRM],
+                   hls::stream<float> c_istrms[NSTRM],
                    hls::stream<bool> e_c_istrms[NSTRM],
-                   hls::stream<ap_uint<WOUT_STRM> > c_ostrms[NSTRM],
+                   hls::stream<float> c_ostrms[NSTRM],
                    hls::stream<bool> e_c_ostrms[NSTRM])
 {
 
@@ -90,9 +90,9 @@ void  consume_0(
 
 // case 1
 void  consume_1( 
-                   hls::stream<ap_uint<WOUT_STRM> > c_istrms[NSTRM],
+                   hls::stream<float> c_istrms[NSTRM],
                    hls::stream<bool> e_c_istrms[NSTRM],
-                   hls::stream<ap_uint<WOUT_STRM> > c_ostrms[NSTRM],
+                   hls::stream<float> c_ostrms[NSTRM],
                    hls::stream<bool> e_c_ostrms[NSTRM])
 {
 
@@ -128,9 +128,9 @@ void  consume_1(
 }
 // case2
 void  consume_2( 
-                   hls::stream<ap_uint<WOUT_STRM> > c_istrms[NSTRM],
+                   hls::stream<float> c_istrms[NSTRM],
                    hls::stream<bool> e_c_istrms[NSTRM],
-                   hls::stream<ap_uint<WOUT_STRM> > c_ostrms[NSTRM],
+                   hls::stream<float> c_ostrms[NSTRM],
                    hls::stream<bool> e_c_ostrms[NSTRM])
 {
 
@@ -155,9 +155,9 @@ void  consume_2(
    }
 }
 
-void test_core_1_n(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
+void test_core_1_n(hls::stream<float>& data_istrm,
                    hls::stream<bool>& e_istrm,
-                   hls::stream<ap_uint<WOUT_STRM> > data_ostrms[NSTRM],
+                   hls::stream<float> data_ostrms[NSTRM],
                    hls::stream<bool> e_data_ostrms[NSTRM])
 {
   /* 
@@ -168,12 +168,12 @@ void test_core_1_n(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
 */  
     #pragma HLS dataflow
 // here the depth  is an influence factor of outputs' order 
-  hls::stream<ap_uint<WOUT_STRM> > c_strms[NSTRM];
+  hls::stream<float> c_strms[NSTRM];
    #pragma HLS stream variable = c_strms depth = 4 // 1024
   hls::stream<bool> e_c_strms[NSTRM];
    #pragma HLS stream variable = e_c_strms depth = 4   //1024
 
-  xf::common::utils_hw::strm_one_to_n<WIN_STRM, WOUT_STRM,NSTRM>(
+  xf::common::utils_hw::strm_one_to_n<float,NSTRM>(
                          data_istrm,  e_istrm,
                          c_strms, e_c_strms,
                          xf::common::utils_hw::load_balance_t());
@@ -186,9 +186,9 @@ void test_core_1_n(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
 
 int test_1_n(){
 
-   hls::stream<ap_uint<WIN_STRM> > data_istrm;
+   hls::stream<float> data_istrm;
    hls::stream<bool> e_istrm;
-   hls::stream<ap_uint<WOUT_STRM> > data_ostrms[NSTRM];
+   hls::stream<float> data_ostrms[NSTRM];
    hls::stream<bool> e_data_ostrms[NSTRM];
    int td[NS]={0} ;
   const int buf_width = xf::common::utils_hw::lcm<WIN_STRM, WOUT_STRM>::value;
@@ -197,22 +197,14 @@ int test_1_n(){
   const int sw_l=8;
   bool sw=false;
 
-  ap_uint<buf_width> buff;
   std::cout<<std::dec<< "WIN_STRM  = "<< WIN_STRM <<std::endl;
   std::cout<<std::dec<< "WOUT_STRM = "<< WOUT_STRM <<std::endl;
   std::cout<<std::dec<< "NSTRM     = "<< NSTRM <<std::endl;
   std::cout<<std::dec<< "NS        = "<< NS <<std::endl;
  
-  int t = WIN_STRM / WOUT_STRM; 
-  for(int d=0; d< NS; d += t)  {
-    int i = d% (NSTRM); 
-    ap_uint<WIN_STRM> bd  = 0;
-    ap_uint<WOUT_STRM> sd = d;
-    for( int j=0; j< t ; ++j) {
-      bd.range((j+1)*WOUT_STRM-1, j*WOUT_STRM) = sd;
-      sd++; 
-    }
-    data_istrm.write(bd);
+  for(int i=0; i< NS; ++i)  {
+    float d = i + 0.5;
+    data_istrm.write(d);
     e_istrm.write(false);
   }
   
@@ -233,8 +225,14 @@ int test_1_n(){
      for( int kk=0; kk <NSTRM; ++kk) {
       std::cout<<"stream kk:"<<kk<<std::endl;
          while (! e_data_ostrms[kk].read()) { 
-            ap_uint<WOUT_STRM> d = data_ostrms[kk].read();
-            td[d] ++; 
+            float d = data_ostrms[kk].read();
+            int i = (int)(d-0.5);
+            if( i>=0 && i <NS)
+              td[i] ++;
+            else {
+              std::cout<<"erro "<< "stream i= "<<i <<"  "<<"  d="<<d<<std::endl;
+              nerror=1;
+            }
             std::cout<< d <<"  ";
             len[kk]++;
             count++;
