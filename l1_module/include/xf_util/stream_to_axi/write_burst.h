@@ -15,8 +15,9 @@
  */
 
 /**
- * @file burst_to_axi.h
- * @brief Stream_to_axi template function implementation.
+ * @file write_burst.h
+ * @brief countForBurst template function implementation.
+ * @brief burstWrite    template function implementation.
  *
  * This file is part of XF Common Utils Library.
  */
