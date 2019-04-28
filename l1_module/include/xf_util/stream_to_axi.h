@@ -30,6 +30,27 @@ namespace xf {
 namespace util {
 namespace level1 {
 
+/// @brief the template of stream to AXI master port in burst.
+
+/// @tparam WAxi   width of axi port.
+/// @tparam WStrm  width of input stream.
+/// @tparam NBurst length of a burst.
+
+/// @param wbuf    output AXI port.
+/// @param istrm   input stream.
+/// @param e_istrm end flag for input stream
+template <int WAxi, int WStrm, int NBurst = 16>
+void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
+                   hls::stream<bool> &e_istrm);
+} // level1
+} // util
+} // xf
+
+namespace xf {
+namespace util {
+namespace level1 {
+namespace details {
+
 /// @brief the template of convert stream width from WStrm to WAxi and count
 /// burst number.
 
@@ -119,30 +140,23 @@ doing_burst:
     n = nb_strm.read();
   }
 }
+} // details
 
-/// @brief the template of stream to AXI master port in burst.
-
-/// @tparam WAxi   width of axi port.
-/// @tparam WStrm  width of input stream.
-/// @tparam NBurst length of a burst.
-
-/// @param wbuf    output AXI port.
-/// @param istrm   input stream.
-/// @param e_istrm end flag for input stream
-template <int WAxi, int WStrm, int NBurst = 16>
-void strm_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
-                 hls::stream<bool> &e_istrm)
-{
+template <int WAxi, int WStrm, int NBurst>
+void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
+                   hls::stream<bool> &e_istrm) {
 #ifndef __SYNTHESIS__
   assert(WAxi % WStrm == 0);
 #endif
+  const int fifo_buf = 2 * NBurst;
   hls::stream<ap_uint<WAxi> > axi_strm;
   hls::stream<ap_uint<8> > nb_strm;
 #pragma HLS stream variable = nb_strm depth = 2
-#pragma HLS stream variable = axi_strm depth = 64
+#pragma HLS stream variable = axi_strm depth = fifo_buf
 #pragma HLS dataflow
-  countForBurst<WAxi, WStrm, NBurst>(istrm, e_istrm, axi_strm, nb_strm);
-  burstWrite<WAxi, WStrm, NBurst>(wbuf, axi_strm, nb_strm);
+  details::countForBurst<WAxi, WStrm, NBurst>(istrm, e_istrm, axi_strm,
+                                              nb_strm);
+  details::burstWrite<WAxi, WStrm, NBurst>(wbuf, axi_strm, nb_strm);
 }
 
 } // level1

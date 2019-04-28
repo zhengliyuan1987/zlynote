@@ -1,28 +1,27 @@
 
 #include <ap_int.h>
-#include <stdlib.h>
 #include <iostream>
+#include <stdlib.h>
 
 #include "hls_stream.h"
-#include "xf_util/stream_to_axi/stream_to_axi.h"
+#include "xf_util/stream_to_axi.h"
 
 #define WAXI (512)
 #define WSTRM (32)
-#define NBURST (64)
 
-#define SNUM (1024)
+#define SNUM (512)
 
 // generate a random integer sequence between speified limits a and b (a<b);
 int rand_int(int a, int b) { return rand() % (b - a + 1) + a; }
-
+// burst default = 16
 void stream_to_axi_test(ap_uint<WAXI> wbuf[SNUM * WSTRM / WAXI + 1],
-                        hls::stream<ap_uint<WSTRM> >& istrm,
-                        hls::stream<bool>& e_strm) {
+                        hls::stream<ap_uint<WSTRM> > &istrm,
+                        hls::stream<bool> &e_strm) {
 #pragma HLS INTERFACE s_axilite port = wbuf bundle = control
-#pragma HLS INTERFACE m_axi depth = 512 port = wbuf offset = slave bundle = \
-    gmem0 num_read_outstanding = 32 num_write_outstanding =                 \
+#pragma HLS INTERFACE m_axi depth = 512 port = wbuf offset = slave bundle =    \
+    gmem0 num_read_outstanding = 32 num_write_outstanding =                    \
         32 max_read_burst_length = 16 max_write_burst_length = 16
-  xf::util::level1::stream_to_axi<WAXI, WSTRM, NBURST>(wbuf, istrm, e_strm);
+  xf::util::level1::stream_to_axi<WAXI, WSTRM>(wbuf, istrm, e_strm);
 }
 
 int main() {
