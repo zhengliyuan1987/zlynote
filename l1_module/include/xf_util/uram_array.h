@@ -168,7 +168,7 @@ l_init_value:
 
   // update d for cache
 init_cache:
-  for (int i = 1; i < NCache; i++) {
+  for (int i = 0; i < NCache; i++) {
 #pragma HLS unroll
     _state[i] = d;
     _index[i] = 0;
