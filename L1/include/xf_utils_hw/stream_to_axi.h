@@ -108,8 +108,8 @@ doing_loop:
     assert(nb <= NBurst);
 #endif
     nb_strm.write(nb);
-  } else
-    nb_strm.write(0);
+  }
+  nb_strm.write(0);
 }
 
 /// @brief the template of stream width of WAxi burst out.
