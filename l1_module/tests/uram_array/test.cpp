@@ -1,55 +1,9 @@
-
-#include <ap_int.h>
 #include <iostream>
 #include <stdlib.h>
 
-#include "hls_stream.h"
-#include "xf_util/uram_array.h"
+#include "dut.h"
 
-// as reference uram size 4K*256
-#define WDATA (64)
-#define NDATA (1 << 10)
-#define NCACHE (4)
-
-#define NUM_SIZE (1 << 10)
-
-void core_test(ap_uint<WDATA> ii, hls::stream<ap_uint<WDATA> > &out_stream) {
-  xf::util::level1::uram_array<WDATA, NDATA, NCACHE> uram_array1;
-
-l_init_value:
-  int num = uram_array1.memset_uram(ii);
-
-l_read_after_write_test:
-  for (int i = 0; i < NUM_SIZE; i++) {
-#pragma HLS PIPELINE II = 1
-#pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
-    if ((i & 1) == 0) {
-      uram_array1.write(i, i);
-    } else {
-      ap_uint<WDATA> t = uram_array1.read(i - 1);
-      out_stream.write(t);
-    }
-  }
-
-// test case need to WData > 36£¬if not Cosim fail
-l_update_value_with_1_II:
-  for (int i = 0; i < NUM_SIZE; i++) {
-#pragma HLS PIPELINE II = 1
-#pragma HLS DEPENDENCE variable = uram_array1._blocks inter false
-    ap_uint<WDATA> t = uram_array1.read(i);
-    ap_uint<WDATA> u = (t & 1) ? 1 : 0;
-    uram_array1.write(i, u);
-  }
-
-l_dump_value:
-  for (int i = 0; i < NDATA; ++i) {
-#pragma HLS PIPELINE II = 1
-    ap_uint<WDATA> t = uram_array1.read(i);
-    out_stream.write(t);
-  }
-}
-
-int uram_array_test() {
+int main(int argc, const char *argv[]) {
   int nerror = 0;
 
   hls::stream<ap_uint<WDATA> > ref_stream("reference");
@@ -77,7 +31,8 @@ int uram_array_test() {
 
   ap_uint<WDATA> ii = 1;
   hls::stream<ap_uint<WDATA> > out_stream("output");
-  core_test(ii, out_stream);
+
+  dut(ii, out_stream);
 
   while (true) {
     ap_uint<WDATA> r = ref_stream.read();
@@ -108,5 +63,3 @@ int uram_array_test() {
   }
   return nerror;
 }
-
-int main() { return uram_array_test(); }

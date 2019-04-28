@@ -21,58 +21,57 @@
  * This file is part of XF Common Utils Library.
  */
 
-#ifndef XF_DATABASE_URAM_ARRAY_H
-#define XF_DATABASE_URAM_ARRAY_H
-
-#ifndef __cplusplus
-#error "xf_util_level1 uram_array interface, and thus requires C++"
-#endif
+#ifndef XF_UTILS_HW_URAM_ARRAY_H
+#define XF_UTILS_HW_URAM_ARRAY_H
 
 #include <ap_int.h>
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
+namespace details {
 /// @brief the structure of compute available uram block numbers.
-
+///
 /// @tparam width width of one data.
 /// @tparam depth size of one array.
 /// @tparam B     condition of W <= 72.
-template <int total, int one, bool B = (total <= 72)> struct need_num {
-private:
+template <int total, int one, bool B = (total <= 72)>
+struct need_num {
+ private:
   static const int elem_per_line = 72 / total;
 
-public:
+ public:
   static const int value =
       ((total + 71) / 72) *
       ((one + (elem_per_line * 4096) - 1) / (elem_per_line * 4096));
 };
 
-template <int total, int one> struct need_num<total, one, false> {
-public:
+template <int total, int one>
+struct need_num<total, one, false> {
+ public:
   static const int value = ((total + 71) / 72) * ((one + 4095) / 4096);
 };
+} // details
 
-/// @brief URAMs are 72 bit fixed, and currently very large buffers,
-/// needs logic help to be read/write every cycle.
-
+/// @brief Helper class to create URAM array that can be updated every cycle
+/// with forwarding regs.
+///
 /// @tparam WData  the width of every element.
-/// @tparam NData  the depth of array.
+/// @tparam NData  the number of elements in the array.
 /// @tparam NCache the number of cache.
-template <int WData, int NData, int NCache> class uram_array {
-public:
-  uram_array()
-      : _elem_per_line(72 / WData), _num_one_process((WData + 71) / 72),
-        _index_one_block(_elem_per_line * 4096) {
-#pragma HLS RESOURCE variable = _blocks core = XPM_MEMORY uram
-#pragma HLS ARRAY_PARTITION variable = _blocks complete dim = 1
+template <int WData, int NData, int NCache>
+class uram_array {
+ public:
+  uram_array() {
+#pragma HLS RESOURCE variable = blocks core = XPM_MEMORY uram
+#pragma HLS ARRAY_PARTITION variable = blocks complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = _index complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = _state complete dim = 1
 #ifndef __SYNTHESIS__
     // TODO:malloc the array
     for (int i = 0; i < _num_uram_block; i++) {
-      _blocks[i] = (ap_uint<72> *)malloc(sizeof(ap_uint<72>) * 4096);
+      blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * 4096);
     }
 #endif
     for (int i = 0; i < NCache; i++) {
@@ -83,9 +82,8 @@ public:
   }
   ~uram_array() {
 #ifndef __SYNTHESIS__
-  Delete_Loop:
     for (int i = 0; i < _num_uram_block; i++) {
-      free(_blocks[i]);
+      free(blocks[i]);
     }
 #endif
   }
@@ -93,28 +91,28 @@ public:
   /// @brief  initialization for uram.
   /// @param  d value for initialization.
   /// @return number of block which had been initialize.
-  int memset_uram(const ap_uint<WData> &d);
+  int memset(const ap_uint<WData>& d);
 
   /// @brief write to uram.
   /// @param index the index which you want to write.
   /// @param d     the value what you want to write.
-  void write(int index, const ap_uint<WData> &d);
+  void write(int index, const ap_uint<WData>& d);
 
   /// @brief  read from uram.
   /// @param  index the index which you want to read.
   /// @return value you had read.
   ap_uint<WData> read(int index);
 
-private:
+ private:
   /// number elements per line, used with WData<=72. For example, when WData =
   /// 16, _elem_per_line is 4.
-  const int _elem_per_line;
+  static const int _elem_per_line;
 
   /// piece of block using one time.
-  const int _num_one_process;
+  static const int _num_parallel_block;
 
   /// index numbers of one block.
-  const int _index_one_block;
+  static const int _elem_per_block;
 
   /// the numbers of need to access.
   static const int _num_uram_block;
@@ -125,23 +123,38 @@ private:
   /// the cache for saving latest value.
   ap_uint<WData> _state[NCache];
 
-public:
-/// the memory of accessing,one block's fixed width is 72 and the depth is 4K.
+ public:
+// XXX this has to be public, otherwise `depencency false` cannot be
+// specified.
 #ifndef __SYNTHESIS__
-  ap_uint<72> *_blocks[need_num<WData, NData>::value];
+  ap_uint<72>* blocks[details::need_num<WData, NData>::value];
 #else
-  ap_uint<72> _blocks[need_num<WData, NData>::value][4096];
+  ap_uint<72> blocks[details::need_num<WData, NData>::value][4096];
 #endif
 };
 
-template <int WData, int NData, int NCache>
-const int uram_array<WData, NData, NCache>::_num_uram_block =
-    need_num<WData, NData>::value;
+// Const member variables
 
 template <int WData, int NData, int NCache>
-int uram_array<WData, NData, NCache>::memset_uram(const ap_uint<WData> &d) {
-  if (_num_uram_block == 0)
-    return 0;
+const int uram_array<WData, NData, NCache>::_elem_per_line = (72 / WData);
+
+template <int WData, int NData, int NCache>
+const int uram_array<WData, NData, NCache>::_elem_per_block = (_elem_per_line *
+                                                               4096);
+
+template <int WData, int NData, int NCache>
+const int uram_array<WData, NData, NCache>::_num_parallel_block =
+    ((WData + 71) / 72);
+
+template <int WData, int NData, int NCache>
+const int uram_array<WData, NData, NCache>::_num_uram_block =
+    (details::need_num<WData, NData>::value);
+
+// Methods
+
+template <int WData, int NData, int NCache>
+int uram_array<WData, NData, NCache>::memset(const ap_uint<WData>& d) {
+  if (_num_uram_block == 0) return 0;
 
   ap_uint<72> t;
 l_init_value:
@@ -154,19 +167,19 @@ l_init_value:
 #pragma HLS unroll
           t(j * WData + WData - 1, j * WData) = d(WData - 1, 0);
         }
-        _blocks[nb][i] = t;
+        blocks[nb][i] = t;
       } else {
-        int offset = nb % _num_one_process;
+        int offset = nb % _num_parallel_block;
         int begin = offset * 72;
-        if (offset == (_num_one_process - 1))
-          _blocks[nb][i] = d(WData - 1, begin);
+        if (offset == (_num_parallel_block - 1))
+          blocks[nb][i] = d(WData - 1, begin);
         else
-          _blocks[nb][i] = d(begin + 71, begin);
+          blocks[nb][i] = d(begin + 71, begin);
       }
     }
   }
 
-  // update d for cache
+// update d for cache
 init_cache:
   for (int i = 0; i < NCache; i++) {
 #pragma HLS unroll
@@ -179,31 +192,31 @@ init_cache:
 
 template <int WData, int NData, int NCache>
 void uram_array<WData, NData, NCache>::write(int index,
-                                             const ap_uint<WData> &d) {
+                                             const ap_uint<WData>& d) {
 #pragma HLS inline
   int div_block = 0, div_index = 0;
   int dec_block = 0, dec, begin;
 
 Write_Inner:
-  for (int i = 0; i < _num_one_process; i++) {
+  for (int i = 0; i < _num_parallel_block; i++) {
     if (WData <= 72) {
-      div_block = index / _index_one_block;
-      dec_block = index % _index_one_block;
+      div_block = index / _elem_per_block;
+      dec_block = index % _elem_per_block;
       div_index = dec_block / _elem_per_line;
       dec = dec_block % _elem_per_line;
       begin = dec * WData;
-      ap_uint<72> tmp = _blocks[div_block][div_index];
+      ap_uint<72> tmp = blocks[div_block][div_index];
       tmp.range(begin + WData - 1, begin) = d;
-      _blocks[div_block][div_index] = tmp;
+      blocks[div_block][div_index] = tmp;
     } else {
       div_block = index / 4096;
       dec_block = index % 4096;
-      int ii = i + div_block * _num_one_process;
+      int ii = i + div_block * _num_parallel_block;
       begin = i * 72;
-      if (i == (_num_one_process - 1))
-        _blocks[ii][dec_block] = d.range(WData - 1, begin);
+      if (i == (_num_parallel_block - 1))
+        blocks[ii][dec_block] = d.range(WData - 1, begin);
       else
-        _blocks[ii][dec_block] = d.range(begin + 71, begin);
+        blocks[ii][dec_block] = d.range(begin + 71, begin);
     }
   }
 
@@ -232,34 +245,33 @@ Read_Cache:
   }
 
 Read_Inner:
-  for (int i = 0; i < _num_one_process; i++) {
+  for (int i = 0; i < _num_parallel_block; i++) {
     if (WData <= 72) {
-      div_block = index / _index_one_block;
-      dec_block = index % _index_one_block;
+      div_block = index / _elem_per_block;
+      dec_block = index % _elem_per_block;
       div_index = dec_block / _elem_per_line;
       dec = dec_block % _elem_per_line;
       begin = dec * WData;
-      ap_uint<72> tmp = _blocks[div_block][div_index];
+      ap_uint<72> tmp = blocks[div_block][div_index];
       value = tmp.range(begin + WData - 1, begin);
     } else {
       div_block = index / 4096;
       dec_block = index % 4096;
-      int ii = i + div_block * _num_one_process;
+      int ii = i + div_block * _num_parallel_block;
       begin = i * 72;
 
-      if (i == (_num_one_process - 1))
-        value.range(WData - 1, begin) = _blocks[ii][dec_block];
+      if (i == (_num_parallel_block - 1))
+        value.range(WData - 1, begin) = blocks[ii][dec_block];
       else {
-        value.range(begin + 71, begin) = _blocks[ii][dec_block];
+        value.range(begin + 71, begin) = blocks[ii][dec_block];
       }
     }
   }
-
   return value;
 }
 
-} // level1
-} // dal
+} // utils_hw
+} // common
 } // xf
 
 #endif
