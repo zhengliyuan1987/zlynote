@@ -1,9 +1,16 @@
-#ifndef XF_UTIL_COMMON_H
-#define XF_UTIL_COMMON_H
+#ifndef XF_UTILS_HW_COMMON_H
+#define XF_UTILS_HW_COMMON_H
 
 namespace xf {
 namespace common {
 namespace utils_hw {
+
+// Calculate Power of 2
+template <int _N>
+struct PowerOf2 {
+  static const unsigned value = (1u << _N);
+};
+
 
 // Greatest Common Divisor
 template<int a,int b> struct gcd{
@@ -145,19 +152,18 @@ ap_uint<128> count_ones<128>(ap_uint<128> y)
 #ifndef __SYNTHESIS__
 // for assert function.
 #include <cassert>
-#define XF_UTIL_ASSERT(b) assert((b))
+#define XF_UTILS_HW_ASSERT(b) assert((b))
 #else
-#define XF_UTIL_ASSERT(b) ((void)0)
+#define XF_UTILS_HW_ASSERT(b) ((void)0)
 #endif
 
 #if __cplusplus >= 201103L
-#define XF_UTIL_STATIC_ASSERT(b, m) static_assert((b), m)
+#define XF_UTILS_HW_STATIC_ASSERT(b, m) static_assert((b), m)
 #else
-#define XF_UTIL_STATIC_ASSERT(b, m) XF_UTIL_ASSERT((b) && (m))
+#define XF_UTILS_HW_STATIC_ASSERT(b, m) XF_UTILS_HW_ASSERT((b) && (m))
 #endif
 
-#define XF_UTIL_MACRO_QUOTE(s) #s
-#define XF_UTIL_MACRO_STR(s) XF_UTIL_MACRO_QUOTE(s)
+#define XF_UTILS_HW_MACRO_QUOTE(s) #s
+#define XF_UTILS_HW_MACRO_STR(s) XF_UTILS_HW_MACRO_QUOTE(s)
 
-
-#endif // XF_UTIL_COMMON_H
+#endif // XF_UTILS_HW_COMMON_H

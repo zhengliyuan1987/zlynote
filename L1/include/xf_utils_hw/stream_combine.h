@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_STREAM_COMBINE_H
-#define XF_UTIL_STREAM_COMBINE_H
+#ifndef XF_UTILS_HW_STREAM_COMBINE_H
+#define XF_UTILS_HW_STREAM_COMBINE_H
 
 #include "xf_utils_hw/types.h"
 #include "xf_utils_hw/enums.h"
@@ -203,4 +203,4 @@ loop:
 } // common
 } // xf
 
-#endif // XF_UTIL_STREAM_DUP_H
+#endif // XF_UTILS_HW_STREAM_DUP_H

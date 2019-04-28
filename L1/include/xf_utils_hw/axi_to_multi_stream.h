@@ -22,8 +22,8 @@
  * This file is part of XF Hardware Utilities Library.
  */
 
-#ifndef XF_UTIL_AXI_TO_MULTI_STRM_H
-#define XF_UTIL_AXI_TO_MULTI_STRM_H
+#ifndef XF_UTILS_HW_AXI_TO_MULTI_STRM_H
+#define XF_UTILS_HW_AXI_TO_MULTI_STRM_H
 
 #include "xf_utils_hw/types.h"
 #include "xf_utils_hw/enums.h"
@@ -387,4 +387,4 @@ const int NONBLOCK_DEPTH = (256);
 } // common
 } // xf
 
-#endif // XF_UTIL_AXI_TO_MULTI_STRM_H
+#endif // XF_UTILS_HW_AXI_TO_MULTI_STRM_H

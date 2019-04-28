@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_STRM_DROP_H
-#define XF_UTIL_STRM_DROP_H
+#ifndef XF_UTILS_HW_STRM_DROP_H
+#define XF_UTILS_HW_STRM_DROP_H
 
 // Forward decl
 
@@ -22,4 +22,4 @@ void stream_sync(hls::stream<_TIn> istrms[_NStrm],
 // TODO implementation
 // ...
 
-#endif // XF_UTIL_STRM_DROP_H
+#endif // XF_UTILS_HW_STRM_DROP_H

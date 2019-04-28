@@ -21,8 +21,8 @@
  * This file is part of XF Common Utils Library.
  */
 
-#ifndef XF_UTIL_STRM_TO_AXI_H
-#define XF_UTIL_STRM_TO_AXI_H
+#ifndef XF_UTILS_HW_STRM_TO_AXI_H
+#define XF_UTILS_HW_STRM_TO_AXI_H
 
 // Forward decl
 
@@ -163,4 +163,4 @@ void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
 } // util
 } // xf
 
-#endif // XF_UTIL_STRM_TO_AXI_H
+#endif // XF_UTILS_HW_STRM_TO_AXI_H

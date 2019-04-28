@@ -3,8 +3,8 @@
  * @brief This file is part of XF Utility Library, contains type definitions.
  */
 
-#ifndef XF_UTIL_TYPES_H
-#define XF_UTIL_TYPES_H
+#ifndef XF_UTILS_HW_TYPES_H
+#define XF_UTILS_HW_TYPES_H
 
 // Fixed width integers
 #if defined(__cplusplus) && __cplusplus >= 201103L
@@ -45,7 +45,7 @@ typedef unsigned long long int uint64_t;
 #include "ap_int.h"
 #include "hls_stream.h"
 
-#endif // ifndef XF_UTIL_TYPES_H
+#endif // ifndef XF_UTILS_HW_TYPES_H
 
 // -*- cpp -*-
 // vim: ts=8:sw=2:sts=2:ft=cpp

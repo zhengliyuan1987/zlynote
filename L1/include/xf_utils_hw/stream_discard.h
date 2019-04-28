@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_STRM_DISCARD_H
-#define XF_UTIL_STRM_DISCARD_H
+#ifndef XF_UTILS_HW_STRM_DISCARD_H
+#define XF_UTILS_HW_STRM_DISCARD_H
 
 #include "xf_utils_hw/types.h"
 
@@ -34,4 +34,4 @@ void stream_discard(hls::stream<_TIn>& istrm,
 // TODO implementation
 // ...
 
-#endif // XF_UTIL_STRM_DISCARD_H
+#endif // XF_UTILS_HW_STRM_DISCARD_H

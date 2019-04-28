@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_ENUMS_H
-#define XF_UTIL_ENUMS_H
+#ifndef XF_UTILS_HW_ENUMS_H
+#define XF_UTILS_HW_ENUMS_H
 
 namespace xf {
 namespace common {
@@ -25,4 +25,4 @@ struct shuffle_right_t {};
 } // common
 } // xf
 
-#endif // XF_UTIL_ENUMS_H
+#endif // XF_UTILS_HW_ENUMS_H

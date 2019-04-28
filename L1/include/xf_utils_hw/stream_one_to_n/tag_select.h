@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_STREAM_1N_TAG_H
-#define XF_UTIL_STREAM_1N_TAG_H
+#ifndef XF_UTILS_HW_STREAM_1N_TAG_H
+#define XF_UTILS_HW_STREAM_1N_TAG_H
 
 /**
  * @file tag_select.h
@@ -8,7 +8,6 @@
 
 #include "xf_utils_hw/types.h"
 #include "xf_utils_hw/enums.h"
-#include "xf_utils_hw/traits.h"
 #include "xf_utils_hw/common.h"
 // Forward decl
 
@@ -44,8 +43,8 @@ void stream_one_to_n(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<ap_uint<_WInStrm> > data_ostrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
     tag_select_t _op);
 
 /**
@@ -74,8 +73,8 @@ void stream_one_to_n(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
     tag_select_t _op);
 
 } // utils_hw
@@ -97,16 +96,16 @@ void stream_one_to_n_tag_select(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<ap_uint<_WInStrm> > data_ostrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value]) {
+    hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value]) {
   bool last_tag = e_tag_istrm.read();
   bool last_istrm = e_istrm.read();
   while (!last_tag && !last_istrm) {
 #pragma HLS pipeline II = 1
     ap_uint<_WInStrm> data = istrm.read();
     ap_uint<_WTagStrm> tag = tag_istrm.read();
-    XF_UTIL_ASSERT(tag >= 0);
-    XF_UTIL_ASSERT(tag < PowerOf2<_WTagStrm>::value);
+    XF_UTILS_HW_ASSERT(tag >= 0);
+    XF_UTILS_HW_ASSERT(tag < power_of_2<_WTagStrm>::value);
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
     last_tag = e_tag_istrm.read();
@@ -118,9 +117,9 @@ void stream_one_to_n_tag_select(
     ap_uint<_WInStrm> data = istrm.read();
   }
 
-  XF_UTIL_ASSERT(last_tag);
+  XF_UTILS_HW_ASSERT(last_tag);
 
-  const unsigned int nstrm = PowerOf2<_WTagStrm>::value;
+  const unsigned int nstrm = power_of_2<_WTagStrm>::value;
   for (unsigned int i = 0; i < nstrm; ++i) {
 #pragma HLS unroll
     e_data_ostrms[i].write(true);
@@ -135,8 +134,8 @@ void stream_one_to_n(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<ap_uint<_WInStrm> > data_ostrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
     tag_select_t _op) {
   details::stream_one_to_n_tag_select<_WInStrm, _WTagStrm>(
       istrm, e_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
@@ -151,16 +150,16 @@ void stream_one_to_n_tag_select_type(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value]) {
+    hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value]) {
   bool last_tag = e_tag_istrm.read();
   bool last_istrm = e_istrm.read();
   while (!last_tag && !last_istrm) {
 #pragma HLS pipeline II = 1
     _TIn data = istrm.read();
     ap_uint<_WTagStrm> tag = tag_istrm.read();
-    XF_UTIL_ASSERT(tag >= 0);
-    XF_UTIL_ASSERT(tag < PowerOf2<_WTagStrm>::value);
+    XF_UTILS_HW_ASSERT(tag >= 0);
+    XF_UTILS_HW_ASSERT(tag < power_of_2<_WTagStrm>::value);
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
     last_tag = e_tag_istrm.read();
@@ -172,9 +171,9 @@ void stream_one_to_n_tag_select_type(
     _TIn data = istrm.read();
   }
 
-  XF_UTIL_ASSERT(last_tag);
+  XF_UTILS_HW_ASSERT(last_tag);
 
-  const unsigned int nstrm = PowerOf2<_WTagStrm>::value;
+  const unsigned int nstrm = power_of_2<_WTagStrm>::value;
   for (unsigned int i = 0; i < nstrm; ++i) {
 #pragma HLS unroll
     e_data_ostrms[i].write(true);
@@ -189,8 +188,8 @@ void stream_one_to_n(
     hls::stream<bool>& e_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
-    hls::stream<_TIn> data_ostrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_ostrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
     tag_select_t _op) {
   details::stream_one_to_n_tag_select_type<_TIn, _WTagStrm>(
       istrm, e_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
@@ -200,4 +199,4 @@ void stream_one_to_n(
 } // common
 } // xf
 
-#endif // XF_UTIL_STREAM_1N_TAG_H
+#endif // XF_UTILS_HW_STREAM_1N_TAG_H

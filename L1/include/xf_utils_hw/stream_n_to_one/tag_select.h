@@ -6,10 +6,9 @@
  * @brief header collect distribute in tag-selected order.
  */
 
-#include "xf_utils_hw/common.h"
 #include "xf_utils_hw/enums.h"
-#include "xf_utils_hw/traits.h"
 #include "xf_utils_hw/types.h"
+#include "xf_utils_hw/common.h"
 
 // Forward decl
 
@@ -40,8 +39,8 @@ namespace utils_hw {
  */
 template <int _WInStrm, int _WTagStrm>
 void stream_n_to_one(
-    hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<ap_uint<_WInStrm> > data_istrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_istrms[power_of_2<_WTagStrm>::value],
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
@@ -71,8 +70,8 @@ void stream_n_to_one(
  */
 template <typename _TIn, int _WTagStrm>
 void stream_n_to_one(
-    hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<_TIn> data_istrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_istrms[power_of_2<_WTagStrm>::value],
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
@@ -92,13 +91,13 @@ namespace details {
 
 template <int _WInStrm, int _WTagStrm>
 void stream_n_to_one_select(
-    hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<ap_uint<_WInStrm> > data_istrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_istrms[power_of_2<_WTagStrm>::value],
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
     hls::stream<bool>& e_ostrm) {
-  const int n = PowerOf2<_WTagStrm>::value;
+  const int n = power_of_2<_WTagStrm>::value;
   ap_uint<n> ends = 0;
   bool last_tag = e_tag_istrm.read();
   for (int i = 0; i < n; ++i) {
@@ -133,8 +132,8 @@ void stream_n_to_one_select(
 // tag based collect, combine tag
 template <int _WInStrm, int _WTagStrm>
 void stream_n_to_one(
-    hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<ap_uint<_WInStrm> > data_istrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_istrms[power_of_2<_WTagStrm>::value],
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
@@ -148,13 +147,13 @@ namespace details {
 
 template <typename _TIn, int _WTagStrm>
 void stream_n_to_one_select_type(
-    hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<_TIn> data_istrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_istrms[power_of_2<_WTagStrm>::value],
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
     hls::stream<bool>& e_ostrm) {
-  const int n = PowerOf2<_WTagStrm>::value;
+  const int n = power_of_2<_WTagStrm>::value;
   ap_uint<n> ends = 0;
   bool last_tag = e_tag_istrm.read();
   for (int i = 0; i < n; ++i) {
@@ -188,8 +187,8 @@ void stream_n_to_one_select_type(
 // tag based collect, discard tag
 template <typename _TIn, int _WTagStrm>
 void stream_n_to_one(
-    hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-    hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+    hls::stream<_TIn> data_istrms[power_of_2<_WTagStrm>::value],
+    hls::stream<bool> e_data_istrms[power_of_2<_WTagStrm>::value],
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,

@@ -1,5 +1,5 @@
-#ifndef XF_UTIL_STREAM_DUP_H
-#define XF_UTIL_STREAM_DUP_H
+#ifndef XF_UTILS_HW_STREAM_DUP_H
+#define XF_UTILS_HW_STREAM_DUP_H
 
 #include "xf_utils_hw/types.h"
 
@@ -64,4 +64,4 @@ void stream_dup(hls::stream<_TIn>& istrm,
 } // common
 } // xf
 
-#endif // XF_UTIL_STREAM_DUP_H
+#endif // XF_UTILS_HW_STREAM_DUP_H

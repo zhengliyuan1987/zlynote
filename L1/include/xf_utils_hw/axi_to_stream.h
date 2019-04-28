@@ -22,8 +22,8 @@
  * This file is part of XF Hardware Utilities Library.
  */
 
-#ifndef XF_UTIL_AXI_TO_STREAM_H
-#define XF_UTIL_AXI_TO_STREAM_H
+#ifndef XF_UTILS_HW_AXI_TO_STREAM_H
+#define XF_UTILS_HW_AXI_TO_STREAM_H
 
 #include "xf_utils_hw/types.h"
 #include "xf_utils_hw/enums.h"
@@ -299,4 +299,4 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf, const int num,
 } // common
 } // xf
 
-#endif // XF_UTIL_AXI_TO_STRM_H
+#endif // XF_UTILS_HW_AXI_TO_STRM_H
