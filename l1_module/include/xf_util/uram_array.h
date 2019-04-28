@@ -167,16 +167,11 @@ l_init_value:
   }
 
   // update d for cache
-  if (WData <= 72)
-    _index[0] = _elem_per_line * _num_uram_block * 4096 - 1;
-  else
-    _index[0] = _num_uram_block / _num_one_process * 4096 - 1;
-  _state[0] = d;
 init_cache:
   for (int i = 1; i < NCache; i++) {
 #pragma HLS unroll
     _state[i] = d;
-    _index[i] = _index[i - 1] - 1;
+    _index[i] = 0;
   }
 
   return _num_uram_block;
