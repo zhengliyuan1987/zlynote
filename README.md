@@ -4,8 +4,7 @@ XF Hardware Utility Library is an SDx library of common patterns of streaming an
 
 ## Comprehensive Documentation
 
-[HTML Doc](https://pages.gitenterprise.xilinx.com/FaaSApps/xf_database/index.html)
-(TODO: change to real doc...)
+[HTML Doc](#)
 
 ## Software/Hardware Requirements
 
