@@ -1,13 +1,20 @@
 #ifndef XF_UTILS_HW_COMMON_H
 #define XF_UTILS_HW_COMMON_H
 
+/**
+ * @file common.h
+ * @brief Shared logic in utilities library.
+ *
+ * This file is part of XF Hardware Utilities Library.
+ */
+
 namespace xf {
 namespace common {
 namespace utils_hw {
 
 // Calculate Power of 2
 template <int _N>
-struct PowerOf2 {
+struct power_of_2 {
   static const unsigned value = (1u << _N);
 };
 
