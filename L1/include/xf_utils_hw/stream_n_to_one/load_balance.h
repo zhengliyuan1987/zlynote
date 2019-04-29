@@ -8,7 +8,6 @@
 
 #include "xf_utils_hw/enums.h"
 #include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
 #include "xf_utils_hw/common.h"
 
 // Forward decl
@@ -17,7 +16,8 @@ namespace xf {
 namespace common {
 namespace utils_hw {
 
-/* @brief stream distribute, skip to read the empty input streams.
+/**
+ * @brief stream distribute, skip to read the empty input streams.
  *
  * @tparam _WInStrm input stream width.
  * @tparam _WOutStrm output stream width.
@@ -36,7 +36,8 @@ void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool>& e_ostrm,
                    load_balance_t alg);
 
-/* @brief stream distribute, skip to read the empty input streams.
+/**
+ * @brief stream distribute, skip to read the empty input streams.
  *
  * @tparam _TIn the type of stream.
  * @tparam _NStrm number of input streams.
@@ -64,7 +65,8 @@ namespace utils_hw {
 
 namespace details {
 
-/* @brief read the data from _NStrm streams, skip the empty streams  
+/**
+ * @brief read the data from _NStrm streams, skip the empty streams  
  * collect  _NStrm data(_WInStrm bits) from input streams and output one(_NStrm*_NStrm bits)
  * @tparam _WInStrm input stream width.
  * @tparam _NStrm number of input streams.
@@ -165,7 +167,7 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
   for(int i=1; i<_NStrm; ++i) {
     #pragma HLS unroll
     ap_uint<up_nstrm> v = val.range(i-1,0);
-    int ones            = count_ones< up_nstrm >(v); // it's similar to round robin  if ones always is _NStrm.
+    int ones            = count_ones< up_nstrm >(v); // it's similar to round robin  if ones always is i.
     int p               = ones;//index of tmpb[i].range(), where  istrm[i] is stored if it is not empty
     ap_uint<_NStrm*_WInStrm> d = ttm[i];
     tmpb[i]             = d << (p*_WInStrm); 
@@ -208,9 +210,10 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
 }
 
 
-/* @brief buffer data to solve different input and output width.
+/**
+ * @brief buffer data to solve different input and output width.
  * 
- *input  _WInStrm * _NStrm bit --> output lcm(_WInStrm*_NStrm, WOutStrm) bits
+ * input  _WInStrm * _NStrm bit --> output lcm(_WInStrm*_NStrm, WOutStrm) bits
  * @tparam _WInStrm input stream width.
  * @tparam _WOutStrm output stream width.
  * @tparam _NStrm number of input streams.
@@ -269,7 +272,8 @@ void stream_n_to_one_collect_lb(
      
 }
 
-/* @brief output data sequentially from input stream with big width.
+/**
+ * @brief output data sequentially from input stream with big width.
  * output buf_width=lcm(_WInStrm*_NStrm, WOutStrm) bits in buf_width/_WOutStrm cycles
  * @tparam _WInStrm input stream width.
  * @tparam _WOutStrm output stream width.
@@ -317,7 +321,8 @@ void stream_n_to_one_distribute_lb(
 
 }
 
-/* @brief stream distribute, skip to read the empty input streams.
+/**
+ * @brief stream distribute, skip to read the empty input streams.
  *
  * @tparam _WInStrm input stream width.
  * @tparam _WOutStrm output stream width.
@@ -388,7 +393,8 @@ void stream_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm]
 
 
 
-/* @brief stream distribute, skip to read the empty input streams.
+/**
+ * @brief stream distribute, skip to read the empty input streams.
  *
  * @tparam _WInStrm input stream width.
  * @tparam _WOutStrm output stream width.
@@ -419,7 +425,8 @@ void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
 // support _TIn
 namespace details {
 
-/* @brief stream distribute, skip to read the empty input streams.
+/**
+ * @brief stream distribute, skip to read the empty input streams.
  *
  * @tparam _TIn the type of streams.
  * @tparam _NStrm number of input streams.
@@ -465,7 +472,8 @@ void stream_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
    
 }  // details
 
-/* @brief stream distribute, skip to read the empty input streams.
+/**
+ * @brief stream distribute, skip to read the empty input streams.
  *
  * @tparam _TIn the type of stream.
  * @tparam _NStrm number of input streams.
