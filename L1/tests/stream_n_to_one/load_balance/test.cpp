@@ -168,7 +168,7 @@ void test_core_n_1(
                          data_istrms, e_data_istrms,
                          c_strms,  e_c_strms
           );
-  xf::common::utils_hw::strm_n_to_one<WIN_STRM, WOUT_STRM,NSTRM>(
+  xf::common::utils_hw::stream_n_to_one<WIN_STRM, WOUT_STRM,NSTRM>(
                          c_strms, e_c_strms,
                          data_ostrm,  e_ostrm,
                          xf::common::utils_hw::load_balance_t());
