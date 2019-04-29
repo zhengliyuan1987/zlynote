@@ -13,22 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=====================
-XF Database Library
-=====================
+=============================
+XF Hardware Utilities Library
+=============================
 
-XF Database Library is an SDx library for accelerating database applications.
-It consists of the following parts:
-
-* HLS C++ based hardware acceleration primitives.
-* Predefined SDx kernel and corresponding software utilities.
-* Design examples of different database acceleration approach.
+XF Hardware Utilities Library is an HLS library, aiming to
+assist developers to efficiently access memory in DDR, HBM or URAM,
+and perform data distribution/collection/re-ordering/insertion/discarding
+along stream-based transfer.
 
 .. toctree::
    :caption: Library Overview
    :maxdepth: 1
 
    overview.rst
+   release.rst
 
 .. toctree::
    :caption: User Guide

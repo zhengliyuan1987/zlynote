@@ -35,7 +35,7 @@ namespace utils_hw {
  * are ended.
  * @param data_ostrm the output stream.
  * @param e_data_ostrm the end signals of data_ostrm.
- * @param _op algorithm selector
+ * @param alg algorithm selector
  */
 template <int _WInStrm, int _WTagStrm>
 void stream_n_to_one(
@@ -45,7 +45,7 @@ void stream_n_to_one(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
     hls::stream<bool>& e_ostrm,
-    tag_select_t _op);
+    tag_select_t alg);
 
 /**
  * @brief This function selects from input streams based on tags.
@@ -66,7 +66,7 @@ void stream_n_to_one(
  * are ended.
  * @param data_ostrm the output stream.
  * @param e_data_ostrm the end signals of data_ostrm.
- * @param _op   algorithm selector
+ * @param alg   algorithm selector
  */
 template <typename _TIn, int _WTagStrm>
 void stream_n_to_one(
@@ -76,7 +76,7 @@ void stream_n_to_one(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
     hls::stream<bool>& e_ostrm,
-    tag_select_t _op);
+    tag_select_t alg);
 
 } // utils_hw
 } // common
@@ -138,7 +138,7 @@ void stream_n_to_one(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
     hls::stream<bool>& e_ostrm,
-    tag_select_t _op) {
+    tag_select_t alg) {
   details::stream_n_to_one_select<_WInStrm, _WTagStrm>(
       data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm, e_ostrm);
 }
@@ -193,7 +193,7 @@ void stream_n_to_one(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
     hls::stream<bool>& e_ostrm,
-    tag_select_t _op) {
+    tag_select_t alg) {
   details::stream_n_to_one_select_type<_TIn, _WTagStrm>(
       data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm, e_ostrm);
 }

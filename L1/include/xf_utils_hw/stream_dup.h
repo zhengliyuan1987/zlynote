@@ -3,13 +3,21 @@
 
 #include "xf_utils_hw/types.h"
 
+/**
+ * @file stream_dup.h
+ * @brief duplicate stream and attach end signal to each dup.
+ *
+ * This file is part of XF Hardware Utilities Library.
+ */
+
 // Forward decl ======================================================
 
 namespace xf {
 namespace common {
 namespace utils_hw {
 
-/* @brief stream duplication.
+/**
+ * @brief stream duplication.
  *
  * @tparam _TIn input stream width.
  * @tparam _NStrm number of output stream.
@@ -18,7 +26,6 @@ namespace utils_hw {
  * @param e_istrm end flag stream for input data.
  * @param ostrms output data streams.
  * @param e_ostrms end flag streams, one for each output data stream.
- * @param _op algorithm selector.
  */
 template <typename _TIn, int _NStrm>
 void stream_dup(hls::stream<_TIn>& istrm,

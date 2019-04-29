@@ -13,14 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-**************************************
-Module Design Internals
-**************************************
+.. _release_note:
+
+Release Note
+============
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
 
-   ./axi_to_stream/axi_to_stream.rst
-   ./axi_to_multi_stream/axi_to_multi_stream.rst
+1.0
+----
 
-.. ERROR:: TODO need doc for all modules.
+The 1.0 release provides a range of HLS primitives for:
+
+ * Work distribution and result collection in different algorithms.
+ * Stream manipulation, including combination, duplication, synchronizaton, shuffle, etc.
+ * Updating URAM array in higher frequency.

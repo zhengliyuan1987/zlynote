@@ -16,7 +16,7 @@
 .. _module_guide:
 
 ======================
-Kernel Developer Guide
+L2 Module User Guide
 ======================
 
 .. toctree::

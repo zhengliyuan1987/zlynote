@@ -200,13 +200,14 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm, const int len,
  *
  * \rst
  * ::
- *    ********************
- *     DDR   ->  AXI_BUS                          ->  FIFO  ->   strm
- *     XXX1     XXX1234567323334_3536373839646566    XXX12345    1234
- *     ...      ...                                  67323334    5673
- *                                                   ...         ...
- *     32XX     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX
- *    ********************
+ *    
+ *    +----------------------------------------------------------------+
+ *    | DDR   ->  AXI_BUS                          ->  FIFO  ->   strm |
+ *    | XXX1     XXX1234567323334_3536373839646566    XXX12345    1234 |
+ *    | ...      ...                                  67323334    5673 |
+ *    |                                               ...         ...  |
+ *    | 32XX     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX |
+ *    +----------------------------------------------------------------+
  *
  * \endrst
  *
@@ -257,11 +258,14 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf, hls::stream<_TStrm>& ostrm,
  *
  * \rst
  * ::
- *     DDR->  AXI_BUS   ->  FIFO  ->     strm(aligned to dd)
- *     
- *     XXaa   XXaabbcc    XXaabbcc       aa
- *     bbcc   ddXX0000    ddXX0000       ...
- *     ddXX                              dd
+ *    
+ *    +-------------------------------------------------------+
+ *    | DDR->  AXI_BUS   ->  FIFO  ->     strm(aligned to dd) |
+ *    |                                                       |
+ *    | XXaa   XXaabbcc    XXaabbcc       aa                  |
+ *    | bbcc   ddXX0000    ddXX0000       ...                 |
+ *    | ddXX                              dd                  |
+ *    +-------------------------------------------------------+
  *
  * \endrst
  *

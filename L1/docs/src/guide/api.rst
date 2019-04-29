@@ -15,12 +15,17 @@
 
 .. _api:
 
-************************
-API Document
-************************
+********************************************
+Module APIs
+********************************************
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   ../rst/namespace_xf_util.rst
+
+Namespace ``xf::common::utils_hw``
+==================================
+
+.. include:: ../rst/namespace_xf_common_utils_hw.rst
+   :start-after: FunctionSection
 

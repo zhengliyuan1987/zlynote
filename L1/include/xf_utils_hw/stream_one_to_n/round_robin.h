@@ -10,13 +10,14 @@
 #include "xf_utils_hw/enums.h"
 #include "xf_utils_hw/common.h"
 
-// Forward decl ======================================================
+// Forward decl ===============================================================
 
 namespace xf {
 namespace common {
 namespace utils_hw {
 
-/* @brief stream distribute, in round-robin order from first output.
+/**
+ * @brief stream distribute, in round-robin order from first output.
  *
  * The input stream is assumed to be conpact data to be splitted into
  * _WOutStrm wide data into output streams.
@@ -29,16 +30,17 @@ namespace utils_hw {
  * @param e_istrm end flag stream for input data.
  * @param ostrms output data streams.
  * @param e_ostrms end flag streams, one for each output data stream.
- * @param _op algorithm selector.
+ * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t _op);
+                     round_robin_t alg);
 
-/* @brief stream distribute, in round-robin order from first output.
+/**
+ * @brief stream distribute, in round-robin order from first output.
  *
  * @tparam _TIn  the type of input stream.
  * @tparam _NStrm number of output stream.
@@ -47,19 +49,19 @@ void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
  * @param e_istrm end flag stream for input data.
  * @param ostrms output data streams.
  * @param e_ostrms end flag streams, one for each output data stream.
- * @param _op algorithm selector.
+ * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
 void stream_one_to_n(hls::stream<_TIn>& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<_TIn> ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t _op);
+                     round_robin_t alg);
 } // utils_hw
 } // common
 } // xf
 
-// Implementation ====================================================
+// Implementation =============================================================
 
 namespace xf {
 namespace common {
@@ -206,7 +208,7 @@ void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t _op) {
+                     round_robin_t alg) {
   details::stream_one_to_n_rr<_WInStrm, _WOutStrm, _NStrm>(
       istrm, e_istrm, ostrms, e_ostrms);
 }
@@ -242,7 +244,7 @@ void stream_one_to_n(hls::stream<_TIn>& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<_TIn> ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t _op) {
+                     round_robin_t alg) {
   details::stream_one_to_n_rr_type<_TIn, _NStrm>(
       istrm, e_istrm, ostrms, e_ostrms);
 }

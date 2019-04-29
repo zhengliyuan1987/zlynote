@@ -35,7 +35,7 @@ namespace utils_hw {
  * ended.
  * @param data_ostrms the output stream.
  * @param e_data_ostrms the end signals of data_ostrms.
- * @param _op   algorithm selector
+ * @param alg   algorithm selector
  */
 template <int _WInStrm, int _WTagStrm>
 void stream_one_to_n(
@@ -45,7 +45,7 @@ void stream_one_to_n(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
-    tag_select_t _op);
+    tag_select_t alg);
 
 /**
  * @brief This function send element from one stream to multiple streams based
@@ -65,7 +65,7 @@ void stream_one_to_n(
  * ended.
  * @param data_ostrms the output stream.
  * @param e_data_ostrms the end signals of data_ostrms.
- * @param _op   algorithm selector.
+ * @param alg   algorithm selector.
  */
 template <typename _TIn, int _WTagStrm>
 void stream_one_to_n(
@@ -75,7 +75,7 @@ void stream_one_to_n(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
-    tag_select_t _op);
+    tag_select_t alg);
 
 } // utils_hw
 } // common
@@ -136,7 +136,7 @@ void stream_one_to_n(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
-    tag_select_t _op) {
+    tag_select_t alg) {
   details::stream_one_to_n_tag_select<_WInStrm, _WTagStrm>(
       istrm, e_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
 }
@@ -190,7 +190,7 @@ void stream_one_to_n(
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
-    tag_select_t _op) {
+    tag_select_t alg) {
   details::stream_one_to_n_tag_select_type<_TIn, _WTagStrm>(
       istrm, e_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
 }

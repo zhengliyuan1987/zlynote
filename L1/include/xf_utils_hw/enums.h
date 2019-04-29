@@ -1,6 +1,13 @@
 #ifndef XF_UTILS_HW_ENUMS_H
 #define XF_UTILS_HW_ENUMS_H
 
+/**
+ * @file enums.h
+ * @brief Enum and tag-class definition.
+ *
+ * This file is part of XF Hardware Utilities Library.
+ */
+
 namespace xf {
 namespace common {
 namespace utils_hw {

@@ -1,10 +1,12 @@
-/**
- * @file types.h
- * @brief This file is part of XF Utility Library, contains type definitions.
- */
-
 #ifndef XF_UTILS_HW_TYPES_H
 #define XF_UTILS_HW_TYPES_H
+
+/**
+ * @file types.h
+ * @brief This file contains type definitions.
+ *
+ * This file is part of XF Hardware Utilities Library.
+ */
 
 // Fixed width integers
 #if defined(__cplusplus) && __cplusplus >= 201103L

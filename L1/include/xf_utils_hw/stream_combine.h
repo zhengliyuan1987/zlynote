@@ -4,13 +4,21 @@
 #include "xf_utils_hw/types.h"
 #include "xf_utils_hw/enums.h"
 
+/**
+ * @file stream_combine.h
+ * @brief combine multiple streams into a wider one to share end signal.
+ *
+ * This file is part of XF Hardware Utilities Library.
+ */
+
 // Forward decl ======================================================
 
 namespace xf {
 namespace common {
 namespace utils_hw {
 
-/* @brief stream combine, shift selected stream to left.
+/**
+ * @brief stream combine, shift selected stream to left.
  *
  * @tparam _WIn input stream width.
  * @tparam _NStrm number of output stream.
@@ -20,7 +28,7 @@ namespace utils_hw {
  * @param e_istrm end flag for all input streams.
  * @param ostrm input data stream.
  * @param e_ostrm end flag stream for input data.
- * @param _op algorithm selector for this function.
+ * @param alg algorithm selector for this function.
  */
 template <int _WIn, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
@@ -31,9 +39,10 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_left_t _op);
+                    combine_left_t alg);
 
-/* @brief stream combine, shift selected stream to right.
+/**
+ * @brief stream combine, shift selected stream to right.
  *
  * @tparam _WIn input stream width.
  * @tparam _NStrm number of output stream.
@@ -43,7 +52,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
  * @param e_istrm end flag for all input streams.
  * @param ostrm input data stream.
  * @param e_ostrm end flag stream for input data.
- * @param _op algorithm selector for this function.
+ * @param alg algorithm selector for this function.
  */
 
 template <int _WIn, int _NStrm>
@@ -55,7 +64,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_right_t _op);
+                    combine_right_t alg);
 
 } // utils_hw
 } // common
@@ -77,7 +86,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_left_t _op) {
+                    combine_left_t alg) {
   bool e = e_istrm.read();
   ap_uint<_NStrm> bb = select_cfg.read();
   bool b[_NStrm][_NStrm];
@@ -143,7 +152,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_right_t _op) {
+                    combine_right_t alg) {
   bool e = e_istrm.read();
   ap_uint<_NStrm> bb = select_cfg.read();
   bool b[_NStrm][_NStrm];

@@ -20,14 +20,14 @@ void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                      hls::stream<bool> e_istrms[_NStrm],
                      hls::stream<ap_uint<_WOutStrm> >& ostrm,
                      hls::stream<bool>& e_ostrm,
-                     load_balance_t _op);
+                     load_balance_t alg);
 
 template <typename _TIn, int _NStrm>
 void stream_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                      hls::stream<bool> e_istrms[_NStrm],
                      hls::stream<_TIn>& ostrm,
                      hls::stream<bool>& e_ostrm,
-                     load_balance_t _op);
+                     load_balance_t alg);
 
 } // utils_hw
 } // common
