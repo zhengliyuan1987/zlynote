@@ -102,7 +102,7 @@ html_theme = 'sphinx_rtd_theme'
 # documentation.
 #
 html_theme_options = {
-    'logo_only': False,
+    'logo_only': True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -110,9 +110,9 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-#html_logo = '_static/logo.png'
+html_logo = '_static/logo.png'
 
-#html_favicon = '_static/xilinx-favicon.ico'
+html_favicon = '_static/xf-favicon.ico'
 
 html_context = {
     'css_files': [

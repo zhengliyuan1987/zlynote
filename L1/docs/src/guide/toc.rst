@@ -16,7 +16,7 @@
 .. _module_guide:
 
 ======================
-L2 Module User Guide
+L1 Module User Guide
 ======================
 
 .. toctree::
