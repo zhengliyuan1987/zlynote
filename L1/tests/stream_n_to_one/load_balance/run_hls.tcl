@@ -1,5 +1,5 @@
 
-open_project -reset "test_one_to_n.prj"
+open_project -reset "test_n_to_one.prj"
 
 add_files test.cpp -cflags "-I../../../include/"  
 add_files -tb test.cpp -cflags "-I../../../include/"
