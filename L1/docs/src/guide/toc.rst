@@ -24,6 +24,7 @@ L1 Module User Guide
 
    stream_based.rst
    api.rst
+   api_class.rst
    internals.rst
    demos.rst
 

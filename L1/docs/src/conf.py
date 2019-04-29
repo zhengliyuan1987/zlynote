@@ -84,7 +84,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'rst/namespace_xf.rst']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'rst/*.rst']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -103,6 +103,7 @@ html_theme = 'sphinx_rtd_theme'
 #
 html_theme_options = {
     'logo_only': True,
+    'navigation_depth': 5,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -13,15 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _api:
+.. _api_class:
 
 ********************************************
-API functions in ``xf::common::utils_hw``
+API class in ``xf::common::utils_hw``
 ********************************************
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-.. include:: ../rst/namespace_xf_common_utils_hw.rst
-   :start-after: FunctionSection
+.. include:: ../rst/class_xf_common_utils_hw_uram_array.rst
 
