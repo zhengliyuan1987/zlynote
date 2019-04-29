@@ -1,6 +1,12 @@
-#ifndef XF_UTIL_STREAM_N1_LB
-#define XF_UTIL_STREAM_N1_LB
+#ifndef XF_UTILS_HW_STREAM_N1_LB
+#define XF_UTILS_HW_STREAM_N1_LB
 
+/**
+ * @file load_balance.h
+ * @brief header for collect in round-roubin order.
+ */
+
+#include "xf_utils_hw/enums.h"
 #include "xf_utils_hw/types.h"
 #include "xf_utils_hw/enums.h"
 #include "xf_utils_hw/common.h"
@@ -21,14 +27,14 @@ namespace utils_hw {
  * @param e_istrms end flag streams for input data.
  * @param ostrm output data stream.
  * @param e_ostrm end flag stream.
- * @param _op algorithm selector.
+ * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void strm_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
+void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<_WOutStrm> >& ostrm,
                    hls::stream<bool>& e_ostrm,
-                   load_balance_t _op);
+                   load_balance_t alg);
 
 /* @brief stream distribute, skip to read the empty input streams.
  *
@@ -39,14 +45,14 @@ void strm_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  * @param e_istrms end flag streams for input data.
  * @param ostrm output data stream.
  * @param e_ostrm end flag stream.
- * @param _op algorithm selector.
+ * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
-void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
+void stream_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<_TIn>& ostrm,
                    hls::stream<bool>& e_ostrm,
-                   load_balance_t _op);
+                   load_balance_t alg);
 
 } // utils_hw
 } // common
@@ -70,7 +76,7 @@ namespace details {
  * @param e_buf_lcm_strm end flag stream.
  */
 template <int _WInStrm, int _NStrm>
-void strm_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
+void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<32> > &left_n,
                    hls::stream<ap_uint<_WInStrm*_NStrm> >& buf_lcm_strm,
@@ -217,7 +223,7 @@ void strm_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  * @param e_buf_lcm_strm end flag stream.
  */
 template <int _WInStrm, int _WOutStrm,int _NStrm>
-void strm_n_to_one_collect_lb(
+void stream_n_to_one_collect_lb(
                    hls::stream<ap_uint<_WInStrm*_NStrm> > &buf_n_strm,
                    hls::stream<bool> &e_buf_n_strm,
                    hls::stream<ap_uint<32> > &left_n,
@@ -276,7 +282,7 @@ void strm_n_to_one_collect_lb(
  * @param estrm end flag stream.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void strm_n_to_one_distribute_lb(
+void stream_n_to_one_distribute_lb(
                    hls::stream<ap_uint< lcm<_WInStrm*_NStrm, _WOutStrm>::value> >& buf_lcm_strm,
                    hls::stream<bool> &e_buf_lcm_strm,
                    hls::stream<ap_uint<32> > &left_lcm,
@@ -323,7 +329,7 @@ void strm_n_to_one_distribute_lb(
  * @param e_ostrm end flag stream.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void strm_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
+void stream_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<_WOutStrm> >& ostrm,
                    hls::stream<bool>& e_ostrm) {
@@ -353,14 +359,14 @@ void strm_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  * least common mutiple(lcm) is used for solving the difference between  the input width and output width
  *
  * */
-  strm_n_to_one_read_lb < _WInStrm, _NStrm>
+  stream_n_to_one_read_lb < _WInStrm, _NStrm>
                   ( istrms,
                     e_istrms,
                     left_n,
                     buf_n_strm,
                     e_buf_n_strm);
   
-  strm_n_to_one_collect_lb < _WInStrm, _WOutStrm, _NStrm>
+  stream_n_to_one_collect_lb < _WInStrm, _WOutStrm, _NStrm>
                   (  buf_n_strm,
                      e_buf_n_strm,
                      left_n,
@@ -369,7 +375,7 @@ void strm_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                      e_buf_lcm_strm);
   
   
-  strm_n_to_one_distribute_lb < _WInStrm,  _WOutStrm, _NStrm>
+  stream_n_to_one_distribute_lb < _WInStrm,  _WOutStrm, _NStrm>
                  ( buf_lcm_strm,
                    e_buf_lcm_strm,
                    left_lcm,
@@ -392,16 +398,16 @@ void strm_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  * @param e_istrms end flag streams for input data.
  * @param ostrm output data stream.
  * @param e_ostrm end flag stream.
- * @param _op algorithm selector.
+ * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void strm_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
+void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<ap_uint<_WOutStrm> >& ostrm,
                    hls::stream<bool>& e_ostrm,
-                   load_balance_t _op) {
+                   load_balance_t alg) {
 
- details::strm_n_to_one_load_balance<_WInStrm,_WOutStrm, _NStrm>(
+ details::stream_n_to_one_load_balance<_WInStrm,_WOutStrm, _NStrm>(
                    istrms,
                    e_istrms,
                    ostrm,
@@ -424,7 +430,7 @@ namespace details {
  * @param e_ostrm end flag stream.
  */
 template <typename _TIn, int _NStrm>
-void strm_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
+void stream_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<_TIn>& ostrm,
                    hls::stream<bool>& e_ostrm) {
@@ -468,16 +474,16 @@ void strm_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
  * @param e_istrms end flag streams for input data.
  * @param ostrm output data stream.
  * @param e_ostrm end flag stream.
- * @param _op algorithm selector.
+ * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
-void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
+void stream_n_to_one(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool> e_istrms[_NStrm],
                    hls::stream<_TIn>& ostrm,
                    hls::stream<bool>& e_ostrm,
-                   load_balance_t _op) {
+                   load_balance_t alg) {
 
- details::strm_n_to_one_load_balance_type<_TIn, _NStrm>(
+ details::stream_n_to_one_load_balance_type<_TIn, _NStrm>(
                    istrms,
                    e_istrms,
                    ostrm,
@@ -486,4 +492,4 @@ void strm_n_to_one(hls::stream<_TIn> istrms[_NStrm],
 } // utils_hw
 } // common
 } // xf
-#endif // XF_UTIL_STREAM_N1_LB
+#endif // XF_UTILS_HW_STREAM_N1_LB
