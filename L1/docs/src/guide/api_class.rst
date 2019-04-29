@@ -16,11 +16,11 @@
 .. _api_class:
 
 ********************************************
-API class in ``xf::common::utils_hw``
+API Class of ``xf::common::utils_hw``
 ********************************************
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
 .. include:: ../rst/class_xf_common_utils_hw_uram_array.rst
 

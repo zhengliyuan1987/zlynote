@@ -16,7 +16,7 @@
 .. _api:
 
 ********************************************
-API functions in ``xf::common::utils_hw``
+API Functions of ``xf::common::utils_hw``
 ********************************************
 
 .. toctree::
