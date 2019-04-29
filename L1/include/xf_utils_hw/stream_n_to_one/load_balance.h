@@ -147,7 +147,7 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
       bool et= istrms[i].empty();
       bool vl = !et && !bak_last[i];
       val[i]  = vl; // flag of available data
-      // neither  empty nor end stream, read it, or default zero 
+      // neither  empty nor finished stream, read it, or default zero 
       ttm[i]  = vl? istrms[i].read():(ap_uint<_WInStrm>)0;
      // empty or end stream, keep the last flag; or read it
       last[i] = (bak_last[i] || e_istrms[i].empty())? bak_last[i]: e_istrms[i].read();
@@ -160,12 +160,12 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
      #endif
   } // for
   // move the available data to "the right position"
-  // if a stream is empty or finished, there is no point in moving its data since its data is 0,
+  // if a stream is empty or finished, there is no point in moving its data since its data is 0
   tmpb[0] = ttm[0];
   for(int i=1; i<_NStrm; ++i) {
     #pragma HLS unroll
     ap_uint<up_nstrm> v = val.range(i-1,0);
-    int ones            = count_ones< up_nstrm >(v); // it's similar to rond_robin  if one always is 0.
+    int ones            = count_ones< up_nstrm >(v); // it's similar to round robin  if ones always is _NStrm.
     int p               = ones;//index of tmpb[i].range(), where  istrm[i] is stored if it is not empty
     ap_uint<_NStrm*_WInStrm> d = ttm[i];
     tmpb[i]             = d << (p*_WInStrm); 
@@ -436,7 +436,6 @@ void stream_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
                    hls::stream<bool>& e_ostrm) {
    
    ap_uint<_NStrm> last = 0;
-   ap_uint<_NStrm> bak_last = 0;
    ap_uint<_NStrm> end  = ~last;
 
   for(int i =0; i< _NStrm; ++i) {
@@ -448,15 +447,16 @@ void stream_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
    int id = 0;
    while(last != end ) {
      #pragma HLS pipeline II=1 
-     bak_last = last;
      bool lst = last[id];
      bool em  = istrms[id].empty(); 
+     // read data if not end and not empty
      if(!lst && !em ) {
          _TIn data = istrms[id].read();
          ostrm.write(data);
          e_ostrm.write(false);
       }
       bool ee = e_istrms[id].empty();
+      // keep its flag if a stream is finished or empty
       last[id]= (lst || ee) ? lst: e_istrms[id].read();
       id = (id+1) == _NStrm ? 0: (id+1);
    } //while 
