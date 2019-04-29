@@ -27,41 +27,45 @@
 // Forward decl
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 
-/// @brief the template of stream to AXI master port in burst.
-
-/// @tparam WAxi   width of axi port.
-/// @tparam WStrm  width of input stream.
-/// @tparam NBurst length of a burst.
-
-/// @param wbuf    output AXI port.
-/// @param istrm   input stream.
-/// @param e_istrm end flag for input stream
+/**
+ * @brief the template of stream to AXI master port in burst.
+ *
+ * @tparam WAxi   width of axi port.
+ * @tparam WStrm  width of input stream.
+ * @tparam NBurst length of a burst.
+ *
+ * @param wbuf    output AXI port.
+ * @param istrm   input stream.
+ * @param e_istrm end flag for input stream
+ */
 template <int WAxi, int WStrm, int NBurst = 16>
 void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
                    hls::stream<bool> &e_istrm);
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 namespace xf {
-namespace util {
-namespace level1 {
+namespace common {
+namespace utils_hw {
 namespace details {
 
-/// @brief the template of convert stream width from WStrm to WAxi and count
-/// burst number.
-
-/// @tparam WAxi   width of axi port.
-/// @tparam WStrm  width of input stream.
-/// @tparam NBurst length of a burst.
-
-/// @param istrm   input stream.
-/// @param e_istrm  end flag for input stream
-/// @param axi_strm stream width is WAxi
-/// @param nb_strm  store burst number of each burst
+/**
+ * @brief the template of convert stream width from WStrm to WAxi and count
+ * burst number.
+ *
+ * @tparam WAxi   width of axi port.
+ * @tparam WStrm  width of input stream.
+ * @tparam NBurst length of a burst.
+ *
+ * @param istrm   input stream.
+ * @param e_istrm  end flag for input stream
+ * @param axi_strm stream width is WAxi
+ * @param nb_strm  store burst number of each burst
+ */
 template <int WAxi, int WStrm, int NBurst = 16>
 void countForBurst(hls::stream<ap_uint<WStrm> > &istrm,
                    hls::stream<bool> &e_istrm,
@@ -159,8 +163,8 @@ void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
   details::burstWrite<WAxi, WStrm, NBurst>(wbuf, axi_strm, nb_strm);
 }
 
-} // level1
-} // util
+} // utils_hw
+} // common
 } // xf
 
 #endif // XF_UTILS_HW_STRM_TO_AXI_H
