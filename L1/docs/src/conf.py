@@ -121,6 +121,9 @@ html_context = {
     ],
 }
 
+html_copy_source = False
+html_show_sourcelink = False
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
