@@ -224,30 +224,31 @@ void stream_one_to_n_distribute(
 #pragma HLS ARRAY_PARTITION variable = deq dim = 0
   int frt[_NStrm] = {0};
 #pragma HLS ARRAY_PARTITION variable = frt dim = 1 // complete
-  int rr[_NStrm] = {0};
+  int rr[_NStrm]  = {0};
 #pragma HLS ARRAY_PARTITION variable = rr dim = 1 // complete
   int pos[_NStrm] = {0};
 #pragma HLS ARRAY_PARTITION variable = pos complete
 
-  ap_uint<_NStrm> full = 0;
-  ap_uint<_NStrm> all_full = ~full;
-  ap_uint<_NStrm> bak_full = 0;
-  ap_uint<_NStrm> bak_full1 = 0;
+  ap_uint<_NStrm> full         = 0;
+  ap_uint<_NStrm> all_full     =  ~full;
+  ap_uint<_NStrm> bak_full     = 0;
+  ap_uint<_NStrm> bak_full1    = 0;
   ap_uint<_NStrm> inv_bak_full = 0;
-  ap_uint<_NStrm> last_full = 0;
-  const int mult_nstrm = _NStrm * 2;
-  int base = 0;
+  ap_uint<_NStrm> last_full    = 0;
+  const int mult_nstrm         = _NStrm * 2;
+  int base      = 0;
   int next_base = 0;
-  int bs_n = 0;
-  int p = 0;
-  int rn = 0;
-  int rn2 = 0;
-  int ld = 0;
-  int ld2 = 0;
-  int dflds = 0;
-  bool wb = true;
-  bool high = true;
-  bool be = e_buf_n_strm.read();
+  int bs_n      = 0;
+  int p         = 0;
+  int rn        = 0;
+  int rn2       = 0;
+  int ld        = 0;
+  int ld2       = 0;
+  int dflds     = 0;
+  bool wb       = true;
+  bool high     = true;
+  int  tc       = 0;
+  bool be       = e_buf_n_strm.read();
   /**********************************************************************************
  *  iterator  1      2       3
  *  input    4321   8765    no input
@@ -306,24 +307,26 @@ LOOP_core:
     base = next_base;
     /*
     * here ld = ld - rn2 means how many data are stored in buf_arr. However,if
-    * it locates before "if( ld < _NStrm)" , it leads big latency because the
+    * it locates before "if( ld < _NStrm)" , it leads to big latency because the
     * critical path includes  read the input stream. So buff_r2 is added to
     * cache the input data.
     *
     * */
     // ld = ld-rn2 ;
-    int tc = 0;
-    if (bak_full != all_full && ld < mult_nstrm && dflds < _NStrm) {
+    if (bak_full != all_full && ld < mult_nstrm && dflds <= 0) {
       //  read new data when left data is not enough
       be = e_buf_n_strm.read();
       buff_r = buf_n_strm.read();
       high = !high;
       tc = _NStrm;
     }
+    else
+      tc=0;
     // ld is the number of input data ,including data in buf_arr and buff_r
     // ld2 is the number of input data stored in buf_arr
     ld2 = ld2 - rn2;
     ld = ld - rn2 + tc;
+    int tmp_ld=ld2 < _NStrm ? ld2 + mult_nstrm: ld2 + _NStrm; 
     // get data when the  data in buf_arr is not enough
     if (ld2 < _NStrm) {
       wb = true;
@@ -331,12 +334,15 @@ LOOP_core:
       ld2 += _NStrm;
       buff_q = high ? buff_r2 : buff_q;
       buff_p = high ? buff_p : buff_r2;
-    } else
+    } else {
       wb = false;
+
+    }
+    
     // if the data in buff_r are move to buff_r2, ld is equals to ld2 and buff_r
     // is free and could store new data
-    dflds = ld - ld2;
-
+    // dflds = ld - ld2- _NStrm;
+     dflds = ld - tmp_ld;
     // compute the index that  deq[i] read the data in buf_arr
     pos[0] = base;
     for (int i = 1; i < _NStrm; ++i) {
