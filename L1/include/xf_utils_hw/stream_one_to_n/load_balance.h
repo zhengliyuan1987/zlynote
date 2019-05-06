@@ -213,7 +213,8 @@ void stream_one_to_n_distribute(
   const int count_out = num_out / _NStrm;
   // const int up_nstrm  = _NStrm;
   const int up_nstrm = up_bound<_NStrm>::up;
-  const int deq_depth = 32;
+  const int deq_depth = 8;
+  const int deq_width = 4;
   ap_uint<buf_width> buff_r = 0;
   ap_uint<buf_width> buff_r2 = 0;
   ap_uint<buf_width> buff_p = 0;
@@ -222,11 +223,11 @@ void stream_one_to_n_distribute(
 #pragma HLS ARRAY_PARTITION variable = buf_arr complete
   ap_uint<_WOutStrm> deq[_NStrm][deq_depth];
 #pragma HLS ARRAY_PARTITION variable = deq dim = 0
-  int frt[_NStrm] = {0};
-#pragma HLS ARRAY_PARTITION variable = frt dim = 1 // complete
-  int rr[_NStrm]  = {0};
-#pragma HLS ARRAY_PARTITION variable = rr dim = 1 // complete
-  int pos[_NStrm] = {0};
+  ap_uint<deq_width> frt[_NStrm] ;
+#pragma HLS ARRAY_PARTITION variable = frt  complete
+  ap_uint<deq_width> rr[_NStrm]  ;
+#pragma HLS ARRAY_PARTITION variable = rr  complete
+  int pos[_NStrm] ;
 #pragma HLS ARRAY_PARTITION variable = pos complete
 
   ap_uint<_NStrm> full         = 0;
@@ -244,7 +245,8 @@ void stream_one_to_n_distribute(
   int rn2       = 0;
   int ld        = 0;
   int ld2       = 0;
-  int dflds     = 0;
+  int dflds     = -1;
+  bool ld_flg  = true;
   bool wb       = true;
   bool high     = true;
   int  tc       = 0;
@@ -275,6 +277,8 @@ void stream_one_to_n_distribute(
   for (int i = 0; i < _NStrm; ++i) {
 #pragma HLS unroll
     bak_full1[i] = ostrms[i].full();
+    frt[i]=0 ;
+    rr[i]=0;
   }
 LOOP_core:
   while (!be) {
@@ -290,7 +294,8 @@ LOOP_core:
       if (f != r && fl == false) {
         ostrms[i].write(d);
         e_ostrms[i].write(false);
-        frt[i] = (f + 1) == deq_depth ? 0 : (f + 1);
+        int nf = (f + 1) == deq_depth ? 0 : (f + 1);
+        frt[i] = nf;
       }
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
       std::cout << "i =  " << std::dec << i << std::endl;
@@ -313,7 +318,8 @@ LOOP_core:
     *
     * */
     // ld = ld-rn2 ;
-    if (bak_full != all_full && ld < mult_nstrm && dflds <= 0) {
+    //if (bak_full != all_full && ld < mult_nstrm && dflds <= 0) {
+    if (bak_full != all_full && ld_flg) {
       //  read new data when left data is not enough
       be = e_buf_n_strm.read();
       buff_r = buf_n_strm.read();
@@ -327,6 +333,8 @@ LOOP_core:
     ld2 = ld2 - rn2;
     ld = ld - rn2 + tc;
     int tmp_ld=ld2 < _NStrm ? ld2 + mult_nstrm: ld2 + _NStrm; 
+   // dflds = ld - tmp_ld;
+    ld_flg = ld< mult_nstrm && ld <= tmp_ld;
     // get data when the  data in buf_arr is not enough
     if (ld2 < _NStrm) {
       wb = true;
@@ -338,11 +346,11 @@ LOOP_core:
       wb = false;
 
     }
-    
+   //dflds += tc - wb? _NStrm: 0;  
     // if the data in buff_r are move to buff_r2, ld is equals to ld2 and buff_r
     // is free and could store new data
     // dflds = ld - ld2- _NStrm;
-     dflds = ld - tmp_ld;
+     //dflds = ld - tmp_ld;
     // compute the index that  deq[i] read the data in buf_arr
     pos[0] = base;
     for (int i = 1; i < _NStrm; ++i) {
@@ -350,9 +358,8 @@ LOOP_core:
       ap_uint<up_nstrm> bf = inv_bak_full.range(i - 1, 0);
       // the number of not full streams befor the i-th streams ( i.e, among the
       // first i-1 streams).
-      int c = count_ones<up_nstrm>(bf);
+      int nb = count_ones<up_nstrm>(bf);
       // no-blockings
-      int nb = c;
       int mv = nb + base;
       pos[i] = (mv >= mult_nstrm) ? (mv - mult_nstrm) : mv;
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
@@ -389,7 +396,8 @@ LOOP_core:
         ap_uint<_WOutStrm> d = buf_arr[ps];
         int r = rr[i];
         deq[i][r] = d;
-        rr[i] = (r + 1) == deq_depth ? 0 : (r + 1);
+        int nr = (r + 1) == deq_depth ? 0 : (r + 1);
+        rr[i]=nr;
       }
     } // for
   }   // while
