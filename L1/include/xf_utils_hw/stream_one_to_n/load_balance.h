@@ -215,7 +215,7 @@ void stream_one_to_n_distribute(
   const int up_nstrm = up_bound<_NStrm>::up;
   const int deq_depth = 8;
   const int deq_width = 4;
-  ap_uint<buf_width> buff_r = 0;
+  ap_uint<buf_width> buff_r  = 0;
   ap_uint<buf_width> buff_r2 = 0;
   ap_uint<buf_width> buff_p = 0;
   ap_uint<buf_width> buff_q = 0;
@@ -246,7 +246,7 @@ void stream_one_to_n_distribute(
   int ld        = 0;
   int ld2       = 0;
   int dflds     = -1;
-  bool ld_flg  = true;
+  bool ld_flg   = true;
   bool wb       = true;
   bool high     = true;
   int  tc       = 0;
@@ -305,11 +305,11 @@ LOOP_core:
 
     // read state
     // bak_full= full;
-    bak_full = bak_full1;
+    bak_full     = bak_full1;
     inv_bak_full = ~bak_full1;
-    bak_full1 = full;
+    bak_full1    = full;
 
-    base = next_base;
+    base         = next_base;
     /*
     * here ld = ld - rn2 means how many data are stored in buf_arr. However,if
     * it locates before "if( ld < _NStrm)" , it leads to big latency because the
@@ -337,16 +337,14 @@ LOOP_core:
     ld_flg = ld< mult_nstrm && ld <= tmp_ld;
     // get data when the  data in buf_arr is not enough
     if (ld2 < _NStrm) {
-      wb = true;
+      wb      = true;
       buff_r2 = buff_r;
-      ld2 += _NStrm;
-      buff_q = high ? buff_r2 : buff_q;
-      buff_p = high ? buff_p : buff_r2;
+      ld2    += _NStrm;
+      buff_q  = high ? buff_r2 : buff_q;
+      buff_p  = high ? buff_p : buff_r2;
     } else {
-      wb = false;
-
+      wb      = false;
     }
-   //dflds += tc - wb? _NStrm: 0;  
     // if the data in buff_r are move to buff_r2, ld is equals to ld2 and buff_r
     // is free and could store new data
     // dflds = ld - ld2- _NStrm;
@@ -371,8 +369,7 @@ LOOP_core:
     for (int i = 0; i < _NStrm; ++i) {
 #pragma HLS unroll
       buf_arr[i] = buff_p.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);
-      buf_arr[i + _NStrm] =
-          buff_q.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);
+      buf_arr[i + _NStrm] =  buff_q.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);
     }
     last_full = bak_full;
     // the numbers of data which are written to deq from buf_arr in this
