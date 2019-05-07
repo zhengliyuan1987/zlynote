@@ -8,6 +8,8 @@
  * This file is part of XF Hardware Utilities Library.
  */
 
+#include "xf_utils_hw/types.h"
+
 namespace xf {
 namespace common {
 namespace utils_hw {
