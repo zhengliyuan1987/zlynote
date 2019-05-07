@@ -118,7 +118,7 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
  * @param alg algorithm selector for this function.
  */
 
-template <int _WIn, int _Wout, int _NStrm>
+template <int _WIn, int _WOut, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
 
