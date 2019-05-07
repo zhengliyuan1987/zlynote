@@ -18,7 +18,10 @@ namespace common {
 namespace utils_hw {
 
 /**
- * @brief stream combine, shift selected stream to left.
+ * @brief combine multiple streams into one, shift selected streams to LSB side.
+ *
+ * The first selected stream will be copied to LSB. The data within the stream
+ * will not change the bit-order.
  *
  * @tparam _WIn input stream width.
  * @tparam _NStrm number of output stream.
@@ -39,10 +42,13 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_left_t alg);
+                    lsb_side_t alg);
 
 /**
- * @brief stream combine, shift selected stream to right.
+ * @brief combine multiple streams into one, shift selected streams to MSB side.
+ *
+ * The first selected stream will be copied to MSB. The data within the stream
+ * will not change the bit-order.
  *
  * @tparam _WIn input stream width.
  * @tparam _NStrm number of output stream.
@@ -64,7 +70,63 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_right_t alg);
+                    msb_side_t alg);
+
+/**
+ * @brief combine multiple streams into a wide one, align to LSB.
+ *
+ * The first selected stream will be copied to LSB. The data within the stream
+ * will not change the bit-order.
+ *
+ * If ``_WOut > _WIn * _NStrm``, extra bits will be filled with zeros.
+ *
+ * @tparam _WIn input stream width.
+ * @tparam _WOut input stream width, should be no less than _WIn * _NStrm.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrms output data streams.
+ * @param e_istrm end flag for all input streams.
+ * @param ostrm input data stream.
+ * @param e_ostrm end flag stream for input data.
+ * @param alg algorithm selector for this function.
+ */
+template <int _WIn, int _WOut, int _NStrm>
+void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
+                    hls::stream<bool>& e_istrm,
+
+                    hls::stream<ap_uint<_WOut> >& ostrm,
+                    hls::stream<bool>& e_ostrm,
+
+                    lsb_side_t alg); // TODO
+
+/**
+ * @brief combine multiple streams into a wide one, align to MSB.
+ *
+ * The first selected stream will be copied to MSB. The data within the stream
+ * will not change the bit-order.
+ *
+ * If ``_WOut > _WIn * _NStrm``, extra bits will be filled with zeros.
+ *
+ * @tparam _WIn input stream width.
+ * @tparam _WOut input stream width, should be no less than _WIn * _NStrm.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrms output data streams.
+ * @param e_istrm end flag for all input streams.
+ * @param ostrm input data stream.
+ * @param e_ostrm end flag stream for input data.
+ * @param alg algorithm selector for this function.
+ */
+
+template <int _WIn, int _Wout, int _NStrm>
+void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
+                    hls::stream<bool>& e_istrm,
+
+                    hls::stream<ap_uint<_WOut> >& ostrm,
+                    hls::stream<bool>& e_ostrm,
+
+                    msb_side_t alg); // TODO
+
 
 } // utils_hw
 } // common
@@ -86,7 +148,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_left_t alg) {
+                    lsb_side_t alg) {
   bool e = e_istrm.read();
   ap_uint<_NStrm> bb = select_cfg.read();
   bool b[_NStrm][_NStrm];
@@ -152,7 +214,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    combine_right_t alg) {
+                    msb_side_t alg) {
   bool e = e_istrm.read();
   ap_uint<_NStrm> bb = select_cfg.read();
   bool b[_NStrm][_NStrm];
@@ -212,4 +274,4 @@ loop:
 } // common
 } // xf
 
-#endif // XF_UTILS_HW_STREAM_DUP_H
+#endif // XF_UTILS_HW_STREAM_COMBINE_H

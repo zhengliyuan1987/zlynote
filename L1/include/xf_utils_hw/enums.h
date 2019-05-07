@@ -21,8 +21,8 @@ struct load_balance_t {};
 struct round_robin_t {};
 
 // combine
-struct combine_left_t {};
-struct combine_right_t {};
+struct lsb_side_t {};
+struct msb_side_t {};
 
 //shuffle
 struct shuffle_left_t {};
