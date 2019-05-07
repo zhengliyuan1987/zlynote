@@ -70,8 +70,8 @@ class uram_array {
 #pragma HLS ARRAY_PARTITION variable = blocks complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = _index complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = _state complete dim = 1
+
 #ifndef __SYNTHESIS__
-    // TODO:malloc the array
     for (int i = 0; i < _num_uram_block; i++) {
       blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * 4096);
     }
@@ -82,6 +82,7 @@ class uram_array {
       _state[i] = 0;
     }
   }
+
   ~uram_array() {
 #ifndef __SYNTHESIS__
     for (int i = 0; i < _num_uram_block; i++) {

@@ -17,7 +17,7 @@ namespace common {
 namespace utils_hw {
 
 /**
- * @brief stream duplication.
+ * @brief Duplicate stream.
  *
  * @tparam _TIn input stream width.
  * @tparam _NStrm number of output stream.
@@ -48,7 +48,6 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]) {
-  // TODO
   bool e = e_istrm.read();
   while (!e) {
 #pragma HLS pipeline II = 1

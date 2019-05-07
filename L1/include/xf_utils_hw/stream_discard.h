@@ -4,8 +4,8 @@
 #include "xf_utils_hw/types.h"
 
 /**
- * @file stream_dup.h
- * @brief duplicate stream and attach end signal to each dup.
+ * @file stream_discard.h
+ * @brief discard streams.
  *
  * This file is part of XF Hardware Utilities Library.
  */
@@ -21,27 +21,34 @@ namespace utils_hw {
  */
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
-                    hls::stream<bool> e_istrms[_NStrm]);
+                    hls::stream<bool> e_istrms[_NStrm]); // TODO
 
 /**
  * @brief Discard multiple streams synchronized with one end flag
  */
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
-                    hls::stream<bool> e_istrm);
+                    hls::stream<bool> e_istrm); // TODO
 
 /**
  * @brief Discard one stream with its end flag helper.
  */
 template <typename _TIn>
 void stream_discard(hls::stream<_TIn>& istrm,
-                    hls::stream<bool>& e_istrm);
+                    hls::stream<bool>& e_istrm); // TODO
 
 } // utils_hw
 } // common
 } // xf
 
 // Implementation
-// TODO
+
+namespace xf {
+namespace common {
+namespace utils_hw {
+
+} // namespace utils_hw
+} // namespace common
+} // namespace xf
 
 #endif // XF_UTILS_HW_STRM_DISCARD_H

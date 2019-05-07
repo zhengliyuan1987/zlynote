@@ -81,13 +81,13 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
  * If ``_WOut > _WIn * _NStrm``, extra bits will be filled with zeros.
  *
  * @tparam _WIn input stream width.
- * @tparam _WOut input stream width, should be no less than _WIn * _NStrm.
+ * @tparam _WOut output stream width, should be no less than _WIn * _NStrm.
  * @tparam _NStrm number of output stream.
  *
- * @param istrms output data streams.
+ * @param istrms input data streams.
  * @param e_istrm end flag for all input streams.
- * @param ostrm input data stream.
- * @param e_ostrm end flag stream for input data.
+ * @param ostrm output data stream.
+ * @param e_ostrm end flag stream for the output.
  * @param alg algorithm selector for this function.
  */
 template <int _WIn, int _WOut, int _NStrm>
@@ -108,13 +108,13 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
  * If ``_WOut > _WIn * _NStrm``, extra bits will be filled with zeros.
  *
  * @tparam _WIn input stream width.
- * @tparam _WOut input stream width, should be no less than _WIn * _NStrm.
+ * @tparam _WOut output stream width, should be no less than _WIn * _NStrm.
  * @tparam _NStrm number of output stream.
  *
- * @param istrms output data streams.
+ * @param istrms input data streams.
  * @param e_istrm end flag for all input streams.
- * @param ostrm input data stream.
- * @param e_ostrm end flag stream for input data.
+ * @param ostrm output data stream.
+ * @param e_ostrm end flag stream for the output.
  * @param alg algorithm selector for this function.
  */
 
