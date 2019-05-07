@@ -82,7 +82,7 @@ ap_uint<2> count_ones<2>(ap_uint<2> y)
 #pragma HLS inline
    
    ap_uint<2> x0= y;
-   ap_uint<2> x1 = (x0 & 0x1) + (x0 & 0x2);  
+   ap_uint<2> x1 = (x0 & 0x1) + ((x0 & 0x2)>>1);  
     return x1;  
 }
 

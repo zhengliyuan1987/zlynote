@@ -213,8 +213,9 @@ void stream_one_to_n_distribute(
   const int count_out = num_out / _NStrm;
   // const int up_nstrm  = _NStrm;
   const int up_nstrm = up_bound<_NStrm>::up;
-  const int deq_depth = 32;
-  ap_uint<buf_width> buff_r = 0;
+  const int deq_depth = 8;
+  const int deq_width = 4;
+  ap_uint<buf_width> buff_r  = 0;
   ap_uint<buf_width> buff_r2 = 0;
   ap_uint<buf_width> buff_p = 0;
   ap_uint<buf_width> buff_q = 0;
@@ -222,32 +223,34 @@ void stream_one_to_n_distribute(
 #pragma HLS ARRAY_PARTITION variable = buf_arr complete
   ap_uint<_WOutStrm> deq[_NStrm][deq_depth];
 #pragma HLS ARRAY_PARTITION variable = deq dim = 0
-  int frt[_NStrm] = {0};
-#pragma HLS ARRAY_PARTITION variable = frt dim = 1 // complete
-  int rr[_NStrm] = {0};
-#pragma HLS ARRAY_PARTITION variable = rr dim = 1 // complete
-  int pos[_NStrm] = {0};
+  ap_uint<deq_width> frt[_NStrm] ;
+#pragma HLS ARRAY_PARTITION variable = frt  complete
+  ap_uint<deq_width> rr[_NStrm]  ;
+#pragma HLS ARRAY_PARTITION variable = rr  complete
+  int pos[_NStrm] ;
 #pragma HLS ARRAY_PARTITION variable = pos complete
 
-  ap_uint<_NStrm> full = 0;
-  ap_uint<_NStrm> all_full = ~full;
-  ap_uint<_NStrm> bak_full = 0;
-  ap_uint<_NStrm> bak_full1 = 0;
+  ap_uint<_NStrm> full         = 0;
+  ap_uint<_NStrm> all_full     =  ~full;
+  ap_uint<_NStrm> bak_full     = 0;
+  ap_uint<_NStrm> bak_full1    = 0;
   ap_uint<_NStrm> inv_bak_full = 0;
-  ap_uint<_NStrm> last_full = 0;
-  const int mult_nstrm = _NStrm * 2;
-  int base = 0;
+  ap_uint<_NStrm> last_full    = 0;
+  const int mult_nstrm         = _NStrm * 2;
+  int base      = 0;
   int next_base = 0;
-  int bs_n = 0;
-  int p = 0;
-  int rn = 0;
-  int rn2 = 0;
-  int ld = 0;
-  int ld2 = 0;
-  int dflds = 0;
-  bool wb = true;
-  bool high = true;
-  bool be = e_buf_n_strm.read();
+  int bs_n      = 0;
+  int p         = 0;
+  int rn        = 0;
+  int rn2       = 0;
+  int ld        = 0;
+  int ld2       = 0;
+  int dflds     = -1;
+  bool ld_flg   = true;
+  bool wb       = true;
+  bool high     = true;
+  int  tc       = 0;
+  bool be       = e_buf_n_strm.read();
   /**********************************************************************************
  *  iterator  1      2       3
  *  input    4321   8765    no input
@@ -274,6 +277,8 @@ void stream_one_to_n_distribute(
   for (int i = 0; i < _NStrm; ++i) {
 #pragma HLS unroll
     bak_full1[i] = ostrms[i].full();
+    frt[i]=0 ;
+    rr[i]=0;
   }
 LOOP_core:
   while (!be) {
@@ -289,7 +294,8 @@ LOOP_core:
       if (f != r && fl == false) {
         ostrms[i].write(d);
         e_ostrms[i].write(false);
-        frt[i] = (f + 1) == deq_depth ? 0 : (f + 1);
+        int nf = (f + 1) == deq_depth ? 0 : (f + 1);
+        frt[i] = nf;
       }
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
       std::cout << "i =  " << std::dec << i << std::endl;
@@ -299,44 +305,50 @@ LOOP_core:
 
     // read state
     // bak_full= full;
-    bak_full = bak_full1;
+    bak_full     = bak_full1;
     inv_bak_full = ~bak_full1;
-    bak_full1 = full;
+    bak_full1    = full;
 
-    base = next_base;
+    base         = next_base;
     /*
     * here ld = ld - rn2 means how many data are stored in buf_arr. However,if
-    * it locates before "if( ld < _NStrm)" , it leads big latency because the
+    * it locates before "if( ld < _NStrm)" , it leads to big latency because the
     * critical path includes  read the input stream. So buff_r2 is added to
     * cache the input data.
     *
     * */
     // ld = ld-rn2 ;
-    int tc = 0;
-    if (bak_full != all_full && ld < mult_nstrm && dflds < _NStrm) {
+    //if (bak_full != all_full && ld < mult_nstrm && dflds <= 0) {
+    if (bak_full != all_full && ld_flg) {
       //  read new data when left data is not enough
       be = e_buf_n_strm.read();
       buff_r = buf_n_strm.read();
       high = !high;
       tc = _NStrm;
     }
+    else
+      tc=0;
     // ld is the number of input data ,including data in buf_arr and buff_r
     // ld2 is the number of input data stored in buf_arr
     ld2 = ld2 - rn2;
     ld = ld - rn2 + tc;
+    int tmp_ld=ld2 < _NStrm ? ld2 + mult_nstrm: ld2 + _NStrm; 
+   // dflds = ld - tmp_ld;
+    ld_flg = ld< mult_nstrm && ld <= tmp_ld;
     // get data when the  data in buf_arr is not enough
     if (ld2 < _NStrm) {
-      wb = true;
+      wb      = true;
       buff_r2 = buff_r;
-      ld2 += _NStrm;
-      buff_q = high ? buff_r2 : buff_q;
-      buff_p = high ? buff_p : buff_r2;
-    } else
-      wb = false;
+      ld2    += _NStrm;
+      buff_q  = high ? buff_r2 : buff_q;
+      buff_p  = high ? buff_p : buff_r2;
+    } else {
+      wb      = false;
+    }
     // if the data in buff_r are move to buff_r2, ld is equals to ld2 and buff_r
     // is free and could store new data
-    dflds = ld - ld2;
-
+    // dflds = ld - ld2- _NStrm;
+     //dflds = ld - tmp_ld;
     // compute the index that  deq[i] read the data in buf_arr
     pos[0] = base;
     for (int i = 1; i < _NStrm; ++i) {
@@ -344,9 +356,8 @@ LOOP_core:
       ap_uint<up_nstrm> bf = inv_bak_full.range(i - 1, 0);
       // the number of not full streams befor the i-th streams ( i.e, among the
       // first i-1 streams).
-      int c = count_ones<up_nstrm>(bf);
+      int nb = count_ones<up_nstrm>(bf);
       // no-blockings
-      int nb = c;
       int mv = nb + base;
       pos[i] = (mv >= mult_nstrm) ? (mv - mult_nstrm) : mv;
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
@@ -358,8 +369,7 @@ LOOP_core:
     for (int i = 0; i < _NStrm; ++i) {
 #pragma HLS unroll
       buf_arr[i] = buff_p.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);
-      buf_arr[i + _NStrm] =
-          buff_q.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);
+      buf_arr[i + _NStrm] =  buff_q.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);
     }
     last_full = bak_full;
     // the numbers of data which are written to deq from buf_arr in this
@@ -383,7 +393,8 @@ LOOP_core:
         ap_uint<_WOutStrm> d = buf_arr[ps];
         int r = rr[i];
         deq[i][r] = d;
-        rr[i] = (r + 1) == deq_depth ? 0 : (r + 1);
+        int nr = (r + 1) == deq_depth ? 0 : (r + 1);
+        rr[i]=nr;
       }
     } // for
   }   // while

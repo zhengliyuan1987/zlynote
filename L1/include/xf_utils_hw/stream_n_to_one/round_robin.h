@@ -6,9 +6,9 @@
  * @brief header for collect in round-roubin order.
  */
 
-#include "xf_utils_hw/common.h"
 #include "xf_utils_hw/enums.h"
 #include "xf_utils_hw/types.h"
+#include "xf_utils_hw/common.h"
 
 // Forward decl ===============================================================
 
