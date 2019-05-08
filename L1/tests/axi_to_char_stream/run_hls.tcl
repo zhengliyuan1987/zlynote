@@ -20,24 +20,24 @@ add_files -tb l_discount_few.bin
 add_files -tb test_axi_to_stream.cpp -cflags "-std=gnu++0x -g -I ../../include"
 
 # test the top_align_axi_to_stream
-set_top top_align_axi_to_stream
+#set_top top_align_axi_to_stream
 #
 ##corner test, modify define in testbanch##
 #set host_args "-dataFile l_discount_few0.bin    -isALBIN 1 -isALREF 1 -isZERO 0"
 
 ##functional test##
-set host_args "-dataFile l_discount_fix.bin    -isALBIN 1 -isALREF 1"
+#set host_args "-dataFile l_discount_fix.bin    -isALBIN 1 -isALREF 1"
 #set host_args "-dataFile l_orderkey_nfdint.bin -isALBIN 1 -isALREF 0"
 
 # test the top_general_axi_to_stream
-#set_top top_general_axi_to_stream
+set_top top_general_axi_to_stream
 ##corner test, modify define set testbanch##
 #set host_args "-dataFile l_discount_few.bin       -isALBIN 0 -isALREF 1 -isZERO 0"
 #
 ##functional test##
 #set host_args "-dataFile l_discount_fix.bin       -isALBIN 0 -isALREF 1 -isZERO 1"
 #set host_args "-dataFile l_orderkey_nfdint.bin    -isALBIN 0 -isALREF 0 -isZERO 1"
-#set host_args "-dataFile l_orderkey_unaligned.bin -isALBIN 0 -isALREF 1 -isZERO 0"
+set host_args "-dataFile l_orderkey_unaligned.bin -isALBIN 0 -isALREF 1 -isZERO 0"
 
 open_solution -reset "solution1"
 set_part virtexuplus
