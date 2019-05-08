@@ -16,8 +16,7 @@
 
 /**
  * @file axi_to_stream.h
- * @brief This file is a template implement of loading data from AXI master to stream.
- * Xilinx.
+ * @brief This file provides loading data from AXI master to stream APIs.
  *
  * This file is part of XF Hardware Utilities Library.
  */
@@ -31,18 +30,139 @@
 namespace xf {
 namespace common {
 namespace utils_hw {
+
+// ---------------------- APIs ---------------------------------
+
+/**
+ * @brief Loading data from AXI master to stream.
+ *
+ * This module reqires the data elements to align to its size in buffer.
+ * In another word, the start offset is specified by element count from
+ * the beginning of a vector of AXI port width.
+ *
+ * This primitive assumes the width of AXI port width is positive integer
+ * multiple of data element's alignment width.
+ *
+ * Both AXI port and alignment width are assumed to be multiple of 8-bit char.
+ *
+ * \rst
+ * ::
+ *
+ *    +--------------------------------------------------------+
+ *    | DDR  -> AXI_BUS  -> FIFO     -> stream(aligned to 16b) |
+ *    | XXaa    XXaabbcc    XXaabbcc    aa                     |
+ *    | bbcc    ddXX0000    ddXX0000    bb                     |
+ *    | ddXX                            cc                     |
+ *    |                                 dd                     |
+ *    +--------------------------------------------------------+
+ *
+ * \endrst
+ *
+ * @tparam _BurstLen burst length of AXI buffer.
+ * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
+ * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width
+ * stream.
+ *
+ * @param rbuf input AXI port.
+ * @param num number of data to load from AXI port.
+ * @param ostrm output stream.
+ * @param e_ostrm end flag for output stream.
+ * @param offset_num offset from the beginning of the buffer, by num of element.
+ */
+template <int _BurstLen, int _WAxi, typename _TStrm>
+void axi_to_stream(ap_uint<_WAxi>* rbuf,
+                   hls::stream<_TStrm>& ostrm,
+                   hls::stream<bool>& e_ostrm,
+                   const int num,
+                   const int offset_num = 0) {
+#pragma HLS DATAFLOW
+  static const int fifo_depth = _BurstLen * 2;
+  static const int size0 = sizeof(_TStrm);
+  static const int scal_vec = _WAxi / (8 * size0);
+  static const int scal_char = _WAxi / 8;
+
+  hls::stream<ap_uint<_WAxi> > vec_strm;
+#pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
+#pragma HLS STREAM variable = vec_strm depth = fifo_depth
+
+  details::read_to_vec<_WAxi, _BurstLen>(rbuf, num, scal_vec, vec_strm);
+
+  details::split_vec<_WAxi, _TStrm, scal_vec>(
+      vec_strm, num, offset_num, ostrm, e_ostrm);
+}
+
+
+/**
+ * @brief Loading char data from AXI master to stream.
+ *
+ * This primitive relaxes the alignment requirement, and actually load data by
+ * 8-bit char. The 8-bit chars are packed as output stream wide word.
+ * The last word may contain invalid data in high-bits if enough char has
+ * already been packed.
+ *
+ * Both AXI port and output stream are assumed to have width of multiple of 8.
+ *
+ * \rst
+ * ::
+ *
+ *    +-----------------------------------------------------------------+
+ *    | DDR  -> AXI_BUS                           -> FIFO     -> stream |
+ *    | XXX1    XXX1234567812345_6781234567812345    XXX12345    1234   |
+ *    | ...     ...                                  67812345    5678   |
+ *    |                                              ...         ...    |
+ *    | 32XX    6780000321XXXXXX_XXXXXXXXXXXXXXXX    21XXXXXX    21XX   |
+ *    +-----------------------------------------------------------------+
+ *
+ * \endrst
+ *
+ * @tparam _BurstLen burst length of the AXI port.
+ * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
+ * @tparam _TStrm stream's type.
+ *
+ * @param rbuf input AXI port.
+ * @param ostrm output stream.
+ * @param e_ostrm end flag for output stream.
+ * @param len number of char to load from AXI port.
+ * @param offset offset from the beginning of the buffer, in number of char.
+ */
+template <int _BurstLen, int _WAxi, typename _TStrm>
+void axi_to_char_stream(ap_uint<_WAxi>* rbuf,
+                        hls::stream<_TStrm>& ostrm,
+                        hls::stream<bool>& e_ostrm,
+                        const int len,
+                        const int offset = 0) {
+#pragma HLS DATAFLOW
+  static const int fifo_depth = _BurstLen * 2;
+  static const int size0 = sizeof(_TStrm);
+  static const int scal_vec = _WAxi / (8 * size0);
+  static const int scal_char = _WAxi / 8;
+
+  hls::stream<ap_uint<_WAxi> > vec_strm;
+#pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
+#pragma HLS STREAM variable = vec_strm depth = fifo_depth
+
+  details::read_to_vec<_WAxi, _BurstLen>(rbuf, len, scal_char, offset, vec_strm);
+
+  details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
+      vec_strm, len, scal_char, offset, ostrm, e_ostrm);
+}
+
+// ------------------- Implementation --------------------------
+
 namespace details {
 
-template <int _WAxi, int _BstLen>
-void read_to_vec(ap_uint<_WAxi>* vec_ptr, const int nrow, const int scal_vec,
+template <int _WAxi, int _BurstLen>
+void read_to_vec(ap_uint<_WAxi>* vec_ptr,
+                 const int nrow,
+                 const int scal_vec,
                  hls::stream<ap_uint<_WAxi> >& vec_strm) {
   const int nread = (nrow + scal_vec - 1) / scal_vec;
 
 READ_TO_VEC:
-  for (int i = 0; i < nread; i += _BstLen) {
+  for (int i = 0; i < nread; i += _BurstLen) {
 #pragma HLS loop_tripcount min = 1 max = 1
-    //#pragma HLS PIPELINE II = _BstLen
-    int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
+    //#pragma HLS PIPELINE II = _BurstLen
+    int len = ((i + _BurstLen) > nread) ? (nread - i) : _BurstLen;
   READ_VEC0:
     for (int j = 0; j < len; ++j) {
 #pragma HLS PIPELINE II = 1
@@ -53,8 +173,10 @@ READ_TO_VEC:
 }
 
 template <int _WAxi, typename _TStrm, int scal_vec>
-void split_vec(hls::stream<ap_uint<_WAxi> >& vec_strm, const int nrow,
-               const int offset_AL, hls::stream<_TStrm>& r_strm,
+void split_vec(hls::stream<ap_uint<_WAxi> >& vec_strm,
+               const int nrow,
+               const int offset_AL,
+               hls::stream<_TStrm>& r_strm,
                hls::stream<bool>& e_strm) {
   const int WStrm = 8 * sizeof(_TStrm);
   ap_uint<_WAxi> fst_vec = vec_strm.read();
@@ -90,17 +212,19 @@ SPLIT_VEC:
   e_strm.write(true);
 }
 
-
-template <int _WAxi, int _BstLen>
-void read_to_vec(ap_uint<_WAxi>* vec_ptr, const int len, const int scal_char,
-                 const int offset, hls::stream<ap_uint<_WAxi> >& vec_strm) {
+template <int _WAxi, int _BurstLen>
+void read_to_vec(ap_uint<_WAxi>* vec_ptr,
+                 const int len,
+                 const int scal_char,
+                 const int offset,
+                 hls::stream<ap_uint<_WAxi> >& vec_strm) {
   const int nread = (len + offset + scal_char - 1) / scal_char;
 
 READ_TO_VEC:
-  for (int i = 0; i < nread; i += _BstLen) {
+  for (int i = 0; i < nread; i += _BurstLen) {
 #pragma HLS loop_tripcount min = 1 max = 1
-    //#pragma HLS PIPELINE II = _BstLen
-    int len = ((i + _BstLen) > nread) ? (nread - i) : _BstLen;
+    //#pragma HLS PIPELINE II = _BurstLen
+    int len = ((i + _BurstLen) > nread) ? (nread - i) : _BurstLen;
 
   READ_VEC0:
     for (int j = 0; j < len; ++j) {
@@ -112,8 +236,10 @@ READ_TO_VEC:
 }
 
 template <int _WAxi, typename _TStrm, int scal_vec>
-void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm, const int len,
-                          const int scal_char, const int offset,
+void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm,
+                          const int len,
+                          const int scal_char,
+                          const int offset,
                           hls::stream<_TStrm>& r_strm,
                           hls::stream<bool>& e_strm) {
   const int nread = (len + offset + scal_char - 1) / scal_char;
@@ -186,119 +312,6 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm, const int len,
 }
 
 } // details
-
-// ---------------------- APIs ---------------------------------
-
-/**
- * @brief Loading data from AXI master to fixed_width stream.
- *
- * This primitive is relatively universal compared with AXI port of aligned data
- * primitives.
- *
- * AXI port is assumed to have width as multiple of 8-bit char.
- * The data width cloud be unaligned or aligned, e.g. compressed binary files.
- *
- * \rst
- * ::
- *    
- *    +----------------------------------------------------------------+
- *    | DDR   ->  AXI_BUS                          ->  FIFO  ->   strm |
- *    | XXX1     XXX1234567323334_3536373839646566    XXX12345    1234 |
- *    | ...      ...                                  67323334    5673 |
- *    |                                               ...         ...  |
- *    | 32XX     8123456732XXXXXX_XXXXXXXXXXXXXXXX    32XXXXXX    32XX |
- *    +----------------------------------------------------------------+
- *
- * \endrst
- *
- * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _BstLen burst length of the AXI port.
- * @tparam _TStrm stream's type.
- *
- * @param rbuf input AXI port.
- * @param ostrm output stream.
- * @param e_ostrm end flag for output stream.
- * @param len number of char to load from AXI port.
- * @param offset offset from the beginning of the buffer, in number of char.
- */
-template <int _WAxi, int _BstLen, typename _TStrm>
-void axi_to_stream(ap_uint<_WAxi>* rbuf, hls::stream<_TStrm>& ostrm,
-                   hls::stream<bool>& e_ostrm, const int len,
-                   const int offset = 0) {
-#pragma HLS DATAFLOW
-  const int fifo_depth = _BstLen * 2;
-  const int size0 = sizeof(_TStrm);
-  const int scal_vec = _WAxi / (8 * size0);
-  const int scal_char = _WAxi / 8;
-
-  hls::stream<ap_uint<_WAxi> > vec_strm;
-#pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
-#pragma HLS STREAM variable = vec_strm depth = fifo_depth
-
-  details::read_to_vec<_WAxi, _BstLen>(rbuf, len, scal_char, offset, vec_strm);
-
-  details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
-      vec_strm, len, scal_char, offset, ostrm, e_ostrm);
-}
-
-
-/**
- * @brief Loading data from AXI master to aligned_width stream.
- *
- * Lightweight primitives for aligned data.
- *
- * This primitive assumes the data in DDR is aligned,
- * which means the width of AXI port is positive integer multiple of alignment width
- * and the stream's width just equals the aligned width.
- * When input data ptr width is less than AXI port width, the AXI port bandwidth
- * will not be fully used. So, AXI port width should be minimized while meeting
- * performance requirements of application.
- *
- * Both AXI port and alignment width are assumed to be multiple of 8-bit char.
- *
- * \rst
- * ::
- *    
- *    +-------------------------------------------------------+
- *    | DDR->  AXI_BUS   ->  FIFO  ->     strm(aligned to dd) |
- *    |                                                       |
- *    | XXaa   XXaabbcc    XXaabbcc       aa                  |
- *    | bbcc   ddXX0000    ddXX0000       ...                 |
- *    | ddXX                              dd                  |
- *    +-------------------------------------------------------+
- *
- * \endrst
- *
- * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _BstLen burst length of AXI buffer.
- * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width stream.
- *
- * @param rbuf input AXI port.
- * @param ostrm output stream.
- * @param e_ostrm end flag for output stream.
- * @param num number of data to load from AXI port.
- * @param offset_AL offset from the beginning of the buffer, by aligned width.
- */
-template <int _WAxi, int _BstLen, typename _TStrm>
-void axi_to_stream(ap_uint<_WAxi>* rbuf, const int num,
-                   hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm,
-                   const int offset_AL = 0) {
-#pragma HLS DATAFLOW
-  const int fifo_depth = _BstLen * 2;
-  const int size0 = sizeof(_TStrm);
-  const int scal_vec = _WAxi / (8 * size0);
-  const int scal_char = _WAxi / 8;
-
-  hls::stream<ap_uint<_WAxi> > vec_strm;
-#pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
-#pragma HLS STREAM variable = vec_strm depth = fifo_depth
-
-  details::read_to_vec<_WAxi, _BstLen>(rbuf, num, scal_vec, vec_strm);
-
-  details::split_vec<_WAxi, _TStrm, scal_vec>(vec_strm, num, offset_AL, ostrm,
-                                              e_ostrm);
-}
-
 } // utils_hw
 } // common
 } // xf

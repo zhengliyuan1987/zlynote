@@ -19,7 +19,7 @@ add_files -tb l_discount_few.txt
 add_files -tb l_discount_few.bin
 add_files -tb test_axi_to_stream.cpp -cflags "-std=gnu++0x -g -I ../../include"
 
-# test the top_align_axi_to_stream 
+# test the top_align_axi_to_stream
 #set_top top_align_axi_to_stream
 #
 ##corner test, modify define in testbanch##

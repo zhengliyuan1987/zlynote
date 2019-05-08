@@ -132,7 +132,7 @@ bool axi_batchdata_to_stream(const ap_uint<_WAxi>* rbuf,
   return is_fnl;
 }
 
-template <int _WAxi, int _BstLen, int _NT>
+template <int _WAxi, int _BurstLen, int _NT>
 void read_to_vec_stream(ap_uint<_WAxi>* rbuf,
                         hls::stream<ap_uint<_WAxi> > vec_strm[_NT],
                         const int len[_NT],
@@ -145,7 +145,7 @@ void read_to_vec_stream(ap_uint<_WAxi>* rbuf,
   int off_ali[_NT]; // the first row offset aligned to Axi port by char
   int off_axi[_NT]; // offset aligned by axi width
   ap_uint<_WAxi> dat_ram[_NT]
-                        [_BstLen]; // local ram depth equals the burst length
+                        [_BurstLen]; // local ram depth equals the burst length
   int cnt_alltype_fnl;
   bool is_onetype_fnl[3];
 #pragma HLS RESOURCE variable = dat_ram core = RAM_2P_BRAM
@@ -194,7 +194,7 @@ ROUND_ROBIN:
     for (int t = 0; t < _NT; t++) {
 #pragma HLS UNROLL
       is_onetype_fnl[t] =
-          details::axi_batchdata_to_stream<_WAxi, _BstLen>(rbuf,
+          details::axi_batchdata_to_stream<_WAxi, _BurstLen>(rbuf,
                                                            off_axi[t],
                                                            len_vec[t],
                                                            pos_vec[t],
@@ -293,7 +293,8 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
 
 // ---------------------- APIs ---------------------------------
 
-/* @brief Loading multiple categories of data from one AXI master to streams.
+/**
+ * @brief Loading multiple categories of data from one AXI master to streams.
  *
  * This primitive assumes the width of AXI port is multiple of alignment width.
  * When alignment width is less than AXI port width, the AXI port bandwidth
@@ -315,10 +316,11 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
  *
  * \endrst
  *
+ * @tparam _BurstLen burst length.
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _TStrm stream's type, e.g. ap_uint<fixed_width> for a fixed_width
- * stream.
- * @tparam _TStrm data's type.
+ * @tparam _TStrm0 first stream's type.
+ * @tparam _TStrm1 second stream's type.
+ * @tparam _TStrm2 third stream's type.
  *
  * @param rbuf input AXI port.
  * @param ostrm1 output stream of type 0.
@@ -327,11 +329,11 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
  * @param e_ostrm2 end flag for output stream of type 1.
  * @param ostrm3 output stream of type 2.
  * @param e_ostrm3 end flag for output stream of type 2.
- * @param num number of data to load from AXI port for each type.
- * @param offset offset for each type, in number of char.
+ * @param num number of elements to load from AXI port for each type.
+ * @param offset offset for each type, in number of chars.
  */
-template <int _WAxi,
-          int _BstLen,
+template <int _BurstLen,
+          int _WAxi,
           typename _TStrm0,
           typename _TStrm1,
           typename _TStrm2>
@@ -342,7 +344,7 @@ void axi_to_multi_stream(ap_uint<_WAxi>* rbuf,
                          hls::stream<bool>& e_ostrm1,
                          hls::stream<_TStrm2>& ostrm2,
                          hls::stream<bool>& e_ostrm2,
-                         const int len[3],
+                         const int num[3],
                          const int offset[3]) {
 #pragma HLS DATAFLOW
 
@@ -355,7 +357,7 @@ const int NONBLOCK_DEPTH = (256);
 #pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
 #pragma HLS STREAM variable = vec_strm depth = NONBLOCK_DEPTH
 #pragma HLS ARRAY_PARTITION variable = vec_strm complete
-#pragma HLS ARRAY_PARTITION variable = len complete
+#pragma HLS ARRAY_PARTITION variable = num complete
 #pragma HLS ARRAY_PARTITION variable = offset complete
 
   const int scal_char = _WAxi / 8;
@@ -372,13 +374,13 @@ const int NONBLOCK_DEPTH = (256);
     off_ali[t] = (offset[t]) & (scal_char - 1); // scal_char is always 2^N
   }
 
-  details::read_to_vec_stream<_WAxi, _BstLen, 3>(rbuf, vec_strm, len, offset);
+  details::read_to_vec_stream<_WAxi, _BurstLen, 3>(rbuf, vec_strm, num, offset);
   details::split_vec_to_aligned_duplicate<_WAxi, _TStrm0, scal_vec0>(
-      vec_strm[0], len[0], scal_char, off_ali[0], ostrm0, e_ostrm0);
+      vec_strm[0], num[0], scal_char, off_ali[0], ostrm0, e_ostrm0);
   details::split_vec_to_aligned_duplicate<_WAxi, _TStrm1, scal_vec1>(
-      vec_strm[1], len[1], scal_char, off_ali[1], ostrm1, e_ostrm1);
+      vec_strm[1], num[1], scal_char, off_ali[1], ostrm1, e_ostrm1);
   details::split_vec_to_aligned_duplicate<_WAxi, _TStrm2, scal_vec2>(
-      vec_strm[2], len[2], scal_char, off_ali[2], ostrm2, e_ostrm2);
+      vec_strm[2], num[2], scal_char, off_ali[2], ostrm2, e_ostrm2);
 }
 
 // TODO for 2 and for 4
