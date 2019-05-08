@@ -37,13 +37,13 @@ namespace utils_hw {
  * @param ostrms output data streams.
  * @param e_ostrm end flag for output.
  */
-template <typename _TIn, int _NStrm>
-void stream_shuffle(hls::stream<int>& order_cfg,
+template <typename _TIn, int _INStrm, int _ONstrm>
+void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
 
-                    hls::stream<_TIn> istrms[_NStrm],
+                    hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
 
-                    hls::stream<_TIn> ostrms[_NStrm],
+                    hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm); // TODO
 
 } // utils_hw
@@ -55,47 +55,43 @@ namespace xf {
 namespace common {
 namespace utils_hw {
 
-template <typename _TIn, int _NStrm>
-void stream_shuffle(hls::stream<int>& order_cfg,
+template <typename _TIn, int _INStrm, int _ONstrm>
+void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
 
-                    hls::stream<_TIn> istrms[_NStrm],
+                    hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
 
-                    hls::stream<_TIn> ostrms[_NStrm],
+                    hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm){
 
 	bool e=e_istrm.read();
-	ap_uint<4> route[_NStrm];
+	ap_uint<4> route[_INStrm];
 #pragma HLS ARRAY_PARTITION variable=route complete
 
-	_TIn reg_i[_NStrm];
+	_TIn reg_i[_INStrm];
 #pragma HLS ARRAY_PARTITION variable=reg_i complete
-	_TIn reg_o[_NStrm];
+	_TIn reg_o[_INStrm];
 #pragma HLS ARRAY_PARTITION variable=reg_o complete
 
-	for(int i=0;i<_NStrm;i++){
-#pragma HLS PIPELINE
-		route[i]=order_cfg.read();
+	for(int i=0;i<_INStrm;i++){
+#pragma HLS UNROLL
+		route[i]=order_cfg[i].read();
 	}
 
 	while(!e){
 #pragma HLS PIPELINE
-/*		for(int i=0;i<_NStrm;i++){
-#pragma HLS UNROLL
-			ostrms[route[i]].write(istrms[i].read());
-		}*/
 
-		for(int i=0;i<_NStrm;i++){
+		for(int i=0;i<_INStrm;i++){
 #pragma HLS UNROLL
 			reg_i[i]=istrms[i].read();
 		}
 
-		for(int i=0;i<_NStrm;i++){
+		for(int i=0;i<_INStrm;i++){
 #pragma HLS UNROLL
 			reg_o[route[i]]=reg_i[i];
 		}
 
-		for(int i=0;i<_NStrm;i++){
+		for(int i=0;i<_ONstrm;i++){
 #pragma HLS UNROLL
 			ostrms[i].write(reg_o[i]);
 		}
