@@ -18,24 +18,38 @@ namespace utils_hw {
 
 /**
  * @brief Discard multiple streams with end flag helper for each.
+ * @tparam _TIn streams' type
+ * @tparam _NStrm the number of streams
+ *
+ * @param istrms input streams
+ * @param e_istrms end flag of streams
  */
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
-                    hls::stream<bool> e_istrms[_NStrm]); // TODO
+                    hls::stream<bool> e_istrms[_NStrm]); 
 
 /**
  * @brief Discard multiple streams synchronized with one end flag
+ * @tparam _TIn streams' type
+ * @tparam _NStrm the number of streams
+ *
+ * @param istrms input streams
+ * @param e_istrm end flag, which is shared in all input streams
  */
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
-                    hls::stream<bool>& e_istrm); // TODO
+                    hls::stream<bool>& e_istrm); 
 
 /**
  * @brief Discard one stream with its end flag helper.
+ * @tparam _TIn stream's type
+ *
+ * @param istrm input stream
+ * @param e_istrm end flag of input stream
  */
 template <typename _TIn>
 void stream_discard(hls::stream<_TIn>& istrm,
-                    hls::stream<bool>& e_istrm); // TODO
+                    hls::stream<bool>& e_istrm);
 
 } // utils_hw
 } // common
