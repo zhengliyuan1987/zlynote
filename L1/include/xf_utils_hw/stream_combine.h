@@ -278,13 +278,23 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_ostrm,
 
                     lsb_side_t alg)  {
-  const int max = _WIn*_NStrmrm > _WOut? _WIn*_NStrm : _WOut ;
+/**
+ * stream     
+ *   A      0    4   8
+ *   B      1    5   9
+ *   C      2    6   a
+ *   D      3    7   b
+ *
+ * output  3210 7654 ba98 
+ * */
+
+  const int max = _WIn*_NStrm > _WOut? _WIn*_NStrm : _WOut ;
   bool last= e_istrm.read();
   while(!last) {
    #pragma HLS pipeline II=1
    last=e_istrm.read();
    ap_uint<max> cmb=0;
-   for(int i=0; i< _NStrm, ++i) {
+   for(int i=0; i< _NStrm; ++i) {
     #pragma HLS unroll
     cmb.range( (i+1)*_WIn-1, i*_WIn) = istrms[i].read();
    }
@@ -305,16 +315,27 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_ostrm,
 
                     msb_side_t alg) {
+/**
+ * stream     
+ *   A      0    4   8
+ *   B      1    5   9
+ *   C      2    6   a
+ *   D      3    7   b
+ *
+ * output  0123 4567 89ab 
+ * */
+
+
   const int max = _WIn*_NStrm > _WOut? _WIn*_NStrm : _WOut ;
   const int df  = _WOut - _WIn*_NStrm;
-  const int rdf = df < 0:(-df) : df;
+  const int rdf = df < 0?(-df) : df;
   const int w = _WIn*_NStrm ;
   bool last= e_istrm.read();
   while(!last) {
    #pragma HLS pipeline II=1
    last=e_istrm.read();
    ap_uint<max> cmb=0;
-   for(int i=0,j=_NStrm-1; i< _NStrm, ++i,--j) {
+   for(int i=0,j=_NStrm-1; i< _NStrm; ++i,--j) {
     #pragma HLS unroll
     cmb.range( (j+1)*_WIn-1, j*_WIn) = istrms[i].read();
    }
