@@ -24,8 +24,7 @@
 #ifndef XF_UTILS_HW_AXI_TO_STREAM_H
 #define XF_UTILS_HW_AXI_TO_STREAM_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
+#include "xf_utils_hw/common.h"
 
 namespace xf {
 namespace common {
@@ -75,6 +74,10 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
                    hls::stream<bool>& e_ostrm,
                    const int num,
                    const int offset_num = 0) {
+  XF_UTILS_HW_STATIC_ASSERT(
+      _WAxi % sizeof(_TStrm) == 0,
+      "AXI port width is not multiple of stream element width.")
+
 #pragma HLS DATAFLOW
   static const int fifo_depth = _BurstLen * 2;
   static const int size0 = sizeof(_TStrm);
@@ -90,7 +93,6 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
   details::split_vec<_WAxi, _TStrm, scal_vec>(
       vec_strm, num, offset_num, ostrm, e_ostrm);
 }
-
 
 /**
  * @brief Loading char data from AXI master to stream.
@@ -141,7 +143,8 @@ void axi_to_char_stream(ap_uint<_WAxi>* rbuf,
 #pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
 #pragma HLS STREAM variable = vec_strm depth = fifo_depth
 
-  details::read_to_vec<_WAxi, _BurstLen>(rbuf, len, scal_char, offset, vec_strm);
+  details::read_to_vec<_WAxi, _BurstLen>(
+      rbuf, len, scal_char, offset, vec_strm);
 
   details::split_vec_to_aligned<_WAxi, _TStrm, scal_vec>(
       vec_strm, len, scal_char, offset, ostrm, e_ostrm);

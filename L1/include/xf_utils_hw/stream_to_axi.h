@@ -24,6 +24,8 @@
 #ifndef XF_UTILS_HW_STRM_TO_AXI_H
 #define XF_UTILS_HW_STRM_TO_AXI_H
 
+#include "xf_utils_hw/common.h"
+
 // Forward decl
 
 namespace xf {
@@ -31,18 +33,18 @@ namespace common {
 namespace utils_hw {
 
 /**
- * @brief the template of stream to AXI master port in burst.
+ * @brief Write elements in burst to AXI master port.
  *
- * @tparam WAxi   width of axi port.
- * @tparam WStrm  width of input stream.
- * @tparam NBurst length of a burst.
+ * @tparam _WAxi     width of axi port.
+ * @tparam _WStrm    width of input stream.
+ * @tparam _BurstLen length of a burst, default is 16.
  *
  * @param wbuf    output AXI port.
  * @param istrm   input stream.
  * @param e_istrm end flag for input stream
  */
-template <int WAxi, int WStrm, int NBurst = 16>
-void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
+template <int _WAxi, int _WStrm, int _BurstLen = 16>
+void stream_to_axi(ap_uint<_WAxi> *wbuf, hls::stream<ap_uint<_WStrm> > &istrm,
                    hls::stream<bool> &e_istrm);
 } // utils_hw
 } // common
@@ -54,25 +56,25 @@ namespace utils_hw {
 namespace details {
 
 /**
- * @brief the template of convert stream width from WStrm to WAxi and count
+ * @brief the template of convert stream width from _WStrm to _WAxi and count
  * burst number.
  *
- * @tparam WAxi   width of axi port.
- * @tparam WStrm  width of input stream.
- * @tparam NBurst length of a burst.
+ * @tparam _WAxi   width of axi port.
+ * @tparam _WStrm  width of input stream.
+ * @tparam _BurstLen length of a burst.
  *
  * @param istrm   input stream.
  * @param e_istrm  end flag for input stream
- * @param axi_strm stream width is WAxi
+ * @param axi_strm stream width is _WAxi
  * @param nb_strm  store burst number of each burst
  */
-template <int WAxi, int WStrm, int NBurst = 16>
-void countForBurst(hls::stream<ap_uint<WStrm> > &istrm,
+template <int _WAxi, int _WStrm, int _BurstLen = 16>
+void countForBurst(hls::stream<ap_uint<_WStrm> > &istrm,
                    hls::stream<bool> &e_istrm,
-                   hls::stream<ap_uint<WAxi> > &axi_strm,
+                   hls::stream<ap_uint<_WAxi> > &axi_strm,
                    hls::stream<ap_uint<8> > &nb_strm) {
-  const int N = WAxi / WStrm;
-  ap_uint<WAxi> tmp;
+  const int N = _WAxi / _WStrm;
+  ap_uint<_WAxi> tmp;
   bool isLast;
   int nb = 0;
   int bs = 0;
@@ -82,13 +84,13 @@ doing_loop:
   while (!isLast) {
 #pragma HLS pipeline II = 1
     isLast = e_istrm.read();
-    int offset = bs * WStrm;
-    ap_uint<WStrm> t = istrm.read();
-    tmp.range(offset + WStrm - 1, offset) = t(WStrm - 1, 0);
+    int offset = bs * _WStrm;
+    ap_uint<_WStrm> t = istrm.read();
+    tmp.range(offset + _WStrm - 1, offset) = t(_WStrm - 1, 0);
     if (bs == (N - 1)) {
       axi_strm.write(tmp);
-      if (nb == (NBurst - 1)) {
-        nb_strm.write(NBurst);
+      if (nb == (_BurstLen - 1)) {
+        nb_strm.write(_BurstLen);
         nb = 0;
       } else
         ++nb;
@@ -101,36 +103,34 @@ doing_loop:
   doing_not_enough:
     for (; bs < N; ++bs) {
 #pragma HLS unroll
-      int offset = bs * WStrm;
-      tmp.range(offset + WStrm - 1, offset) = 0;
+      int offset = bs * _WStrm;
+      tmp.range(offset + _WStrm - 1, offset) = 0;
     }
     axi_strm.write(tmp);
     ++nb;
   }
   if (nb != 0) {
-#ifndef __SYNTHESIS__
-    assert(nb <= NBurst);
-#endif
+    XF_UTILS_HW_ASSERT(nb <= _BurstLen);
     nb_strm.write(nb);
   }
   nb_strm.write(0);
 }
 
-/// @brief the template of stream width of WAxi burst out.
+/// @brief the template of stream width of _WAxi burst out.
 
-/// @tparam WAxi   width of axi port.
-/// @tparam WStrm  width of input stream.
-/// @tparam NBurst length of a burst.
+/// @tparam _WAxi   width of axi port.
+/// @tparam _WStrm  width of input stream.
+/// @tparam _BurstLen length of a burst.
 
-/// @tparam WAxi   width of axi port
-/// @param axi_strm stream width is WAxi
+/// @tparam _WAxi   width of axi port
+/// @param axi_strm stream width is _WAxi
 /// @param nb_strm  store burst number of each burst
-template <int WAxi, int WStrm, int NBurst = 16>
-void burstWrite(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WAxi> > &axi_strm,
+template <int _WAxi, int _WStrm, int _BurstLen = 16>
+void burstWrite(ap_uint<_WAxi> *wbuf, hls::stream<ap_uint<_WAxi> > &axi_strm,
                 hls::stream<ap_uint<8> > &nb_strm) {
   // write each burst to axi
   int total = 0;
-  ap_uint<WAxi> tmp;
+  ap_uint<_WAxi> tmp;
   int n = nb_strm.read();
 doing_burst:
   while (n) {
@@ -138,7 +138,7 @@ doing_burst:
     for (int i = 0; i < n; i++) {
 #pragma HLS pipeline II = 1
       tmp = axi_strm.read();
-      wbuf[total * NBurst + i] = tmp;
+      wbuf[total * _BurstLen + i] = tmp;
     }
     total++;
     n = nb_strm.read();
@@ -146,21 +146,24 @@ doing_burst:
 }
 } // details
 
-template <int WAxi, int WStrm, int NBurst>
-void stream_to_axi(ap_uint<WAxi> *wbuf, hls::stream<ap_uint<WStrm> > &istrm,
-                   hls::stream<bool> &e_istrm) {
-#ifndef __SYNTHESIS__
-  assert(WAxi % WStrm == 0);
-#endif
-  const int fifo_buf = 2 * NBurst;
-  hls::stream<ap_uint<WAxi> > axi_strm;
+template <int _WAxi, int _WStrm, int _BurstLen>
+void stream_to_axi(ap_uint<_WAxi>* wbuf,
+                   hls::stream<ap_uint<_WStrm> >& istrm,
+                   hls::stream<bool>& e_istrm) {
+  XF_UTILS_HW_STATIC_ASSERT(_WAxi % _WStrm == 0,
+                            "AXI port width is not multiple of stream width");
+  const int fifo_buf = 2 * _BurstLen;
+
+#pragma HLS dataflow
+
+  hls::stream<ap_uint<_WAxi> > axi_strm;
   hls::stream<ap_uint<8> > nb_strm;
 #pragma HLS stream variable = nb_strm depth = 2
 #pragma HLS stream variable = axi_strm depth = fifo_buf
-#pragma HLS dataflow
-  details::countForBurst<WAxi, WStrm, NBurst>(istrm, e_istrm, axi_strm,
-                                              nb_strm);
-  details::burstWrite<WAxi, WStrm, NBurst>(wbuf, axi_strm, nb_strm);
+
+  details::countForBurst<_WAxi, _WStrm, _BurstLen>(
+      istrm, e_istrm, axi_strm, nb_strm);
+  details::burstWrite<_WAxi, _WStrm, _BurstLen>(wbuf, axi_strm, nb_strm);
 }
 
 } // utils_hw
