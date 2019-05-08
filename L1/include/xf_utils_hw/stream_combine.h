@@ -97,7 +97,7 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    lsb_side_t alg); // TODO
+                    lsb_side_t alg); 
 
 /**
  * @brief combine multiple streams into a wide one, align to MSB.
@@ -125,7 +125,7 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    msb_side_t alg); // TODO
+                    msb_side_t alg); 
 
 
 } // utils_hw
@@ -273,10 +273,8 @@ loop:
 template <int _WIn, int _WOut, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
-
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
-
                     lsb_side_t alg)  {
 /**
  * stream     
@@ -310,10 +308,8 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
 template <int _WIn, int _WOut, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
-
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
-
                     msb_side_t alg) {
 /**
  * stream     
@@ -342,7 +338,6 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
    ap_uint<_WOut> o_cmb = (df>=0) ? (cmb << df) : (cmb >> rdf);
    ostrm.write(o_cmb);
    e_ostrm.write(false);
-
  }
   e_ostrm.write(true);
 }
