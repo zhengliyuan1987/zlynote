@@ -59,10 +59,10 @@ struct need_num<total, one, false> {
 /// @brief Helper class to create URAM array that can be updated every cycle
 /// with forwarding regs.
 ///
-/// @tparam WData  the width of every element.
-/// @tparam NData  the number of elements in the array.
-/// @tparam NCache the number of cache.
-template <int WData, int NData, int NCache>
+/// @tparam _WData  the width of every element.
+/// @tparam _NData  the number of elements in the array.
+/// @tparam _NCache the number of cache.
+template <int _WData, int _NData, int _NCache>
 class uram_array {
  public:
   uram_array() {
@@ -76,7 +76,7 @@ class uram_array {
       blocks[i] = (ap_uint<72>*)malloc(sizeof(ap_uint<72>) * 4096);
     }
 #endif
-    for (int i = 0; i < NCache; i++) {
+    for (int i = 0; i < _NCache; i++) {
 #pragma HLS unroll
       _index[i] = -1;
       _state[i] = 0;
@@ -94,20 +94,20 @@ class uram_array {
   /// @brief  initialization for uram.
   /// @param  d value for initialization.
   /// @return number of block which had been initialize.
-  int memset(const ap_uint<WData>& d);
+  int memset(const ap_uint<_WData>& d);
 
   /// @brief write to uram.
   /// @param index the index which you want to write.
   /// @param d     the value what you want to write.
-  void write(int index, const ap_uint<WData>& d);
+  void write(int index, const ap_uint<_WData>& d);
 
   /// @brief  read from uram.
   /// @param  index the index which you want to read.
   /// @return value you had read.
-  ap_uint<WData> read(int index);
+  ap_uint<_WData> read(int index);
 
  private:
-  /// number elements per line, used with WData<=72. For example, when WData =
+  /// number elements per line, used with _WData<=72. For example, when _WData =
   /// 16, _elem_per_line is 4.
   static const int _elem_per_line;
 
@@ -121,42 +121,42 @@ class uram_array {
   static const int _num_uram_block;
 
   /// the cache for saving latest index.
-  int _index[NCache];
+  int _index[_NCache];
 
   /// the cache for saving latest value.
-  ap_uint<WData> _state[NCache];
+  ap_uint<_WData> _state[_NCache];
 
  public:
 // XXX this has to be public, otherwise `depencency false` cannot be
 // specified.
 #ifndef __SYNTHESIS__
-  ap_uint<72>* blocks[details::need_num<WData, NData>::value];
+  ap_uint<72>* blocks[details::need_num<_WData, _NData>::value];
 #else
-  ap_uint<72> blocks[details::need_num<WData, NData>::value][4096];
+  ap_uint<72> blocks[details::need_num<_WData, _NData>::value][4096];
 #endif
 };
 
 // Const member variables
 
-template <int WData, int NData, int NCache>
-const int uram_array<WData, NData, NCache>::_elem_per_line = (72 / WData);
+template <int _WData, int _NData, int _NCache>
+const int uram_array<_WData, _NData, _NCache>::_elem_per_line = (72 / _WData);
 
-template <int WData, int NData, int NCache>
-const int uram_array<WData, NData, NCache>::_elem_per_block = (_elem_per_line *
+template <int _WData, int _NData, int _NCache>
+const int uram_array<_WData, _NData, _NCache>::_elem_per_block = (_elem_per_line *
                                                                4096);
 
-template <int WData, int NData, int NCache>
-const int uram_array<WData, NData, NCache>::_num_parallel_block =
-    ((WData + 71) / 72);
+template <int _WData, int _NData, int _NCache>
+const int uram_array<_WData, _NData, _NCache>::_num_parallel_block =
+    ((_WData + 71) / 72);
 
-template <int WData, int NData, int NCache>
-const int uram_array<WData, NData, NCache>::_num_uram_block =
-    (details::need_num<WData, NData>::value);
+template <int _WData, int _NData, int _NCache>
+const int uram_array<_WData, _NData, _NCache>::_num_uram_block =
+    (details::need_num<_WData, _NData>::value);
 
 // Methods
 
-template <int WData, int NData, int NCache>
-int uram_array<WData, NData, NCache>::memset(const ap_uint<WData>& d) {
+template <int _WData, int _NData, int _NCache>
+int uram_array<_WData, _NData, _NCache>::memset(const ap_uint<_WData>& d) {
   if (_num_uram_block == 0) return 0;
 
   ap_uint<72> t;
@@ -165,17 +165,17 @@ l_init_value:
 #pragma HLS PIPELINE II = 1
     for (int nb = 0; nb < _num_uram_block; nb++) {
 #pragma HLS unroll
-      if (WData <= 72) {
+      if (_WData <= 72) {
         for (int j = 0; j < _elem_per_line; j++) {
 #pragma HLS unroll
-          t(j * WData + WData - 1, j * WData) = d(WData - 1, 0);
+          t(j * _WData + _WData - 1, j * _WData) = d(_WData - 1, 0);
         }
         blocks[nb][i] = t;
       } else {
         int offset = nb % _num_parallel_block;
         int begin = offset * 72;
         if (offset == (_num_parallel_block - 1))
-          blocks[nb][i] = d(WData - 1, begin);
+          blocks[nb][i] = d(_WData - 1, begin);
         else
           blocks[nb][i] = d(begin + 71, begin);
       }
@@ -184,7 +184,7 @@ l_init_value:
 
 // update d for cache
 init_cache:
-  for (int i = 0; i < NCache; i++) {
+  for (int i = 0; i < _NCache; i++) {
 #pragma HLS unroll
     _state[i] = d;
     _index[i] = 0;
@@ -193,23 +193,23 @@ init_cache:
   return _num_uram_block;
 }
 
-template <int WData, int NData, int NCache>
-void uram_array<WData, NData, NCache>::write(int index,
-                                             const ap_uint<WData>& d) {
+template <int _WData, int _NData, int _NCache>
+void uram_array<_WData, _NData, _NCache>::write(int index,
+                                             const ap_uint<_WData>& d) {
 #pragma HLS inline
   int div_block = 0, div_index = 0;
   int dec_block = 0, dec, begin;
 
 Write_Inner:
   for (int i = 0; i < _num_parallel_block; i++) {
-    if (WData <= 72) {
+    if (_WData <= 72) {
       div_block = index / _elem_per_block;
       dec_block = index % _elem_per_block;
       div_index = dec_block / _elem_per_line;
       dec = dec_block % _elem_per_line;
-      begin = dec * WData;
+      begin = dec * _WData;
       ap_uint<72> tmp = blocks[div_block][div_index];
-      tmp.range(begin + WData - 1, begin) = d;
+      tmp.range(begin + _WData - 1, begin) = d;
       blocks[div_block][div_index] = tmp;
     } else {
       div_block = index / 4096;
@@ -217,14 +217,14 @@ Write_Inner:
       int ii = i + div_block * _num_parallel_block;
       begin = i * 72;
       if (i == (_num_parallel_block - 1))
-        blocks[ii][dec_block] = d.range(WData - 1, begin);
+        blocks[ii][dec_block] = d.range(_WData - 1, begin);
       else
         blocks[ii][dec_block] = d.range(begin + 71, begin);
     }
   }
 
 Write_Cache:
-  for (int i = NCache - 1; i >= 1; i--) {
+  for (int i = _NCache - 1; i >= 1; i--) {
     _state[i] = _state[i - 1];
     _index[i] = _index[i - 1];
   }
@@ -232,15 +232,15 @@ Write_Cache:
   _index[0] = index;
 }
 
-template <int WData, int NData, int NCache>
-ap_uint<WData> uram_array<WData, NData, NCache>::read(int index) {
+template <int _WData, int _NData, int _NCache>
+ap_uint<_WData> uram_array<_WData, _NData, _NCache>::read(int index) {
 #pragma HLS inline
-  ap_uint<WData> value;
+  ap_uint<_WData> value;
   int div_block = 0, div_index = 0;
   int dec_block = 0, dec, begin;
 
 Read_Cache:
-  for (int i = 0; i < NCache; i++) {
+  for (int i = 0; i < _NCache; i++) {
     if (index == _index[i]) {
       value = _state[i];
       return value;
@@ -249,14 +249,14 @@ Read_Cache:
 
 Read_Inner:
   for (int i = 0; i < _num_parallel_block; i++) {
-    if (WData <= 72) {
+    if (_WData <= 72) {
       div_block = index / _elem_per_block;
       dec_block = index % _elem_per_block;
       div_index = dec_block / _elem_per_line;
       dec = dec_block % _elem_per_line;
-      begin = dec * WData;
+      begin = dec * _WData;
       ap_uint<72> tmp = blocks[div_block][div_index];
-      value = tmp.range(begin + WData - 1, begin);
+      value = tmp.range(begin + _WData - 1, begin);
     } else {
       div_block = index / 4096;
       dec_block = index % 4096;
@@ -264,7 +264,7 @@ Read_Inner:
       begin = i * 72;
 
       if (i == (_num_parallel_block - 1))
-        value.range(WData - 1, begin) = blocks[ii][dec_block];
+        value.range(_WData - 1, begin) = blocks[ii][dec_block];
       else {
         value.range(begin + 71, begin) = blocks[ii][dec_block];
       }
