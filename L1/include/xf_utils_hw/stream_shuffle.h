@@ -79,7 +79,7 @@ void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
 	}
 
 	while(!e){
-#pragma HLS PIPELINE
+#pragma HLS PIPELINE II=1
 
 		for(int i=0;i<_INStrm;i++){
 #pragma HLS UNROLL

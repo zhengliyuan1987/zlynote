@@ -2,7 +2,7 @@
 #include <iostream>
 
 #define NUM_INPUT  16
-#define NUM_OUTPUT 16
+#define NUM_OUTPUT 8
 
 void top(
 	hls::stream<ap_uint<4> > order_cfg[16],
@@ -10,7 +10,7 @@ void top(
 	hls::stream<int> istrms[NUM_INPUT],
 	hls::stream<bool>& e_istrm,
 
-	hls::stream<int> ostrms[NUM_INPUT],
+	hls::stream<int> ostrms[NUM_OUTPUT],
 	hls::stream<bool>& e_ostrm
 ){
 	xf::common::utils_hw::stream_shuffle<int,NUM_INPUT,NUM_OUTPUT>(
