@@ -32,7 +32,7 @@ namespace utils_hw {
  * @param e_ostrm end flag streams for all outputs.
  * @param alg algorithm selector for this function.
  */
-template <int _WOut, int _WIn, int _NStrm>
+template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
 
@@ -57,7 +57,7 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
  * @param alg algorithm selector for this function.
  */
 
-template <int _WOut, int _WOut, int _NStrm>
+template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
 
@@ -74,7 +74,83 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
 
 namespace xf {
 namespace common {
-namespace utils_hw {} // utils_hw
+namespace utils_hw {
+
+
+
+template <int _WIn, int _WOut, int _NStrm>
+void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
+                  hls::stream<bool>& e_istrm,
+
+                  hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
+                  hls::stream<bool>& e_ostrm,
+
+                  lsb_side_t alg) {
+
+   const int max = _WIn > _WOut * _NStrm ? _WIn : _WOut *_NStrm;
+   bool last = e_istrm.read();
+
+   while( !last) {
+     #pragma HLS pipeline II=1
+     last = e_istrm.read();
+     ap_uint<max>  data = istrm.read();
+     //ap_uint<_WIn>  data = istrm.read();  // out of the range if _WIn< _WOut*_NStrm  
+     for(int i=0; i< _NStrm; ++i) {
+       #pragma HLS unroll 
+        ap_uint<_WOut> d = data.range( (i+1)*_WOut-1, i*_WOut);
+        ostrms[i].write(d);
+     } // for
+     e_ostrm.write(false);
+   }  // while
+
+    e_ostrm.write(true);
+
+
+}
+
+
+
+template <int _WIn, int _WOut, int _NStrm>
+void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
+                  hls::stream<bool>& e_istrm,
+
+                  hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
+                  hls::stream<bool>& e_ostrm,
+
+                  msb_side_t alg) {
+
+   const int nout = _WOut * _NStrm;
+   const int max = _WIn > nout ? _WIn : nout;
+   const int df  = max - nout ;
+     
+   bool last = e_istrm.read();
+
+   while( !last) {
+     #pragma HLS pipeline II=1
+     last = e_istrm.read();
+     //ap_uint<_WIn>  data = istrm.read(); // out of the range if _WIn < _WOut*_NStrm 
+     ap_uint<max>  data = istrm.read();
+     ap_uint<nout>  nd  = _WIn >= nout ?  (data>>df) : (data<<df) ; // keep MSB 
+     for(int i=0,j=_NStrm-1; i< _NStrm; ++i,--j) {
+       #pragma HLS unroll 
+        ap_uint<_WOut> d = nd.range( (i+1)*_WOut-1, i*_WOut);
+        ostrms[j].write(d);
+     } // for
+     e_ostrm.write(false);
+   }  // while
+
+    e_ostrm.write(true);
+
+}
+
+
+
+
+
+
+
+
+} // utils_hw
 } // common
 } // xf
 
