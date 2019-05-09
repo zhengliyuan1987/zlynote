@@ -30,9 +30,11 @@ namespace utils_hw {
  *
  * @tparam _TIn input type.
  * @tparam _INStrm number of input  stream. The advice value is 16 or less.
- * @tparam _ONstrm number of output stream. Should be equal or less than _INStrm.
+ * @tparam _ONstrm number of output stream. Should be equal or less than
+ * _INStrm.
  *
- * @param order_cfg the new order within the window, indexed from 0. -1 means drop the stream. Other minus value is illegal.
+ * @param order_cfg the new order within the window, indexed from 0. -1 means
+ * drop the stream. Other minus value is illegal.
  * @param istrms input data streams.
  * @param e_istrm end flags for input.
  * @param ostrms output data streams.
@@ -63,51 +65,47 @@ void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
                     hls::stream<bool>& e_istrm,
 
                     hls::stream<_TIn> ostrms[_ONstrm],
-                    hls::stream<bool>& e_ostrm){
+                    hls::stream<bool>& e_ostrm) {
+  bool e = e_istrm.read();
+  ap_uint<7> route[_INStrm];
+#pragma HLS ARRAY_PARTITION variable = route complete
 
-	bool e=e_istrm.read();
-	ap_uint<7> route[_INStrm];
-#pragma HLS ARRAY_PARTITION variable=route complete
+  _TIn reg_i[_INStrm];
+#pragma HLS ARRAY_PARTITION variable = reg_i complete
+  _TIn reg_o[_ONstrm + 1];
+#pragma HLS ARRAY_PARTITION variable = reg_o complete
 
-	_TIn reg_i[_INStrm];
-#pragma HLS ARRAY_PARTITION variable=reg_i complete
-	_TIn reg_o[_ONstrm+1];
-#pragma HLS ARRAY_PARTITION variable=reg_o complete
-
-	for(int i=0;i<_INStrm;i++){
+  for (int i = 0; i < _INStrm; i++) {
 #pragma HLS UNROLL
-		route[i]=(1+order_cfg[i].read())(6,0);
-	}
+    route[i] = (1 + order_cfg[i].read())(6, 0);
+  }
 
-	while(!e){
-#pragma HLS PIPELINE II=1
+  while (!e) {
+#pragma HLS PIPELINE II = 1
 
-		for(int i=0;i<_INStrm;i++){
+    for (int i = 0; i < _INStrm; i++) {
 #pragma HLS UNROLL
-			reg_i[i]=istrms[i].read();
-		}
+      reg_i[i] = istrms[i].read();
+    }
 
-		for(int i=0;i<_INStrm;i++){
+    for (int i = 0; i < _INStrm; i++) {
 #pragma HLS UNROLL
-			reg_o[route[i]]=reg_i[i]; 	//critical path
-		}
+      reg_o[route[i]] = reg_i[i]; // critical path
+    }
 
-		for(int i=0;i<_ONstrm;i++){
+    for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-			ostrms[i].write(reg_o[i+1]);
-		}
+      ostrms[i].write(reg_o[i + 1]);
+    }
 
-		e_ostrm.write(false);
-		e=e_istrm.read();
-
-	}
-	e_ostrm.write(true);
-
+    e_ostrm.write(false);
+    e = e_istrm.read();
+  }
+  e_ostrm.write(true);
 }
 
 } // utils_hw
 } // common
 } // xf
-
 
 #endif // XF_UTILS_HW_STREAM_SHUFFLE_H
