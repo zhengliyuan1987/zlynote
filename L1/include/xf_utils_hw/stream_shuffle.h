@@ -19,7 +19,7 @@ namespace utils_hw {
 /**
  * @brief Shuffle the contents from an array of streams to another.
  *
- * Suppose we have an array of 3 streams for R-G-B channels correspndingly,
+ * Suppose we have an array of 3 streams for R-G-B channels correspondingly,
  * and it is needed to shuffle B to Stream 0 and R to Stream 2.
  * This module can bridge this case with the configuration ``2, 1, 0``.
  * Here, ``2`` is the new index for data at old stream index ``0``,
@@ -29,9 +29,10 @@ namespace utils_hw {
  * Totally ``_NStrm`` index integers will be read.
  *
  * @tparam _TIn input type.
- * @tparam _NStrm number of output stream.
+ * @tparam _INStrm number of input  stream. The advice value is 16 or less.
+ * @tparam _ONstrm number of output stream. Should be equal or less than _INStrm.
  *
- * @param order_cfg the new order within the window, indexed from 0.
+ * @param order_cfg the new order within the window, indexed from 0. -1 means drop the stream. Other minus value is illegal.
  * @param istrms input data streams.
  * @param e_istrm end flags for input.
  * @param ostrms output data streams.
@@ -88,7 +89,7 @@ void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
 
 		for(int i=0;i<_INStrm;i++){
 #pragma HLS UNROLL
-			reg_o[route[i]]=reg_i[i];
+			reg_o[route[i]]=reg_i[i]; 	//critical path
 		}
 
 		for(int i=0;i<_ONstrm;i++){
