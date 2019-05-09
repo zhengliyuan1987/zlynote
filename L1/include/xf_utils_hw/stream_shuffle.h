@@ -26,6 +26,9 @@ namespace utils_hw {
  * Here, ``2`` is the new index for data at old stream index ``0``,
  * and ``0`` is the new index for data at old stream index ``2``.
  *
+ * If an output index is not specified, it will be filled with zero.
+ * If an output index is specified twice, the behavior is undefined.
+ *
  * The configuration is load once in one invocation, and reused until the end.
  * Totally ``_NStrm`` index integers will be read.
  *
@@ -97,6 +100,12 @@ void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
 #pragma HLS UNROLL
       reg_i[i] = istrms[i].read();
     }
+    e = e_istrm.read();
+
+    for (int i = 0; i < _ONstrm; i++) {
+#pragma HLS UNROLL
+      reg_o[i] = 0;
+    }
 
     for (int i = 0; i < _INStrm; i++) {
 #pragma HLS UNROLL
@@ -109,7 +118,6 @@ void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
     }
 
     e_ostrm.write(false);
-    e = e_istrm.read();
   }
   e_ostrm.write(true);
 }
