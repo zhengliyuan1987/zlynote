@@ -1,11 +1,11 @@
 #include "xf_utils_hw/stream_shuffle.h"
 #include <iostream>
 
-#define NUM_INPUT  16
-#define NUM_OUTPUT 8
+#define NUM_INPUT  32
+#define NUM_OUTPUT 32
 
 void top(
-	hls::stream<ap_uint<4> > order_cfg[16],
+	hls::stream<ap_int<8> > order_cfg[NUM_INPUT],
 
 	hls::stream<int> istrms[NUM_INPUT],
 	hls::stream<bool>& e_istrm,
@@ -24,7 +24,7 @@ void top(
 
 int main(){
 
-	hls::stream<ap_uint<4> > order_cfg[16];
+	hls::stream<ap_int<8> > order_cfg[NUM_INPUT];
 
 	hls::stream<int> istrms[NUM_INPUT];
 	hls::stream<bool> e_istrm;
@@ -32,8 +32,13 @@ int main(){
 	hls::stream<int> ostrms[NUM_INPUT];
 	hls::stream<bool> e_ostrm;
 
-	for(int i=0;i<NUM_INPUT;i++){
+	int i;
+	for(i=0;i<NUM_OUTPUT;i++){
 		order_cfg[i].write(i);
+	}
+
+	for(;i<NUM_INPUT;i++){
+		order_cfg[i].write(-1);
 	}
 
 	for(int j=0;j<10;j++){

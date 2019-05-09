@@ -38,7 +38,7 @@ namespace utils_hw {
  * @param e_ostrm end flag for output.
  */
 template <typename _TIn, int _INStrm, int _ONstrm>
-void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
+void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
 
                     hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
@@ -56,7 +56,7 @@ namespace common {
 namespace utils_hw {
 
 template <typename _TIn, int _INStrm, int _ONstrm>
-void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
+void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
 
                     hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
@@ -65,17 +65,17 @@ void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
                     hls::stream<bool>& e_ostrm){
 
 	bool e=e_istrm.read();
-	ap_uint<4> route[_INStrm];
+	ap_uint<7> route[_INStrm];
 #pragma HLS ARRAY_PARTITION variable=route complete
 
 	_TIn reg_i[_INStrm];
 #pragma HLS ARRAY_PARTITION variable=reg_i complete
-	_TIn reg_o[_INStrm];
+	_TIn reg_o[_ONstrm+1];
 #pragma HLS ARRAY_PARTITION variable=reg_o complete
 
 	for(int i=0;i<_INStrm;i++){
 #pragma HLS UNROLL
-		route[i]=order_cfg[i].read();
+		route[i]=(1+order_cfg[i].read())(6,0);
 	}
 
 	while(!e){
@@ -93,7 +93,7 @@ void stream_shuffle(hls::stream<ap_uint<4> > order_cfg[16],
 
 		for(int i=0;i<_ONstrm;i++){
 #pragma HLS UNROLL
-			ostrms[i].write(reg_o[i]);
+			ostrms[i].write(reg_o[i+1]);
 		}
 
 		e_ostrm.write(false);
