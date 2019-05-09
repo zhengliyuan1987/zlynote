@@ -35,10 +35,8 @@ namespace utils_hw {
 template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
-
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-
                   lsb_side_t alg);
 
 /**
@@ -60,11 +58,9 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
 template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
-
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-
-                  msb_side_t alg); 
+                  msb_side_t alg);
 
 } // utils_hw
 } // common
@@ -76,15 +72,13 @@ namespace xf {
 namespace common {
 namespace utils_hw {
 
-
 template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
                   lsb_side_t alg) {
-
-/**
+/*
  * for example, _WIn=20, _WOut=4, _NStrm=4
  * input a data  0x82356 (hex) 
  * split to 4 streams:
@@ -95,29 +89,24 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
  *         ostrms[3] =  0x2    ostrms[3] =  0x5
  * discard   highest =  0x8      lowest  =  0x6
  *
- * this primitive implement split based on lsb
+ * this primitive implement split based on lsb.
  */
-
-   const int max = _WIn > _WOut * _NStrm ? _WIn : _WOut *_NStrm;
-   bool last = e_istrm.read();
-
-   while( !last) {
-     #pragma HLS pipeline II=1
-     last = e_istrm.read();
-     ap_uint<max>  data = istrm.read();
-     //ap_uint<_WIn>  data = istrm.read();  // out of the range if _WIn< _WOut*_NStrm  
-     for(int i=0; i< _NStrm; ++i) {
-       #pragma HLS unroll 
-        ap_uint<_WOut> d = data.range( (i+1)*_WOut-1, i*_WOut);
-        ostrms[i].write(d);
-     } // for
-     e_ostrm.write(false);
-   }  // while
-
-    e_ostrm.write(true);
+  const int max = _WIn > _WOut * _NStrm ? _WIn : _WOut *_NStrm;
+  bool last = e_istrm.read();
+  while( !last) {
+ #pragma HLS pipeline II=1
+    last = e_istrm.read();
+    ap_uint<max>  data = istrm.read();
+    //ap_uint<_WIn>  data = istrm.read();  // out of the range if _WIn< _WOut*_NStrm  
+    for(int i=0; i< _NStrm; ++i) {
+ #pragma HLS unroll 
+       ap_uint<_WOut> d = data.range( (i+1)*_WOut-1, i*_WOut);
+       ostrms[i].write(d);
+    } // for
+    e_ostrm.write(false);
+  }  // while
+   e_ostrm.write(true);
 }
-
-
 
 template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
@@ -125,7 +114,7 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
                   msb_side_t alg) {
-/**
+/*
  * for example, _WIn=20, _WOut=4, _NStrm=4
  * input a data  0x82356 (hex)
  * split to 4 streams:
@@ -136,33 +125,27 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
  *         ostrms[3] =  0x2    ostrms[3] =  0x5
  * discard   highest =  0x8      lowest  =  0x6
  *
- *
- * this primitive implement split based on msb
- * */
-
-   const int nout = _WOut * _NStrm;
-   const int max  = _WIn > nout ? _WIn : nout;
-   const int df   = max - nout ;
-   bool last = e_istrm.read();
-
-   while( !last) {
-     #pragma HLS pipeline II=1
-     last = e_istrm.read();
-     //ap_uint<_WIn>  data = istrm.read(); // out of the range if _WIn < _WOut*_NStrm 
-     ap_uint<max>  data = istrm.read();
-     ap_uint<nout>  nd  = _WIn >= nout ?  (data>>df) : (data<<df) ; // keep MSB 
-     for(int i=0,j=_NStrm-1; i< _NStrm; ++i,--j) {
-       #pragma HLS unroll 
-        ap_uint<_WOut> d = nd.range( (i+1)*_WOut-1, i*_WOut);
-        ostrms[j].write(d);
-     } // for
-     e_ostrm.write(false);
-   }  // while
-
-    e_ostrm.write(true);
-
+ * this primitive implement split based on msb.
+ */
+  const int nout = _WOut * _NStrm;
+  const int max  = _WIn > nout ? _WIn : nout;
+  const int df   = max - nout ;
+  bool last = e_istrm.read();
+  while( !last) {
+ #pragma HLS pipeline II=1
+    last = e_istrm.read();
+    //ap_uint<_WIn>  data = istrm.read(); // out of the range if _WIn < _WOut*_NStrm 
+    ap_uint<max>  data = istrm.read();
+    ap_uint<nout>  nd  = _WIn >= nout ?  (data>>df) : (data<<df) ; // keep MSB 
+    for(int i=0,j=_NStrm-1; i< _NStrm; ++i,--j) {
+ #pragma HLS unroll 
+       ap_uint<_WOut> d = nd.range( (i+1)*_WOut-1, i*_WOut);
+       ostrms[j].write(d);
+    } // for
+    e_ostrm.write(false);
+  }  // while
+  e_ostrm.write(true);
 }
-
 
 } // utils_hw
 } // common

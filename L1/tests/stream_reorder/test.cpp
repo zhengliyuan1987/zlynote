@@ -5,9 +5,9 @@
 
 #include "xf_utils_hw/stream_reorder.h"
 
-#define WS    4
+#define WS      4
 #define W_STRM  16 
-#define NS       (1024*WS)
+#define NS     (1024*WS)
 
 
 void test_core_reorder(
@@ -34,8 +34,8 @@ int test_reorder(){
    hls::stream<bool> e_data_ostrm;
    ap_uint<W_STRM> ba[WS];   
   std::cout<<std::dec<< "W_STRM  = "<< W_STRM <<std::endl;
-  std::cout<<std::dec<< "WS     = "<< WS <<std::endl;
-  std::cout<<std::dec<< "NS        = "<< NS <<std::endl;
+  std::cout<<std::dec<< "WS      = "<< WS <<std::endl;
+  std::cout<<std::dec<< "NS      = "<< NS <<std::endl;
   for(int i=0; i< WS; ++i)
   {
     cfg.write( WS-i-1);
