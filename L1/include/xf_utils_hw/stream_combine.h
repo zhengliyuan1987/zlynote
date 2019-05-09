@@ -97,7 +97,7 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    lsb_side_t alg); 
+                    lsb_side_t alg);
 
 /**
  * @brief combine multiple streams into a wide one, align to MSB.
@@ -125,8 +125,7 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    msb_side_t alg); 
-
+                    msb_side_t alg);
 
 } // utils_hw
 } // common
@@ -275,35 +274,33 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
-                    lsb_side_t alg)  {
-/**
- * stream     
- *   A      0    4   8
- *   B      1    5   9
- *   C      2    6   a
- *   D      3    7   b
- *
- * output  3210 7654 ba98 
- * */
+                    lsb_side_t alg) {
+  /*
+   * stream
+   *   [0]      0    4    8
+   *   [1]      1    5    9
+   *   [2]      2    6    a
+   *   [3]      3    7    b
+   *
+   * output  3210 7654 ba98
+   */
 
-  const int max = _WIn*_NStrm > _WOut? _WIn*_NStrm : _WOut ;
-  bool last= e_istrm.read();
-  while(!last) {
-   #pragma HLS pipeline II=1
-   last=e_istrm.read();
-   ap_uint<max> cmb=0;
-   for(int i=0; i< _NStrm; ++i) {
-    #pragma HLS unroll
-    cmb.range( (i+1)*_WIn-1, i*_WIn) = istrms[i].read();
-   }
-   ap_uint<_WOut> o_cmb= cmb;
-   ostrm.write(o_cmb);
-   e_ostrm.write(false);
-
- }
+  const int max = _WIn * _NStrm > _WOut ? _WIn * _NStrm : _WOut;
+  bool last = e_istrm.read();
+  while (!last) {
+#pragma HLS pipeline II = 1
+    last = e_istrm.read();
+    ap_uint<max> cmb = 0;
+    for (int i = 0; i < _NStrm; ++i) {
+#pragma HLS unroll
+      cmb.range((i + 1) * _WIn - 1, i * _WIn) = istrms[i].read();
+    }
+    ap_uint<_WOut> o_cmb = cmb;
+    ostrm.write(o_cmb);
+    e_ostrm.write(false);
+  }
   e_ostrm.write(true);
 }
-
 
 template <int _WIn, int _WOut, int _NStrm>
 void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
@@ -311,34 +308,33 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
                     msb_side_t alg) {
-/**
- * stream     
- *   A      0    4   8
- *   B      1    5   9
- *   C      2    6   a
- *   D      3    7   b
- *
- * output  0123 4567 89ab 
- * */
+  /*
+   * stream
+   *   [0]      0    4   8
+   *   [1]      1    5   9
+   *   [2]      2    6   a
+   *   [3]      3    7   b
+   *
+   * output  0123 4567 89ab
+   */
 
-
-  const int max = _WIn*_NStrm > _WOut? _WIn*_NStrm : _WOut ;
-  const int df  = _WOut - _WIn*_NStrm;
-  const int rdf = df < 0?(-df) : df;
-  const int w = _WIn*_NStrm ;
-  bool last= e_istrm.read();
-  while(!last) {
-   #pragma HLS pipeline II=1
-   last=e_istrm.read();
-   ap_uint<max> cmb=0;
-   for(int i=0,j=_NStrm-1; i< _NStrm; ++i,--j) {
-    #pragma HLS unroll
-    cmb.range( (j+1)*_WIn-1, j*_WIn) = istrms[i].read();
-   }
-   ap_uint<_WOut> o_cmb = (df>=0) ? (cmb << df) : (cmb >> rdf);
-   ostrm.write(o_cmb);
-   e_ostrm.write(false);
- }
+  const int max = _WIn * _NStrm > _WOut ? _WIn * _NStrm : _WOut;
+  const int df = _WOut - _WIn * _NStrm;
+  const int rdf = df < 0 ? (-df) : df;
+  const int w = _WIn * _NStrm;
+  bool last = e_istrm.read();
+  while (!last) {
+#pragma HLS pipeline II = 1
+    last = e_istrm.read();
+    ap_uint<max> cmb = 0;
+    for (int i = 0, j = _NStrm - 1; i < _NStrm; ++i, --j) {
+#pragma HLS unroll
+      cmb.range((j + 1) * _WIn - 1, j * _WIn) = istrms[i].read();
+    }
+    ap_uint<_WOut> o_cmb = (df >= 0) ? (cmb << df) : (cmb >> rdf);
+    ostrm.write(o_cmb);
+    e_ostrm.write(false);
+  }
   e_ostrm.write(true);
 }
 
