@@ -35,15 +35,15 @@ namespace utils_hw {
 /**
  * @brief Write elements in burst to AXI master port.
  *
+ * @tparam _BurstLen length of a burst, default is 32.
  * @tparam _WAxi     width of axi port.
  * @tparam _WStrm    width of input stream.
- * @tparam _BurstLen length of a burst, default is 16.
  *
  * @param wbuf    output AXI port.
  * @param istrm   input stream.
  * @param e_istrm end flag for input stream
  */
-template <int _WAxi, int _WStrm, int _BurstLen = 16>
+template <int _BurstLen = 32, int _WAxi, int _WStrm>
 void stream_to_axi(ap_uint<_WAxi> *wbuf, hls::stream<ap_uint<_WStrm> > &istrm,
                    hls::stream<bool> &e_istrm);
 } // utils_hw
@@ -68,7 +68,7 @@ namespace details {
  * @param axi_strm stream width is _WAxi
  * @param nb_strm  store burst number of each burst
  */
-template <int _WAxi, int _WStrm, int _BurstLen = 16>
+template <int _WAxi, int _WStrm, int _BurstLen>
 void countForBurst(hls::stream<ap_uint<_WStrm> > &istrm,
                    hls::stream<bool> &e_istrm,
                    hls::stream<ap_uint<_WAxi> > &axi_strm,
@@ -116,16 +116,18 @@ doing_loop:
   nb_strm.write(0);
 }
 
-/// @brief the template of stream width of _WAxi burst out.
-
-/// @tparam _WAxi   width of axi port.
-/// @tparam _WStrm  width of input stream.
-/// @tparam _BurstLen length of a burst.
-
-/// @tparam _WAxi   width of axi port
-/// @param axi_strm stream width is _WAxi
-/// @param nb_strm  store burst number of each burst
-template <int _WAxi, int _WStrm, int _BurstLen = 16>
+/**
+ * @brief the template of stream width of _WAxi burst out.
+ *
+ * @tparam _WAxi   width of axi port.
+ * @tparam _WStrm  width of input stream.
+ * @tparam _BurstLen length of a burst.
+ *
+ * @param wbuf AXI master port to write to.
+ * @param axi_strm stream width is _WAxi
+ * @param nb_strm  store burst number of each burst
+ */
+template <int _WAxi, int _WStrm, int _BurstLen>
 void burstWrite(ap_uint<_WAxi> *wbuf, hls::stream<ap_uint<_WAxi> > &axi_strm,
                 hls::stream<ap_uint<8> > &nb_strm) {
   // write each burst to axi
@@ -146,7 +148,7 @@ doing_burst:
 }
 } // details
 
-template <int _WAxi, int _WStrm, int _BurstLen>
+template <int _BurstLen, int _WAxi, int _WStrm>
 void stream_to_axi(ap_uint<_WAxi>* wbuf,
                    hls::stream<ap_uint<_WStrm> >& istrm,
                    hls::stream<bool>& e_istrm) {
@@ -163,6 +165,7 @@ void stream_to_axi(ap_uint<_WAxi>* wbuf,
 
   details::countForBurst<_WAxi, _WStrm, _BurstLen>(
       istrm, e_istrm, axi_strm, nb_strm);
+
   details::burstWrite<_WAxi, _WStrm, _BurstLen>(wbuf, axi_strm, nb_strm);
 }
 

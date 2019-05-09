@@ -35,7 +35,7 @@ namespace utils_hw {
 /**
  * @brief Loading data from AXI master to stream.
  *
- * This module reqires the data elements to align to its size in buffer.
+ * This module requires the data elements to align to its size in buffer.
  * In another word, the start offset is specified by element count from
  * the beginning of a vector of AXI port width.
  *
@@ -57,7 +57,7 @@ namespace utils_hw {
  *
  * \endrst
  *
- * @tparam _BurstLen burst length of AXI buffer.
+ * @tparam _BurstLen burst length of AXI buffer, default is 32.
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
  * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width
  * stream.
@@ -68,7 +68,7 @@ namespace utils_hw {
  * @param e_ostrm end flag for output stream.
  * @param offset_num offset from the beginning of the buffer, by num of element.
  */
-template <int _BurstLen, int _WAxi, typename _TStrm>
+template <int _BurstLen = 32, int _WAxi, typename _TStrm>
 void axi_to_stream(ap_uint<_WAxi>* rbuf,
                    hls::stream<_TStrm>& ostrm,
                    hls::stream<bool>& e_ostrm,
@@ -98,7 +98,7 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
  *
  * \endrst
  *
- * @tparam _BurstLen burst length of the AXI port.
+ * @tparam _BurstLen burst length of AXI buffer, default is 32.
  * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
  * @tparam _TStrm stream's type.
  *
@@ -108,7 +108,7 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
  * @param len number of char to load from AXI port.
  * @param offset offset from the beginning of the buffer, in number of char.
  */
-template <int _BurstLen, int _WAxi, typename _TStrm>
+template <int _BurstLen = 32, int _WAxi, typename _TStrm>
 void axi_to_char_stream(ap_uint<_WAxi>* rbuf,
                         hls::stream<_TStrm>& ostrm,
                         hls::stream<bool>& e_ostrm,
