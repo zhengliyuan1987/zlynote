@@ -1,4 +1,3 @@
-
 open_project -reset "stream_shuffle.prj"
 
 add_files test.cpp -cflags "-I../../include/"  
@@ -18,7 +17,7 @@ csynth_design
 
 #cosim_design -wave_debug -tool xsim -trace_level all
 
-#cosim_design 
+cosim_design 
 
 
 #export_design -flow impl -rtl verilog -format ip_catalog
