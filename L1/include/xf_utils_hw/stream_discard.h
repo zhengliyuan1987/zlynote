@@ -18,6 +18,7 @@ namespace utils_hw {
 
 /**
  * @brief Discard multiple streams with end flag helper for each.
+ *
  * @tparam _TIn streams' type
  * @tparam _NStrm the number of streams
  *
@@ -26,10 +27,11 @@ namespace utils_hw {
  */
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
-                    hls::stream<bool> e_istrms[_NStrm]); 
+                    hls::stream<bool> e_istrms[_NStrm]);
 
 /**
  * @brief Discard multiple streams synchronized with one end flag
+ *
  * @tparam _TIn streams' type
  * @tparam _NStrm the number of streams
  *
@@ -38,17 +40,18 @@ void stream_discard(hls::stream<_TIn> istrms[_NStrm],
  */
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
-                    hls::stream<bool>& e_istrm); 
+                    hls::stream<bool>& e_istrm);
 
 /**
  * @brief Discard one stream with its end flag helper.
+ *
  * @tparam _TIn stream's type
  *
  * @param istrm input stream
  * @param e_istrm end flag of input stream
  */
 template <typename _TIn>
-void stream_discard(hls::stream<_TIn>& istrm,
+void stream_discard(hls::stream<_TIn>& istrm, //
                     hls::stream<bool>& e_istrm);
 
 } // utils_hw
@@ -67,12 +70,10 @@ namespace utils_hw {
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
                     hls::stream<bool> e_istrms[_NStrm]) {
-
-  #pragma HLS dataflow
-  for( int i = 0;  i < _NStrm ; ++i) {
-    #pragma HLS  unroll
-    stream_discard<_TIn>( istrms[i],
-                          e_istrms[i]); 
+#pragma HLS dataflow
+  for (int i = 0; i < _NStrm; ++i) {
+#pragma HLS unroll
+    stream_discard<_TIn>(istrms[i], e_istrms[i]);
   }
 }
 
@@ -82,28 +83,24 @@ void stream_discard(hls::stream<_TIn> istrms[_NStrm],
 template <typename _TIn, int _NStrm>
 void stream_discard(hls::stream<_TIn> istrms[_NStrm],
                     hls::stream<bool>& e_istrm) {
-
-  while(!e_istrm.read()) {
-   #pragma HLS pipeline II=1
-   for( int i = 0;  i < _NStrm ; ++i) {
-    #pragma HLS  unroll
-        _TIn d = istrms[i].read(); 
-   }
-  } 
-
+  while (!e_istrm.read()) {
+#pragma HLS pipeline II = 1
+    for (int i = 0; i < _NStrm; ++i) {
+#pragma HLS unroll
+      _TIn d = istrms[i].read();
+    }
+  }
 }
 
 /**
  * @brief Discard one stream with its end flag helper.
  */
 template <typename _TIn>
-void stream_discard(hls::stream<_TIn>& istrm,
-                    hls::stream<bool>& e_istrm) {
-
-     while( !e_istrm.read()) {
-      #pragma HLS pipeline II=1
-        _TIn d = istrm.read(); 
-     }
+void stream_discard(hls::stream<_TIn>& istrm, hls::stream<bool>& e_istrm) {
+  while (!e_istrm.read()) {
+#pragma HLS pipeline II = 1
+    _TIn d = istrm.read();
+  }
 }
 
 } // namespace utils_hw
