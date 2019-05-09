@@ -25,20 +25,21 @@ void gld(ap_int<8> gld_cfg[NUM_INPUT],
   }
 }
 
-void top(hls::stream<ap_int<8> > order_cfg[NUM_INPUT],
+void top(hls::stream<ap_uint<8 * NUM_INPUT> >& order_cfg,
 
          hls::stream<DATA_TYPE> istrms[NUM_INPUT],
          hls::stream<bool>& e_istrm,
 
          hls::stream<DATA_TYPE> ostrms[NUM_OUTPUT],
          hls::stream<bool>& e_ostrm) {
-  xf::common::utils_hw::stream_shuffle<DATA_TYPE, NUM_INPUT, NUM_OUTPUT>(
+  xf::common::utils_hw::stream_shuffle<NUM_INPUT, NUM_OUTPUT>(
       order_cfg, istrms, e_istrm, ostrms, e_ostrm);
 }
 
 int main() {
   nerror = 0;
-  hls::stream<ap_int<8> > order_cfg[NUM_INPUT];
+  ap_uint<8 * NUM_INPUT> orders = 0;
+  hls::stream<ap_uint<8 * NUM_INPUT> > order_cfg;
 
   hls::stream<DATA_TYPE> istrms[NUM_INPUT];
   hls::stream<bool> e_istrm;
@@ -52,14 +53,15 @@ int main() {
 
   int i;
   for (i = 0; i < NUM_OUTPUT; i++) {
-    order_cfg[i].write(i);
+    orders.range(8 * i + 7, 8 * i) = ap_int<8>(i);
     gld_cfg[i] = i;
   }
 
   for (; i < NUM_INPUT; i++) {
-    order_cfg[i].write(-1);
+    orders.range(8 * i + 7, 8 * i) = ap_int<8>(-1);
     gld_cfg[i] = -1;
   }
+  order_cfg.write(orders);
 
   for (int j = 0; j < STRM_LEN; j++) {
     for (int i = 0; i < NUM_INPUT; i++) {

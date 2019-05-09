@@ -2,6 +2,7 @@
 #define XF_UTILS_HW_STREAM_SHUFFLE_H
 
 #include "xf_utils_hw/types.h"
+#include "xf_utils_hw/common.h"
 
 /**
  * @file stream_shuffle.h
@@ -28,10 +29,10 @@ namespace utils_hw {
  * The configuration is load once in one invocation, and reused until the end.
  * Totally ``_NStrm`` index integers will be read.
  *
- * @tparam _TIn input type.
  * @tparam _INStrm number of input  stream. The advice value is 16 or less.
  * @tparam _ONstrm number of output stream. Should be equal or less than
  * _INStrm.
+ * @tparam _TIn input type.
  *
  * @param order_cfg the new order within the window, indexed from 0. -1 means
  * drop the stream. Other minus value is illegal.
@@ -40,14 +41,14 @@ namespace utils_hw {
  * @param ostrms output data streams.
  * @param e_ostrm end flag for output.
  */
-template <typename _TIn, int _INStrm, int _ONstrm>
-void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
+template <int _INStrm, int _ONstrm, typename _TIn>
+void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
 
                     hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
 
                     hls::stream<_TIn> ostrms[_ONstrm],
-                    hls::stream<bool>& e_ostrm); // TODO
+                    hls::stream<bool>& e_ostrm);
 
 } // utils_hw
 } // common
@@ -58,15 +59,21 @@ namespace xf {
 namespace common {
 namespace utils_hw {
 
-template <typename _TIn, int _INStrm, int _ONstrm>
-void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
+template <int _INStrm, int _ONstrm, typename _TIn>
+void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
 
                     hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
 
                     hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm) {
-  bool e = e_istrm.read();
+
+  XF_UTILS_HW_STATIC_ASSERT(_ONstrm < _INStrm,
+                            "stream_shuffle cannot have more output than input.");
+
+  XF_UTILS_HW_STATIC_ASSERT(_INStrm <= 128,
+                            "stream_shuffle cannot handle more than 128 streams.");
+
   ap_uint<7> route[_INStrm];
 #pragma HLS ARRAY_PARTITION variable = route complete
 
@@ -75,11 +82,14 @@ void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
   _TIn reg_o[_ONstrm + 1];
 #pragma HLS ARRAY_PARTITION variable = reg_o complete
 
+  ap_uint<8 * _INStrm> orders = order_cfg.read();
   for (int i = 0; i < _INStrm; i++) {
 #pragma HLS UNROLL
-    route[i] = (1 + order_cfg[i].read())(6, 0);
+    route[i] = orders.range(8 * i + 6, 8 * i);
+    route[i] += 1; // -1 to 0
   }
 
+  bool e = e_istrm.read();
   while (!e) {
 #pragma HLS PIPELINE II = 1
 
@@ -95,7 +105,7 @@ void stream_shuffle(hls::stream<ap_int<8> > order_cfg[_INStrm],
 
     for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      ostrms[i].write(reg_o[i + 1]);
+      ostrms[i].write(reg_o[i + 1]); // shift by 1
     }
 
     e_ostrm.write(false);
