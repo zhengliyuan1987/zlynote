@@ -39,7 +39,7 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
 
-                  lsb_side_t alg); // TODO
+                  lsb_side_t alg);
 
 /**
  * @brief split one wide stream into multiple streams, start from the MSB.
@@ -64,7 +64,7 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
 
-                  msb_side_t alg); // TODO
+                  msb_side_t alg); 
 
 } // utils_hw
 } // common
@@ -77,15 +77,26 @@ namespace common {
 namespace utils_hw {
 
 
-
 template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
-
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-
                   lsb_side_t alg) {
+
+/**
+ * for example, _WIn=20, _WOut=4, _NStrm=4
+ * input a data  0x82356 (hex) 
+ * split to 4 streams:
+ *              lsb                msb               
+ *         ostrms[0] =  0x6    ostrms[0] =  0x8
+ *         ostrms[1] =  0x5    ostrms[1] =  0x2
+ *         ostrms[2] =  0x3    ostrms[2] =  0x3
+ *         ostrms[3] =  0x2    ostrms[3] =  0x5
+ * discard   highest =  0x8      lowest  =  0x6
+ *
+ * this primitive implement split based on lsb
+ */
 
    const int max = _WIn > _WOut * _NStrm ? _WIn : _WOut *_NStrm;
    bool last = e_istrm.read();
@@ -104,8 +115,6 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
    }  // while
 
     e_ostrm.write(true);
-
-
 }
 
 
@@ -113,16 +122,27 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
 template <int _WIn, int _WOut, int _NStrm>
 void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
-
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-
                   msb_side_t alg) {
+/**
+ * for example, _WIn=20, _WOut=4, _NStrm=4
+ * input a data  0x82356 (hex)
+ * split to 4 streams:
+ *              lsb                msb               
+ *         ostrms[0] =  0x6    ostrms[0] =  0x8
+ *         ostrms[1] =  0x5    ostrms[1] =  0x2
+ *         ostrms[2] =  0x3    ostrms[2] =  0x3
+ *         ostrms[3] =  0x2    ostrms[3] =  0x5
+ * discard   highest =  0x8      lowest  =  0x6
+ *
+ *
+ * this primitive implement split based on msb
+ * */
 
    const int nout = _WOut * _NStrm;
-   const int max = _WIn > nout ? _WIn : nout;
-   const int df  = max - nout ;
-     
+   const int max  = _WIn > nout ? _WIn : nout;
+   const int df   = max - nout ;
    bool last = e_istrm.read();
 
    while( !last) {
@@ -142,12 +162,6 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
     e_ostrm.write(true);
 
 }
-
-
-
-
-
-
 
 
 } // utils_hw
