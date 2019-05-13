@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_STREAM_1N_TAG_H
 
 /**
- * @file tag_select.h
+ * @file stream_one_to_n/tag_select.h
  * @brief header for distribute in round-roubin order.
  */
 
@@ -21,26 +21,25 @@ namespace utils_hw {
  *
  * In this primitive, the tag is the index of ouput streams.
  * The input data in data_istrms is distributed to  the data_ostrm whose index
- * is tag .
+ * is tag. Each tag is the index of output streams,
+ * and data_istrm and tag_istrm are synchronous.
  *
  * @tparam _WInStrm  the width of input data
  * @tparam _WTagStrm the width of tag,  pow(2, _WTagStrm) is the number of ouput
  * streams.
  *
- * @param data_istrm the input stream
- * @param tag_istrm  the  tag stream,  each tag is the index of output streams
- * and data_istrm and tag_istrm are synchronous.
- * @param e_tag_istrm the end signal stream, true if data_istrm and tag_istrm
- * are
- * ended.
+ * @param data_istrm the input stream.
+ * @param e_data_istrm the end signal of input stream.
+ * @param tag_istrm  the  tag stream.
+ * @param e_tag_istrm the end signal stream of tags.
  * @param data_ostrms the output stream.
  * @param e_data_ostrms the end signals of data_ostrms.
  * @param alg   algorithm selector
  */
 template <int _WInStrm, int _WTagStrm>
 void stream_one_to_n(
-    hls::stream<ap_uint<_WInStrm> >& istrm,
-    hls::stream<bool>& e_istrm,
+    hls::stream<ap_uint<_WInStrm> >& data_istrm,
+    hls::stream<bool>& e_data_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
@@ -53,24 +52,25 @@ void stream_one_to_n(
  *
  * In this primitive, the tag is the index of ouput streams.
  * The input data in data_istrms is distributed to  the data_ostrm whose index is
- * tag .
+ * tag. Each tag is the index of output streams,
+ * and data_istrm and tag_istrm are synchronous.
+ *
  * @tparam _TIn  the type of input & output data.
  * @tparam _WTagStrm the width of tag,  pow(2, _WTagStrm) is the number of ouput
  * streams.
  *
  * @param data_istrm the input stream.
- * @param tag_istrm  the  tag stream,  each tag is the index of output streams
- * and data_istrm and tag_istrm are synchronous.
- * @param e_tag_istrm the end signal stream, true if data_istrm and tag_istrm are
- * ended.
+ * @param e_data_istrm the end signal of input stream.
+ * @param tag_istrm  the tag stream.
+ * @param e_tag_istrm the end signal of tag stream.
  * @param data_ostrms the output stream.
  * @param e_data_ostrms the end signals of data_ostrms.
  * @param alg   algorithm selector.
  */
 template <typename _TIn, int _WTagStrm>
 void stream_one_to_n(
-    hls::stream<_TIn>& istrm,
-    hls::stream<bool>& e_istrm,
+    hls::stream<_TIn>& data_istrm,
+    hls::stream<bool>& e_data_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
@@ -92,29 +92,29 @@ namespace details {
 
 template <int _WInStrm, int _WTagStrm>
 void stream_one_to_n_tag_select(
-    hls::stream<ap_uint<_WInStrm> >& istrm,
-    hls::stream<bool>& e_istrm,
+    hls::stream<ap_uint<_WInStrm> >& data_istrm,
+    hls::stream<bool>& e_data_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value]) {
   bool last_tag = e_tag_istrm.read();
-  bool last_istrm = e_istrm.read();
+  bool last_istrm = e_data_istrm.read();
   while (!last_tag && !last_istrm) {
 #pragma HLS pipeline II = 1
-    ap_uint<_WInStrm> data = istrm.read();
+    ap_uint<_WInStrm> data = data_istrm.read();
     ap_uint<_WTagStrm> tag = tag_istrm.read();
     XF_UTILS_HW_ASSERT(tag >= 0);
     XF_UTILS_HW_ASSERT(tag < power_of_2<_WTagStrm>::value);
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
     last_tag = e_tag_istrm.read();
-    last_istrm = e_istrm.read();
+    last_istrm = e_data_istrm.read();
   }
   // drop
   while (!last_istrm) {
-    last_istrm = e_istrm.read();
-    ap_uint<_WInStrm> data = istrm.read();
+    last_istrm = e_data_istrm.read();
+    ap_uint<_WInStrm> data = data_istrm.read();
   }
 
   XF_UTILS_HW_ASSERT(last_tag);
@@ -130,15 +130,15 @@ void stream_one_to_n_tag_select(
 
 template <int _WInStrm, int _WTagStrm>
 void stream_one_to_n(
-    hls::stream<ap_uint<_WInStrm> >& istrm,
-    hls::stream<bool>& e_istrm,
+    hls::stream<ap_uint<_WInStrm> >& data_istrm,
+    hls::stream<bool>& e_data_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> > data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
     tag_select_t alg) {
   details::stream_one_to_n_tag_select<_WInStrm, _WTagStrm>(
-      istrm, e_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
+      data_istrm, e_data_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
 }
 //--------------------------------------------------------------------//
 
@@ -146,29 +146,29 @@ namespace details {
 
 template <typename _TIn, int _WTagStrm>
 void stream_one_to_n_tag_select_type(
-    hls::stream<_TIn>& istrm,
-    hls::stream<bool>& e_istrm,
+    hls::stream<_TIn>& data_istrm,
+    hls::stream<bool>& e_data_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value]) {
   bool last_tag = e_tag_istrm.read();
-  bool last_istrm = e_istrm.read();
+  bool last_istrm = e_data_istrm.read();
   while (!last_tag && !last_istrm) {
 #pragma HLS pipeline II = 1
-    _TIn data = istrm.read();
+    _TIn data = data_istrm.read();
     ap_uint<_WTagStrm> tag = tag_istrm.read();
     XF_UTILS_HW_ASSERT(tag >= 0);
     XF_UTILS_HW_ASSERT(tag < power_of_2<_WTagStrm>::value);
     data_ostrms[tag].write(data);
     e_data_ostrms[tag].write(false);
     last_tag = e_tag_istrm.read();
-    last_istrm = e_istrm.read();
+    last_istrm = e_data_istrm.read();
   }
   // drop
   while (!last_istrm) {
-    last_istrm = e_istrm.read();
-    _TIn data = istrm.read();
+    last_istrm = e_data_istrm.read();
+    _TIn data = data_istrm.read();
   }
 
   XF_UTILS_HW_ASSERT(last_tag);
@@ -184,15 +184,15 @@ void stream_one_to_n_tag_select_type(
 
 template <typename _TIn, int _WTagStrm>
 void stream_one_to_n(
-    hls::stream<_TIn>& istrm,
-    hls::stream<bool>& e_istrm,
+    hls::stream<_TIn>& data_istrm,
+    hls::stream<bool>& e_data_istrm,
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn> data_ostrms[power_of_2<_WTagStrm>::value],
     hls::stream<bool> e_data_ostrms[power_of_2<_WTagStrm>::value],
     tag_select_t alg) {
   details::stream_one_to_n_tag_select_type<_TIn, _WTagStrm>(
-      istrm, e_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
+      data_istrm, e_data_istrm, tag_istrm, e_tag_istrm, data_ostrms, e_data_ostrms);
 }
 
 } // utils_hw

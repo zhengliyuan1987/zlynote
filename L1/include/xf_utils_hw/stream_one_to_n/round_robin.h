@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_STREAM_1N_RR_H
 
 /**
- * @file round_robin.h
+ * @file stream_one_to_n/round_robin.h
  * @brief header for distribute in round-roubin order.
  */
 

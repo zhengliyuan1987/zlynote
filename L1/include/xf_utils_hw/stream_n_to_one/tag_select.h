@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_STREAM_N1_TAG
 
 /**
- * @file tag_select.h
+ * @file stream_n_to_one/tag_select.h
  * @brief header collect distribute in tag-selected order.
  */
 
@@ -21,7 +21,9 @@ namespace utils_hw {
  *
  * In this primitive, each tag decides the source of the output.
  * It is assumed that input element has a corresponding channel-selection tag.
- * The output data in data_ostrms only contains the input data .
+ * The output data in data_ostrms only contains the input data.
+ * The tag stream is expected to pass the exactly number of tags to distribute
+ * the input data elements.
  *
  * @tparam _WInStrm  the width of input data
  * @tparam _WTagStrm the width of tag,  pow(2, _WTagStrm) is the number of input
@@ -29,10 +31,8 @@ namespace utils_hw {
  *
  * @param data_istrms the input streams
  * @param e_data_istrms the end flag of input streams
- * @param tag_istrm  the tag stream, streams and data_istrm and tag_istrm are
- * synchronous.
- * @param e_tag_istrm the end signal stream, true if data_istrms and tag_istrm
- * are ended.
+ * @param tag_istrm the tag stream.
+ * @param e_tag_istrm the end signal of tag stream.
  * @param data_ostrm the output stream.
  * @param e_data_ostrm the end signals of data_ostrm.
  * @param alg algorithm selector
@@ -44,7 +44,7 @@ void stream_n_to_one(
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
-    hls::stream<bool>& e_ostrm,
+    hls::stream<bool>& e_data_ostrm,
     tag_select_t alg);
 
 /**
@@ -75,7 +75,7 @@ void stream_n_to_one(
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
-    hls::stream<bool>& e_ostrm,
+    hls::stream<bool>& e_data_ostrm,
     tag_select_t alg);
 
 } // utils_hw
@@ -96,7 +96,7 @@ void stream_n_to_one_select(
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
-    hls::stream<bool>& e_ostrm) {
+    hls::stream<bool>& e_data_ostrm) {
   const int n = power_of_2<_WTagStrm>::value;
   ap_uint<n> ends = 0;
   bool last_tag = e_tag_istrm.read();
@@ -112,7 +112,7 @@ void stream_n_to_one_select(
     XF_UTILS_HW_ASSERT(ends[tag] == false);
 
     data_ostrm.write(data);
-    e_ostrm.write(false);
+    e_data_ostrm.write(false);
     ends[tag] = e_data_istrms[tag].read();
     last_tag = e_tag_istrm.read();
   } // while
@@ -125,7 +125,7 @@ void stream_n_to_one_select(
     } // while
   }   // for
 
-  e_ostrm.write(true);
+  e_data_ostrm.write(true);
 }
 
 } // details
@@ -137,10 +137,10 @@ void stream_n_to_one(
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
-    hls::stream<bool>& e_ostrm,
+    hls::stream<bool>& e_data_ostrm,
     tag_select_t alg) {
   details::stream_n_to_one_select<_WInStrm, _WTagStrm>(
-      data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm, e_ostrm);
+      data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm, e_data_ostrm);
 }
 //-------------------------------------------------------------------------------/
 namespace details {
@@ -152,7 +152,7 @@ void stream_n_to_one_select_type(
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
-    hls::stream<bool>& e_ostrm) {
+    hls::stream<bool>& e_data_ostrm) {
   const int n = power_of_2<_WTagStrm>::value;
   ap_uint<n> ends = 0;
   bool last_tag = e_tag_istrm.read();
@@ -168,7 +168,7 @@ void stream_n_to_one_select_type(
 
     _TIn data = data_istrms[tag].read();
     data_ostrm.write(data);
-    e_ostrm.write(false);
+    e_data_ostrm.write(false);
     ends[tag] = e_data_istrms[tag].read();
     last_tag = e_tag_istrm.read();
   } // while
@@ -181,7 +181,7 @@ void stream_n_to_one_select_type(
     } // while
   }   // for
 
-  e_ostrm.write(true);
+  e_data_ostrm.write(true);
 }
 } // details
 // tag based collect, discard tag
@@ -192,10 +192,10 @@ void stream_n_to_one(
     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
     hls::stream<bool>& e_tag_istrm,
     hls::stream<_TIn>& data_ostrm,
-    hls::stream<bool>& e_ostrm,
+    hls::stream<bool>& e_data_ostrm,
     tag_select_t alg) {
   details::stream_n_to_one_select_type<_TIn, _WTagStrm>(
-      data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm, e_ostrm);
+      data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm, e_data_ostrm);
 }
 
 } // utils_hw

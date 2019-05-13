@@ -323,12 +323,12 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
  * @tparam _TStrm2 third stream's type.
  *
  * @param rbuf input AXI port.
- * @param ostrm1 output stream of type 0.
- * @param e_ostrm1 end flag for output stream of type 0.
- * @param ostrm2 output stream of type 1.
- * @param e_ostrm2 end flag for output stream of type 1.
- * @param ostrm3 output stream of type 2.
- * @param e_ostrm3 end flag for output stream of type 2.
+ * @param ostrm0 output stream of type 0.
+ * @param e_ostrm0 end flag for output stream of type 0.
+ * @param ostrm1 output stream of type 1.
+ * @param e_ostrm1 end flag for output stream of type 1.
+ * @param ostrm2 output stream of type 2.
+ * @param e_ostrm2 end flag for output stream of type 2.
  * @param num number of elements to load from AXI port for each type.
  * @param offset offset for each type, in number of chars.
  */

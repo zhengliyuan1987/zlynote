@@ -4,7 +4,7 @@
 #include "xf_utils_hw/types.h"
 
 /**
- * @file stream_reoder.h
+ * @file stream_reorder.h
  * @brief utility to do window-reorder on a stream.
  *
  * This file is part of XF Hardware Utilities Library.

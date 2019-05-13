@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_STREAM_1N_LB_H
 
 /**
- * @file load_balance.h
+ * @file stream_one_to_n/load_balance.h
  * @brief header for distribute in load-balancing way.
  */
 
