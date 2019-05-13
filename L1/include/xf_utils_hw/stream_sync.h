@@ -53,23 +53,23 @@ void stream_sync(hls::stream<_TIn> istrms[_NStrm],
                  hls::stream<bool> e_istrms[_NStrm],
                  hls::stream<_TIn> ostrms[_NStrm],
                  hls::stream<bool>& e_ostrm) {
-  ap_uint<_NStrm> last=0;
-  ap_uint<_NStrm> end= ~last;
-  for(int i=0; i< _NStrm; ++i) {
- #pragma HLS unroll
-    last[i]= e_istrms[i].read();
-  }  
-  while( last != end ){
- #pragma HLS pipeline II=1
-     for(int i=0; i< _NStrm; ++i) {
- #pragma HLS unroll
-        _TIn d = istrms[i].read();
-        ostrms[i].write(d);
-        last[i]=e_istrms[i].read();
-     }
-     e_ostrm.write(false);
+  ap_uint<_NStrm> last = 0;
+  ap_uint<_NStrm> end = ~last;
+  for (int i = 0; i < _NStrm; ++i) {
+#pragma HLS unroll
+    last[i] = e_istrms[i].read();
+  }
+  while (last != end) {
+#pragma HLS pipeline II = 1
+    for (int i = 0; i < _NStrm; ++i) {
+#pragma HLS unroll
+      _TIn d = istrms[i].read();
+      ostrms[i].write(d);
+      last[i] = e_istrms[i].read();
+    }
+    e_ostrm.write(false);
   } // while
-   e_ostrm.write(true);
+  e_ostrm.write(true);
 }
 
 } // utils_hw
