@@ -26,9 +26,13 @@ Module Design Internals
    ./stream_n_to_one/round_robin/stream_n_to_one_round_robin_type.rst
    ./stream_n_to_one/load_balance/stream_n_to_one_load_balance.rst
    ./stream_n_to_one/load_balance/stream_n_to_one_load_balance_type.rst
+   ./stream_n_to_one/tag_select/stream_n_to_one_tag_select.rst
+   ./stream_n_to_one/tag_select/stream_n_to_one_tag_select_type.rst
    ./stream_one_to_n/round_robin/stream_one_to_n_round_robin.rst
    ./stream_one_to_n/round_robin/stream_one_to_n_round_robin_type.rst
    ./stream_one_to_n/load_balance/stream_one_to_n_load_balance.rst
    ./stream_one_to_n/load_balance/stream_one_to_n_load_balance_type.rst
+   ./stream_one_to_n/tag_select/stream_one_to_n_tag_select.rst
+   ./stream_one_to_n/tag_select/stream_one_to_n_tag_select_type.rst
 
 .. ERROR:: TODO need doc for all modules.

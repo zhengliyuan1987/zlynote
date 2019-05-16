@@ -47,7 +47,7 @@ The design of the primitive includes 3 modules:
 
 1. read: Read data from the input stream then output data by one stream whose width is lcm( win, n * wout) bits. Here, the least common multiple of win and n*wout is the inner buffer size in order to solve the different input width and output width. 
 
-                buf_size = lcm ( n * win, wout)
+                buf_size = lcm (win, n * wout)
 
 2. reduce: split the large width to a few of n*wout bits in order to distribute.
         
