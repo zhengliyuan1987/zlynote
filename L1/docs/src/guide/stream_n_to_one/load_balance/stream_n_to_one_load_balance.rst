@@ -67,5 +67,4 @@ The design of the primitive includes 3 modules:
 .. CAUTION::
    These Applicable conditions.
 
-This ``stream_n_to_one`` primitve has only one port for axi ptr and one port for stream output.
 
