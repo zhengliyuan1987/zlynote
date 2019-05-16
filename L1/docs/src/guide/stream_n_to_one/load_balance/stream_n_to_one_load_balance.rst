@@ -32,8 +32,8 @@ implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>
    :align: center
 
 The stream_n_to_one distributes the data from  n streams to one stream. Distribution on load balance means it is non-blocking. Compared to stream_n_to_one based on round robin, it skips to read the empty input streams. It also supports different input and output widths. It  gets all input streams' states ahead, then reads  data from not empty streams to a buffer. If the total available bits in buffer is enough, then output a data. 
-For example, n = 4, input width(written as win) =16, output width(written as wout)=64.  
-At c0 cycle,  2# stream is empty,  then read 48bits data from 0#,1# and 3# stream,  no output at this cycle;  at c1 cycle,  1# is empty, read 16bits from 0# stream, then output a 64bits(16+48) data, and store 32 bits data from 2# and 3# stream for output them in the future. In the process, put the data from 0# at c0 on the lowest 16bit in the buffer, and 0# at c1 on the highest 16 bits. 
+For example, n = 4, input width(written as win) =16, output width(written as wout)=128.  
+At c0 cycle,  1# stream is empty,  then read 48bits data from 0#,2# and 3# stream,  no output at this cycle;  at c1 cycle,  2# is empty, read 48bits from 0#, 1# and 3#stream; at c3 cycle, 1# and 2# stream are empty, read 32 bits from 0# and 3# stream, then output them as a data by the output stream because of total read 48+48+32=128 bits data from input streams. In the process, put the data from 0# at c0 on the lowest 16bit in the output data, and 3# at c3 on the highest 16 bits. 
 
 There are Applicable conditions:
 
