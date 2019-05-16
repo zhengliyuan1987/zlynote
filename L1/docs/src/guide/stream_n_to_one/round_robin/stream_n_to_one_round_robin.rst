@@ -23,7 +23,7 @@ Internals of stream_n_to_one_round_robin
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream_n_to_one based on round robin,
+This document describes the structure and execution of stream_n_to_one distributing on round robin,
 implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>` function.
 
 .. image:: /images/stream_n_to_one/round_robin/stream_n_to_one_round_robin.png
@@ -31,7 +31,7 @@ implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>
    :width: 80%
    :align: center
 
-The stream_n_to_one based on round robin distributes the data from  n streams to one stream.  This primitive supports different input and output width.  In the process, read the input data (assume  to a binary stream) follows  the order: 0#stream, 1#stream, 2#stream, ... , (n-1)#stream, 0#stream, 1#stream, etc. while output data when the binary stream has enough data (output width bits).  
+The stream_n_to_one distributes the data from  n streams to one stream.  This primitive supports different input and output width.  In the process, read the input data to a buffer follows  the order: 0#stream, 1#stream, 2#stream, ... , (n-1)#stream, 0#stream, 1#stream, etc while output new data when the total available bits are enough data (up to output width bits).  
 For example, n = 4, input width(written as win) =16, output width(written as wout)=64,  the lowest 16 bits in  output data is the data from 0#stream, and the highest 16 bits from 3#stream. 
 When n* win > wout, output times is more than input ones, so read should wait a few cycles sometimes in order to output all buffered data.  
 When n* win < wout, output times is less than input ones, so output should wait a few cycles sometimes in order to read enough data from input streams.  

@@ -23,7 +23,7 @@ Internals of stream_n_to_one supporting any type
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of axi_to_stream,
+This document describes the structure and execution of stream_n_to_one supporting any type which distributes on round robin,
 implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>` function.
 
 .. image:: /images/stream_n_to_one/round_robin/stream_n_to_one_round_robin_type.png
@@ -31,7 +31,7 @@ implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>
    :width: 80%
    :align: center
 
-The stream_n_to_one based on round robin supports any type and distributes data in the order of round robin from input streams. 
+This stream_n_to_one supports any type and distributes data in the order of round robin from input streams. The data types of input stream and output streams are same.  
 
 
 .. CAUTION::

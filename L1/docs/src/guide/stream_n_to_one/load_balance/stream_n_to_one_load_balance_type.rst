@@ -23,37 +23,18 @@ Internals of stream_n_to_one_load_balance supporting any type
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream n to one,
+This document describes the structure and execution of stream_n_to_one distributing on load balance,
 implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>` function.
 
-.. image:: /images/axi_to_stream.png
-   :alt: two types of axi_to_stream Structure
+.. image:: /images/stream_n_to_one/load_balance/stream_n_to_one_load_balance_type.png
+   :alt: stream_n_to_one distribution on load balance Structure
    :width: 80%
    :align: center
 
-The stream_n_to_one for aligned data implement is a lightweight primitive for aligned data, the width of AXI port
-is positive integer multiple of alignment width and the stream's width just equals the aligned width. Both AXI port 
-and alignment width are assumed to be multiple of 8-bit char.
-The axi_to_stream for general data is relatively universal compared with the axi_to_stream for aligned data,
-so it causes more resource. The data length should be in number of char.the data width cloud be unaligned or aligned,
-e.g. compressed binary files. AXI port is assumed to have width as multiple of 8-bit char.
+The stream_n_to_one distributes the data from  n streams to one stream. Distribution on load balance means it is non-blocking. Compared to stream_n_to_one based on round robin, it skips to read the empty input streams. The data types of input and output are same.
 
-There are Applicable conditions:
-
-1. When input data ptr width is less than AXI port width, the AXI port bandwidth
-   will not be fully used. So, AXI port width should be minimized while meeting
-   performance requirements of application.
-
-This primitive performs axi_to_stream in two modules working simultaneously. For example, in a <_WAxi, _BstLen, _TStrm>=<512,32,ap_uint<64> >
-for binary files design:
-
-1. read_to_vec: read axi ptr to a _WAxi width stream
-
-2. split_vec_to_aligned: It takes the _WAxi width stream, aligned to the stream width, then split the _WAxi width data to 
-   stream width and output
 
 .. CAUTION::
-   These Applicable conditions.
+   No condition.
 
-This ``stream_n_to_one`` primitve has only one port for axi ptr and one port for stream output.
 

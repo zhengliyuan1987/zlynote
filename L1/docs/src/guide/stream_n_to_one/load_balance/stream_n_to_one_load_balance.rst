@@ -23,34 +23,46 @@ Internals of stream_n_to_one_load_balance
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream n to one,
+This document describes the structure and execution of stream_n_to_one distributing on load balance,
 implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>` function.
 
 .. image:: /images/stream_n_to_one/load_balance/stream_n_to_one_load_balance.png
-   :alt: stream_n_to_one based on load balance Structure
+   :alt: stream_n_to_one distribution on load balance Structure
    :width: 80%
    :align: center
 
-The stream_n_to_one for aligned data implement is a lightweight primitive for aligned data, the width of AXI port
-is positive integer multiple of alignment width and the stream's width just equals the aligned width. Both AXI port 
-and alignment width are assumed to be multiple of 8-bit char.
-The axi_to_stream for general data is relatively universal compared with the axi_to_stream for aligned data,
-so it causes more resource. The data length should be in number of char.the data width cloud be unaligned or aligned,
-e.g. compressed binary files. AXI port is assumed to have width as multiple of 8-bit char.
+The stream_n_to_one distributes the data from  n streams to one stream. Distribution on load balance means it is non-blocking. Compared to stream_n_to_one based on round robin, it skips to read the empty input streams. It also supports different input and output widths. It  gets all input streams' states ahead, then reads  data from not empty streams to a buffer. If the total available bits in buffer is enough, then output a data. 
+For example, n = 4, input width(written as win) =16, output width(written as wout)=64.  
+At c0 cycle,  2# stream is empty,  then read 48bits data from 0#,1# and 3# stream,  no output at this cycle;  at c1 cycle,  1# is empty, read 16bits from 0# stream, then output a 64bits(16+48) data, and store 32 bits data from 2# and 3# stream for output them in the future. In the process, put the data from 0# at c0 on the lowest 16bit in the buffer, and 0# at c1 on the highest 16 bits. 
 
 There are Applicable conditions:
 
-1. When input data ptr width is less than AXI port width, the AXI port bandwidth
-   will not be fully used. So, AXI port width should be minimized while meeting
-   performance requirements of application.
+1. The leat common multiple(lcm) of input width and n * output width is no more than 4096.
 
-This primitive performs axi_to_stream in two modules working simultaneously. For example, in a <_WAxi, _BstLen, _TStrm>=<512,32,ap_uint<64> >
-for binary files design:
+   For better performance, AP_INT_MAX_W is defined to 4096 in type.h in default, which will be changed manually if lcm is more than 4096. However, it must be less than 32768.
 
-1. read_to_vec: read axi ptr to a _WAxi width stream
+2. n is more than 1. It doesn't work when one stream is distributed to another one on load balance.
 
-2. split_vec_to_aligned: It takes the _WAxi width stream, aligned to the stream width, then split the _WAxi width data to 
-   stream width and output
+The design of the primitive includes 3 modules:
+
+1. read: Read data from the n input streams then output data by one stream whose width is (n * win) bits. 
+
+2. collect: The least common multiple of  n * win and wout is the inner buffer size in order to solve the different input width and output width.
+        
+                buf_size = lcm ( n * win, wout)
+
+        Collect buf_size/(n*win)  input data (each has n*win bits) to a buffer , then output them at once to a stream.
+
+3. distribute:  Read a data with buf_size bits from input stream, then output  buf_size/wout  times to ostrm.
+
+
+
+.. image:: /images/stream_n_to_one/load_balance/stream_n_to_one_load_balance_detail.png
+   :alt:  design details of n streams to one distribution on load balance
+   :width: 100%
+   :align: center
+
+
 
 .. CAUTION::
    These Applicable conditions.
