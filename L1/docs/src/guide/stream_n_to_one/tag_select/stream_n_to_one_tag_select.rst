@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _guide-stream_n_to_one:
+.. _guide-stream_n_to_one_tag_select:
 
 *****************************************
 Internals of stream_n_to_one_tag_select

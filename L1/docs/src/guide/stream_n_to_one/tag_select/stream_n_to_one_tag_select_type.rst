@@ -15,9 +15,9 @@
 
 .. _guide-stream_n_to_one:
 
-*****************************************
-Internals of stream_n_to_one_tag_select
-*****************************************
+***********************************************************
+Internals of stream_n_to_one_tag_select supporting any type
+***********************************************************
 
 .. toctree::
    :hidden:

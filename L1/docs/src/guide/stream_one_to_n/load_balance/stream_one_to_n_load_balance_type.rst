@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _guide-stream_one_to_n:
+.. _guide-stream_one_to_n_load_balance_type:
 
 **************************************************************
 Internals of stream_one_to_n_load_balance supporting any type
@@ -35,6 +35,6 @@ The stream_one_to_n distributes the data from one stream to n streams. Distribut
 
 
 .. CAUTION::
-   No condition.
+   No one.
 
 

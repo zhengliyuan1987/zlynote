@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _guide-stream_n_to_one:
+.. _guide-stream_n_to_one_round_robin_type:
 
-*************************************************
-Internals of stream_n_to_one supporting any type
-*************************************************
+************************************************************
+Internals of stream_n_to_one_round_robin supporting any type
+************************************************************
 
 .. toctree::
    :hidden:
@@ -35,6 +35,6 @@ This stream_n_to_one supports any type and distributes data in the order of roun
 
 
 .. CAUTION::
-    No conditions.
+    No ones.
 
 

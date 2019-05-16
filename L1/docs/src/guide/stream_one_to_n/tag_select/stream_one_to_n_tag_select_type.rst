@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _guide-stream_one_to_n:
+.. _guide-stream_one_to_n_tag_select_type:
 
-*****************************************
-Internals of stream_one_to_n_tag_select
-*****************************************
+***********************************************************
+Internals of stream_one_to_n_tag_select supporting any type
+***********************************************************
 
 .. toctree::
    :hidden:
@@ -26,7 +26,7 @@ Internals of stream_one_to_n_tag_select
 This document describes the structure and execution of stream_one_to_n distribution on tag,
 implemented as :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>` function.
 
-.. image:: /images/stream_one_to_n/tag_select/stream_one_to_n_tag_select.png
+.. image:: /images/stream_one_to_n/tag_select/stream_one_to_n_tag_select_type.png
    :alt: one stream to n distribution on tag Structure
    :width: 80%
    :align: center
