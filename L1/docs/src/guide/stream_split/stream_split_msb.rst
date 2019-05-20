@@ -23,7 +23,7 @@ Internals of stream_split_msb
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream_split distribution on MSB,
+This document describes the structure and execution of stream_split from MSB,
 implemented as :ref:`stream_split <cid-xf::common::utils_hw::stream_split>` function.
 
 .. image:: /images/stream_split/stream_split_msb.png
@@ -31,7 +31,7 @@ implemented as :ref:`stream_split <cid-xf::common::utils_hw::stream_split>` func
    :width: 80%
    :align: center
 
-The stream_split splits one wide stream into multiple streams. Distribution on MSB means output from the highest bit. 
+The stream_split splits one wide stream into multiple streams. Split from MSB means output from the highest bit. 
 
 For example, n = 4, input width(written as win) =64, output width(written as wout)=16, read a data from input stream then its highest 16bits are written to 0#stream, and its lowest 16 bits to 3#stream. If win=72, then the highest 64bits(4*16bits) are output and the lowest 8bits are discarded.
 

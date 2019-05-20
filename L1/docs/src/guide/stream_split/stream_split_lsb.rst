@@ -23,7 +23,7 @@ Internals of stream_split_lsb
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream_split distribution on LSB,
+This document describes the structure and execution of stream_split from LSB,
 implemented as :ref:`stream_split <cid-xf::common::utils_hw::stream_split>` function.
 
 .. image:: /images/stream_split/stream_split_lsb.png
@@ -31,7 +31,7 @@ implemented as :ref:`stream_split <cid-xf::common::utils_hw::stream_split>` func
    :width: 80%
    :align: center
 
-The stream_split splits one wide stream into multiple streams. Distribution on LSB means output from the lowest bit. 
+The stream_split splits one wide stream into multiple streams. Split from LSB means output from the lowest bit. 
 
 For example, n = 4, input width(written as win) =64, output width(written as wout)=16, read a data from input stream then its lowest 16bits are written to 0#stream, and its highest 16 bits to 3#stream. If win=72, then the lowest 64bits(4*16bits) are output and the highst 8bits are discarded.
 
