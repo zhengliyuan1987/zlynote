@@ -33,10 +33,10 @@ implemented as :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>
 
 The stream_one_to_n distributes the data from  one stream to n streams.  This primitive supports different input and output width.  In the process, write the output streams follows  the order: 0#stream, 1#stream, 2#stream, ... , (n-1)#stream, 0#stream, 1#stream, etc.  
 
-For example, n = 8, input width(written as win) =64, output width(written as wout)=16,  read a data from input stream then its lowest 16 bits is write to 0#stream, and its highest 16 bits to 3#stream; read a new data, the lowest 16 bits to 4# and the highest ones to 7#.
+For example, n = 8, input width(written as win)=64, output width(written as wout)=16,  read a data from input stream then its lowest 16 bits are written to 0#stream, and its highest 16 bits to 3#stream; read a new data, the lowest 16 bits to 4# and the highest ones to 7#.
 
 When  win > n*wout, output times is more than input ones, so read should wait a few cycles sometimes in order to output all buffered data.  
-When  win < n*wout, output times is less than input ones, so write should wait a few cycles sometimes in order to read enough data from input streams.  
+When  win < n*wout, output times is less than input ones, so output should wait a few cycles sometimes in order to read enough data from input streams.  
 
 There are Applicable conditions:
 
