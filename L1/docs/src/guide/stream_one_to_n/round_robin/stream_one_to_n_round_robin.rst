@@ -33,7 +33,8 @@ implemented as :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>
 
 The stream_one_to_n distributes the data from  one stream to n streams.  This primitive supports different input and output width.  In the process, write the output streams follows  the order: 0#stream, 1#stream, 2#stream, ... , (n-1)#stream, 0#stream, 1#stream, etc.  
 
-For example, n = 4, input width(written as win) =64, output width(written as wout)=16,  the lowest 16 bits in the input data is write to 0#stream, and the highest 16 bits to 3#stream. If win=128, output the lowest 16 bits to 0#stream at c0 cycle, and the highest 16bit to 3# stream at c1 cycle. 
+For example, n = 8, input width(written as win) =64, output width(written as wout)=16,  read a data from input stream then its lowest 16 bits is write to 0#stream, and its highest 16 bits to 3#stream; read a new data, the lowest 16 bits to 4# and the highest ones to 7#.
+
 When  win > n*wout, output times is more than input ones, so read should wait a few cycles sometimes in order to output all buffered data.  
 When  win < n*wout, output times is less than input ones, so write should wait a few cycles sometimes in order to read enough data from input streams.  
 
@@ -43,18 +44,10 @@ There are Applicable conditions:
 
    For better performance, AP_INT_MAX_W is defined to 4096 in type.h in default, which will be changed manually if lcm is more than 4096. However, it must be less than 32768.
 
-The design of the primitive includes 3 modules:
-
-1. read: Read data from the input stream then output data by one stream whose width is lcm( win, n * wout) bits. Here, the least common multiple of win and n*wout is the inner buffer size in order to solve the different input width and output width. 
+The design of the primitive applies ping-pong buffers to obtain high throughput and the least common multiple of win and n*wout is the inner buffer size in order to solve the different input width and output width. 
 
                 buf_size = lcm (win, n * wout)
-
-2. reduce: split the large width to a few of n*wout bits in order to distribute.
-        
-        Get a data whose has buf_size bits and output buf_size/(n*wout) times data which has n*wout bits.
-
-3. distribute:  Read a data with n*wout bits from input stream, then slit to n data which are distribution on round robin.
-
+At each time, one buffer is storing win bits data from input stream while n*wout bits from another one are output to n streams. 
 
 .. image:: /images/stream_one_to_n/round_robin/stream_one_to_n_round_robin_detail.png
    :alt:  design details of n streams to one distribution on round robin
