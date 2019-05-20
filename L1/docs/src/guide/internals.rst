@@ -22,5 +22,7 @@ Module Design Internals
 
    ./axi_to_stream/axi_to_stream.rst
    ./axi_to_multi_stream/axi_to_multi_stream.rst
+   ./stream_split/stream_split_lsb.rst
+   ./stream_split/stream_split_msb.rst
 
 .. ERROR:: TODO need doc for all modules.
