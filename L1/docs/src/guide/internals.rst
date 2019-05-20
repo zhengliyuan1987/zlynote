@@ -27,5 +27,6 @@ Module Design Internals
    ./stream_combine/stream_combine_lsb.rst
    ./stream_combine/stream_combine_msb.rst
    ./stream_reorder/stream_reorder.rst
+   ./stream_sync/stream_sync.rst
 
 .. ERROR:: TODO need doc for all modules.

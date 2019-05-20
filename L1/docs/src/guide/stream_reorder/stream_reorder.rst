@@ -42,7 +42,7 @@ Output is 2,1,0,3,6,5,4,7.
 The design of this primitive applies ping-pong arrays to obtain high performance. One is storing the input data while output data from another one.
 
 
-There is an  Applicable condition:
+There are Applicable conditions:
 
  1. The length of input stream is multiple (>=1) of the length of reorder config stream, which is the parameter  _WindowSize in template declear.
  2. The configuration is load once in one invocation, and reused until the end.
