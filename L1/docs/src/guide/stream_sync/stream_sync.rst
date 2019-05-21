@@ -33,12 +33,11 @@ implemented as :ref:`stream_sync <cid-xf::common::utils_hw::stream_sync>` functi
 
 The stream_sync synchronizes all streams by sharing a same end-flag stream. Each input data stream has an end-flag stream. After sync, all ouput data streams share an end-flag stream and each output stream is a duplicate of an input stream. That is to say, before output an end-flag, each ouput stream should output a data from corresponding input stream.
 
-
-There are  Applicable conditions:
+There are applicable conditions:
 
   1. It assumes the input elements in each input stream have the same number.
   2. The data type of input stream is same as the one of output.
 
 .. CAUTION::
-   The Applicable conditions.
+   Notice the applicable conditions.
 

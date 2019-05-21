@@ -34,11 +34,7 @@ implemented as :ref:`stream_discard <cid-xf::common::utils_hw::stream_discard>` 
 The stream_discard reads all input streams but no output.That is to say, it discards all input elements. 
 The primitive includes multiple input streams and end-flag streams. Each input stream and its end-flag have no dependency on others.
 
-Applicable condition:
-
-   Each input data stream has an end-flag stream, and the length of the former are 1 more than the one of the latter.
- 
-
 .. CAUTION::
-   The Applicable condition.
+   Applicable condition:
+   Each input data stream has an end-flag stream, and the length of the former are 1 more than the one of the latter.
 

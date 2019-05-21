@@ -35,11 +35,6 @@ The stream_combine combines n streams into one stream. Combination from MSB mean
 
 For example, n = 4, input width(written as win) =16, output width(written as wout)=64, read data from input streams then the data from 0#stream fill the highest 16bits and the data from 3# fill the lowest 16bits. If wout=72, then the highest 64bits(4*16bits) are filled by input streams  and the lowest 8bits are 0.
 
-There is an  Applicable condition:
-
-   n*win <= wout
-
-
 .. CAUTION::
-   The Applicable condition.
-
+   Applicable condition:
+   n * win <= wout

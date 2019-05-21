@@ -39,8 +39,6 @@ Applicable conditions:
    1. Each input stream has the same length as others.
    2. The length of the shared end-flag stream is 1 more than the one of each input stream.
 
-
-
 .. CAUTION::
-   The Applicable conditions.
+   Notice the applicable conditions.
 

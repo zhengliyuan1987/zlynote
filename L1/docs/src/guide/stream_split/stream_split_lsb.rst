@@ -35,11 +35,8 @@ The stream_split splits one wide stream into multiple streams. Split from LSB me
 
 For example, n = 4, input width(written as win) =64, output width(written as wout)=16, read a data from input stream then its lowest 16bits are written to 0#stream, and its highest 16 bits to 3#stream. If win=72, then the lowest 64bits(4*16bits) are output and the highst 8bits are discarded.
 
-There is an  Applicable condition:
-
-   win >= n*wout
-
 
 .. CAUTION::
-   The Applicable condition.
+   Applicable condition:
+   win >= n * wout
 
