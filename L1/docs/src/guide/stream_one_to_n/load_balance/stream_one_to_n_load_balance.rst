@@ -42,6 +42,7 @@ There are Applicable conditions:
    For better performance, AP_INT_MAX_W is defined to 4096 in type.h in default, which will be changed manually if lcm is more than 4096. However, it must be less than 32768.
 
 2. n is more than 1. It doesn't work when one stream is distributed to another one on load balance.
+3. The depths of all output streams are no less 8 because non-blocking writting streams inside may lead to hang in Cosim according UG902.
 
 The design of the primitive includes 3 modules:
 
