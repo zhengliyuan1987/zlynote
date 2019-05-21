@@ -41,7 +41,7 @@ When ``win < n*wout``, output times is less than input ones, so output should wa
 .. CAUTION:: Applicable conditions
 
    * The least common multiple (LCM) of input width and ``n * output width`` should be no more than ``AP_INT_MAX_W``.
-   * Setting ``AP_INT_MAX_W`` too large will slow down C++ syntheis, so the library sets it to 4096. The max supported by HLS is 32768.
+   * Setting ``AP_INT_MAX_W`` too large will slow down C++ synthesis, so the library sets it to 4096. The max supported by HLS is 32768.
    * To effectively override ``AP_INT_MAX_W``, the macro must be set before first inclusion of ``ap_int.h`` header.
 
 The design of the primitive applies ping-pong buffers to obtain high throughput and the least common multiple of win and n*wout is the inner buffer size in order to solve the different input width and output width.

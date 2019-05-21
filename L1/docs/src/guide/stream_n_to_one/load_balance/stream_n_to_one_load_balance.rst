@@ -39,13 +39,13 @@ There are applicable conditions:
 
 1. The least common multiple (LCM) of input width and ``n * output width`` should be no more than ``AP_INT_MAX_W``.
 
-   Setting ``AP_INT_MAX_W`` too large will slow down C++ syntheis, so the library sets it to 4096. The max supported by HLS is 32768.
+   Setting ``AP_INT_MAX_W`` too large will slow down C++ synthesis, so the library sets it to 4096. The max supported by HLS is 32768.
 
    To effectively override ``AP_INT_MAX_W``, the macro must be set before first inclusion of ``ap_int.h`` header.
 
 2. n must be more than 1. It doesn't work when one stream is distributed to another one on load balance.
 
-3. The depths of all input streams are no less 8 because non-blocking read streams inside may lead to hang in Cosim according UG902.
+3. The depths of all input streams are no less 8 because non-blocking read streams inside may lead to hang in Cosim according to UG902.
 
 4. This design is NOT order-preserving.
 
