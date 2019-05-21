@@ -28,5 +28,8 @@ Module Design Internals
    ./stream_combine/stream_combine_msb.rst
    ./stream_reorder/stream_reorder.rst
    ./stream_sync/stream_sync.rst
+   ./stream_discard/stream_discard_single.rst
+   ./stream_discard/stream_discard_array.rst
+   ./stream_discard/stream_discard_share.rst
 
 .. ERROR:: TODO need doc for all modules.
