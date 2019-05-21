@@ -32,28 +32,26 @@ implemented as :ref:`axi_to_stream <cid-xf::common::utils_hw::axi_to_stream>` fu
    :align: center
 
 The axi_to_stream for aligned data implement is a lightweight primitive for aligned data, the width of AXI port
-is positive integer multiple of alignment width and the stream's width just equals the aligned width. Both AXI port 
+is positive integer multiple of alignment width and the stream's width just equals the aligned width. Both AXI port
 and alignment width are assumed to be multiple of 8-bit char.
+
 The axi_to_stream for general data is relatively universal compared with the axi_to_stream for aligned data,
 so it causes more resource. The data length should be in number of char.the data width cloud be unaligned or aligned,
 e.g. compressed binary files. AXI port is assumed to have width as multiple of 8-bit char.
 
-There are Applicable conditions:
+.. CAUTION::
+   Applicable conditions:
 
-1. When input data ptr width is less than AXI port width, the AXI port bandwidth
+   When input data pointer width is less than AXI port width, the AXI port bandwidth
    will not be fully used. So, AXI port width should be minimized while meeting
    performance requirements of application.
 
-This primitive performs axi_to_stream in two modules working simultaneously. For example, in a <_WAxi, _BstLen, _TStrm>=<512,32,ap_uint<64> >
-for binary files design:
+This primitive performs axi_to_stream in two modules working simultaneously.
 
-1. read_to_vec: read axi ptr to a _WAxi width stream
+1. ``read_to_vec``: It reads from AXI master to a ``_WAxi`` width stream.
 
-2. split_vec_to_aligned: It takes the _WAxi width stream, aligned to the stream width, then split the _WAxi width data to 
-   stream width and output
-
-.. CAUTION::
-   These Applicable conditions.
+2. ``split_vec_to_aligned``: It consumes the ``_WAxi`` width stream, splits and aligns the wide data to
+   stream width, and writes the data into stream.
 
 This ``axi_to_stream`` primitve has only one port for axi ptr and one port for stream output.
 

@@ -32,26 +32,27 @@ implemented as :ref:`axi_to_multi_stream <cid-xf::common::utils_hw::axi_to_multi
    :align: center
 
 The axi_to_multi_stream primitive non-blocking and Round Robin load multiple categories of data from one AXI master to streams.
-For example, in the implementation of one Axi port loading three types of data, the data of each type coulde be tightly packed.
+For example, in the implementation of one AXI port loading three types of data, the data of each type coulde be tightly packed.
 Each type of data's length should be in number of char. The three types of data width cloud be unaligned or aligned,
 e.g. three types of data compressed in one binary files. AXI port is assumed to have width as multiple of 8-bit char.
 
-There are Applicable conditions:
+.. CAUTION::
+   Applicable condition:
 
-1. When input data ptr width is less than AXI port width, the AXI port bandwidth
+   This module only supports 3 categories of data.
+
+   When input data ptr width is less than AXI port width, the AXI port bandwidth
    will not be fully used. So, AXI port width should be minimized while meeting
    performance requirements of application.
 
-This primitive performs axi_to_multi_stream in two modules working simultaneously. For example, 
-in a <_WAxi, _BstLen, _TStrm0, _TStrm1, _TStrm2>=<512,32,ap_uint<64>,ap_uint<32>,ap_uint<128> > for binary files design:
 
-1. read_to_vec_stream: read axi ptr to three bram for buffer,
-   then non-blocking and Round Robin the buffer to product _WAxi width stream.
+This primitive has two modules working simultaneously in side.
 
-2. split_vec_to_aligned: It takes the _WAxi width stream, aligned to the stream width, then split the _WAxi width data to 
+1. ``read_to_vec_stream``: read AXI master to three bram buffers.
+   and load the buffers in non-blocking and round robin way to ``_WAxi`` width stream.
+
+2. ``split_vec_to_aligned``: It takes the ``_WAxi`` width stream, aligned to the stream width, then split the _WAxi width data to
    stream width and output
 
-.. CAUTION::
-   These Applicable conditions.
 
 
