@@ -56,6 +56,7 @@ The design of the primitive includes 3 modules:
 
 3. distribute:  Read a data with n*wout bits from input stream, then slit to n data which are distribution on load balance.
 
+4. This design is NOT order-preserving.
 
 
 .. image:: /images/stream_one_to_n/load_balance/stream_one_to_n_load_balance_detail.png
