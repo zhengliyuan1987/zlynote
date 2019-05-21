@@ -22,6 +22,15 @@ Module Design Internals
 
    ./axi_to_stream/axi_to_stream.rst
    ./axi_to_multi_stream/axi_to_multi_stream.rst
+   ./stream_split/stream_split_lsb.rst
+   ./stream_split/stream_split_msb.rst
+   ./stream_combine/stream_combine_lsb.rst
+   ./stream_combine/stream_combine_msb.rst
+   ./stream_reorder/stream_reorder.rst
+   ./stream_sync/stream_sync.rst
+   ./stream_discard/stream_discard_single.rst
+   ./stream_discard/stream_discard_array.rst
+   ./stream_discard/stream_discard_share.rst
    ./stream_n_to_one/round_robin/stream_n_to_one_round_robin.rst
    ./stream_n_to_one/round_robin/stream_n_to_one_round_robin_type.rst
    ./stream_n_to_one/load_balance/stream_n_to_one_load_balance.rst
@@ -35,4 +44,3 @@ Module Design Internals
    ./stream_one_to_n/tag_select/stream_one_to_n_tag_select.rst
    ./stream_one_to_n/tag_select/stream_one_to_n_tag_select_type.rst
 
-.. ERROR:: TODO need doc for all modules.

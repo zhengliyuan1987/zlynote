@@ -1,0 +1,43 @@
+.. 
+   Copyright 2019 Xilinx, Inc.
+  
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+.. _guide-stream_sync:
+
+*****************************************
+Internals of stream_sync
+*****************************************
+
+.. toctree::
+   :hidden:
+   :maxdepth: 3
+
+This document describes the structure and execution of stream_sync,
+implemented as :ref:`stream_sync <cid-xf::common::utils_hw::stream_sync>` function.
+
+.. image:: /images/stream_sync/stream_sync.png
+   :alt: stream sync Structure
+   :width: 80%
+   :align: center
+
+The stream_sync synchronizes all streams by sharing a same end-flag stream. Each input data stream has an end-flag stream. After sync, all ouput data streams share an end-flag stream and each output stream is a duplicate of an input stream. That is to say, before output an end-flag, each ouput stream should output a data from corresponding input stream.
+
+There are applicable conditions:
+
+  1. It assumes the input elements in each input stream have the same number.
+  2. The data type of input stream is same as the one of output.
+
+.. CAUTION::
+   Notice the applicable conditions.
+
