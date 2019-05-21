@@ -31,24 +31,24 @@ implemented as :ref:`stream_reorder <cid-xf::common::utils_hw::stream_reorder>` 
    :width: 80%
    :align: center
 
-The stream_reorder adjusts the output order within a fix size group. Suppose the fix size is Wn, each Wn input data are reorderred to output following the pattern from input configuration.
+The stream_reorder adjusts the output order within a fix size group. Suppose the fix size is Wn, each Wn input data are reordered to output following the pattern from input configuration.
 
-For example, Wn = 4,
-Reorder config is 2,1,0,3.
+For example, Wn = 4, reorder config is 2,1,0,3.
+
 Input order is 1,2,3,4,5,6,7 (1 is first input and 7 is last).
-Each Wn=4 data are reorderred: 0 1 2 3 --> 2 1 0 3 and 4 5 6 7 --> 6 5 4 7.
+
+Each group of 4 data elements is reordered: 0 1 2 3 --> 2 1 0 3 and 4 5 6 7 --> 6 5 4 7.
+
 Output is 2,1,0,3,6,5,4,7.
 
 The design of this primitive applies ping-pong arrays to obtain high performance. One is storing the input data while output data from another one.
 
+There are applicable conditions:
 
-There are Applicable conditions:
-
- 1. The length of input stream is multiple (>=1) of the length of reorder config stream, which is the parameter  _WindowSize in template declear.
+ 1. The length of input stream is multiple (>=1) of the length of reorder config stream set by the  ``_WindowSize`` template parameter.
  2. The configuration is loaded once in one invocation, and reused until the end.
  3. The types of input stream and output stream are same.
-   
 
 .. CAUTION::
-   The Applicable conditions.
+   The applicable conditions.
 
