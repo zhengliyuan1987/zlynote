@@ -75,7 +75,7 @@ void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
                     hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm) {
 
-  XF_UTILS_HW_STATIC_ASSERT(_ONstrm < _INStrm,
+  XF_UTILS_HW_STATIC_ASSERT(_ONstrm <= _INStrm,
                             "stream_shuffle cannot have more output than input.");
 
   XF_UTILS_HW_STATIC_ASSERT(_INStrm <= 128,
