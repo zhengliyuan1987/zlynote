@@ -31,30 +31,28 @@ implemented as :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>
    :width: 80%
    :align: center
 
-The stream_one_to_n distributes the data from  one stream to n streams.  This primitive supports different input and output width.  In the process, write the output streams follows  the order: 0#stream, 1#stream, 2#stream, ... , (n-1)#stream, 0#stream, 1#stream, etc.  
+The stream_one_to_n distributes the data from  one stream to n streams.  This primitive supports different input and output width.  In the process, write the output streams follows  the order: 0#stream, 1#stream, 2#stream, ... , (n-1)#stream, 0#stream, 1#stream, etc.
 
-For example, n = 8, input width(written as win)=64, output width(written as wout)=16,  read a data from input stream then its lowest 16 bits are written to 0#stream, and its highest 16 bits to 3#stream; read a new data, the lowest 16 bits to 4# and the highest ones to 7#.
+For example, n = 8, input width (written as win) = 64, output width (written as wout) = 16, read a data from input stream then its lowest 16 bits are written to 0#stream, and its highest 16 bits to 3#stream; read a new data, the lowest 16 bits to 4# and the highest ones to 7#.
 
-When  win > n*wout, output times is more than input ones, so read should wait a few cycles sometimes in order to output all buffered data.  
-When  win < n*wout, output times is less than input ones, so output should wait a few cycles sometimes in order to read enough data from input streams.  
+When ``win > n*wout``, output times is more than input ones, so read should wait a few cycles sometimes in order to output all buffered data.
+When ``win < n*wout``, output times is less than input ones, so output should wait a few cycles sometimes in order to read enough data from input streams.
 
-There are Applicable conditions:
+.. CAUTION:: Applicable conditions
 
-   The leat common multiple(lcm) of input width and n * output width is no more than 4096.
+   * The least common multiple (LCM) of input width and ``n * output width`` should be no more than ``AP_INT_MAX_W``.
+   * Setting ``AP_INT_MAX_W`` too large will slow down C++ syntheis, so the library sets it to 4096. The max supported by HLS is 32768.
+   * To effectively override ``AP_INT_MAX_W``, the macro must be set before first inclusion of ``ap_int.h`` header.
 
-   For better performance, AP_INT_MAX_W is defined to 4096 in type.h in default, which will be changed manually if lcm is more than 4096. However, it must be less than 32768.
+The design of the primitive applies ping-pong buffers to obtain high throughput and the least common multiple of win and n*wout is the inner buffer size in order to solve the different input width and output width.
 
-The design of the primitive applies ping-pong buffers to obtain high throughput and the least common multiple of win and n*wout is the inner buffer size in order to solve the different input width and output width. 
+    ``buf_size = lcm (win, n * wout)``
 
-                buf_size = lcm (win, n * wout)
-At each time, one buffer is storing win bits data from input stream while n*wout bits from another one are output to n streams. 
+At each time, one buffer is storing win bits data from input stream while n*wout bits from another one are output to n streams.
 
 .. image:: /images/stream_one_to_n/round_robin/stream_one_to_n_round_robin_detail.png
    :alt:  design details of n streams to one distribution on round robin
    :width: 100%
    :align: center
- 
 
-.. CAUTION::
-   These Applicable conditions.
 

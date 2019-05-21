@@ -33,8 +33,3 @@ implemented as :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>
 
 This stream_one_to_n supports any type and distributes data in the order of round robin from input streams. The data types of input stream and output streams are same.  
 
-
-.. CAUTION::
-    No conditions.
-
-
