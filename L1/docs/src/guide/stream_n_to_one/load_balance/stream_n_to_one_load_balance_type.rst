@@ -33,8 +33,3 @@ implemented as :ref:`stream_n_to_one <cid-xf::common::utils_hw::stream_n_to_one>
 
 The stream_n_to_one distributes the data from  n streams to one stream. Distribution on load balance means it is non-blocking. Compared to stream_n_to_one based on round robin, it skips to read the empty input streams. The data types of input and output are same.
 
-
-.. CAUTION::
-   No condition.
-
-

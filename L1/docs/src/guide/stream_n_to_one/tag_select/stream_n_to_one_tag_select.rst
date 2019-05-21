@@ -35,7 +35,8 @@ The stream_n_to_one distributes the data from n streams to one stream.  Distribu
 
 For example, there are 4 input streams and tag is 2, then read the third input stream and output it.
 
-There is an applicable condition:
+.. CAUTION::
+   Application condition:
 
    This primitive only supports the data type of ``ap_uint<>``.
 

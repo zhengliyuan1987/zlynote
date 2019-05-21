@@ -33,12 +33,4 @@ implemented as :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>
 
 The stream_one_to_n distributes the data from one stream to one streams.  Distribution on tag means output data depend on tag, which is the index of output streams.
 
-For example, there are 4 output streams and tag is 2, then write the third stream. 
-
-There is an Applicable condition:
-
-   This primitive supports any data type, such as double, float, ap_uint<N>.
-
-.. CAUTION::
-   The Applicable condition.
-
+For example, there are 4 output streams and tag is 2, then write the third stream.
