@@ -45,7 +45,7 @@ The design of this primitive applies ping-pong arrays to obtain high performance
 There are Applicable conditions:
 
  1. The length of input stream is multiple (>=1) of the length of reorder config stream, which is the parameter  _WindowSize in template declear.
- 2. The configuration is load once in one invocation, and reused until the end.
+ 2. The configuration is loaded once in one invocation, and reused until the end.
  3. The types of input stream and output stream are same.
    
 

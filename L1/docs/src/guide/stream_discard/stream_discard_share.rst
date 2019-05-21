@@ -32,7 +32,7 @@ implemented as :ref:`stream_discard <cid-xf::common::utils_hw::stream_discard>` 
    :align: center
 
 The stream_discard reads all input streams but no output.That is to say, it discards all input elements. 
-This primitive includes multiple input streams and an end-flag stream, which is shared by the former.
+This primitive includes multiple input streams and an end-flag stream, which is shared in the former.
 
 Applicable conditions:
 
