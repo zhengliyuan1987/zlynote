@@ -11,36 +11,43 @@
 //#include "xf_utils_hw/stream_one_to_n.h"
 //#include "xf_utils_hw/stream_n_to_one.h"
 
-#define WIN_STRM  512 
-#define WOUT_STRM 64
+#define W_STRM  512 
+#define W_PU 64
 #define NS       (1024*8)
-#define NSTRM    8
+#define NPU    8
 */
 
 
 
 int test() {
 
-   hls::stream<ap_uint<WIN_STRM> > data_istrm;
+   hls::stream<ap_uint<W_STRM> > data_istrm;
    hls::stream<bool> e_istrm;
-   hls::stream<ap_uint<WIN_STRM> > ostrm;
+   hls::stream<ap_uint<W_STRM> > ostrm;
    hls::stream<bool> e_ostrm;
    
-   int tempa= WIN_STRM*NS/WOUT_STRM;
-   int tempb= tempa*WOUT_STRM;
-   int comp_count= tempb/WIN_STRM;// comp_count<=NS, last data may not equal NS-1 
+   int tempa= W_STRM*NS/W_PU;
+   int tempb= tempa*W_PU;
+   int comp_count= tempb/W_STRM;// comp_count<=NS, last data may not equal NS-1 
 
-  std::cout<<std::dec<< "WIN_STRM  = "<< WIN_STRM <<std::endl;
-  std::cout<<std::dec<< "WOUT_STRM = "<< WOUT_STRM <<std::endl;
-  std::cout<<std::dec<< "NSTRM     = "<< NSTRM <<std::endl;
+  std::cout<<std::dec<< "W_STRM  = "<< W_STRM <<std::endl;
+  std::cout<<std::dec<< "W_PU = "<< W_PU <<std::endl;
+  std::cout<<std::dec<< "NPU     = "<< NPU <<std::endl;
   std::cout<<std::dec<< "NS        = "<< NS <<std::endl;
-  for(int d=0; d< NS; ++d)  { 
-    ap_uint<WIN_STRM> id =d % NSTRM; 
-    data_istrm.write(d);
+  ap_uint<W_STRM> gld=0; 
+  for(int i=0; i< NS; ++i)  { 
+
+    ap_uint<W_PRC> p = i;
+    ap_uint<W_DSC> d = i%10;
+    ap_uint<W_PU> data;
+    
+    data.range(W_PRC-1,0)= p ;
+    data.range(W_DSC+W_PRC-1,W_PRC)= d;
+    data_istrm.write(data);
     e_istrm.write(false);
-#if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
-    std::cout<< "id = "<< id << "  "<< "d="<<d << std::endl;
-#endif
+    
+    ap_uint<W_PU> nd = update_data(data) ;
+    gld += mult(nd);
   } 
   e_istrm.write(true);
 
@@ -50,22 +57,18 @@ int test() {
   int nerror=0;
   int count=0;
   bool first=true;
-  ap_uint<WIN_STRM> last_data; 
+  ap_uint<W_STRM> total=0; 
   
   while(!e_ostrm.read())  {
-    ap_uint<WIN_STRM> d = ostrm.read(); 
-    if ( first ) {
-     first=false;
-    }
-    else {
-      if (count <= comp_count && d != last_data+1) {
-        nerror=1;
-        std::cout<< "erro: last_data="<< last_data <<", "<< "current data="<<d <<std::endl;
-       } 
-     }
-     last_data=d;
-     count++;
+    ap_uint<W_STRM> d = ostrm.read(); 
+    total += mult(d); 
+    count++;
   }
+  if( total != gld){
+    nerror=1;
+    std::cout << "\n error: total" << total << "   gld="<<gld <<std::endl;
+  }
+   
   std::cout << "\n read: " << count <<std::endl;
   if( count != NS){
     nerror=1;
