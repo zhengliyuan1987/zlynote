@@ -7,7 +7,15 @@
 #define NS      (8*1024)
 #define NPU     8
 
-// a duplicate of input stream, double each data as output
+/**
+ * @brief a duplicate of input stream, double each data as output
+ *
+ * @param c_istrm input stream
+ * @param e_c_istrm end flag for input stream
+ * @param c_ostrm output stream
+ * @param e_c_ostrm end flag for output stream
+ *
+ */
 void process_core(
                    hls::stream<ap_uint<W_PU> >& c_istrm,
                    hls::stream<bool>& e_c_istrm,
@@ -25,7 +33,16 @@ void process_core(
    } //while
    e_c_ostrm.write(true);
 }
-// NPU PUs work in parallel
+
+/**
+ * @brief Multiple  PUs work in parallel
+ *
+ * @param c_istrms input streams
+ * @param e_c_istrms end flag for input streams
+ * @param c_ostrms output stream
+ * @param e_c_ostrms end flag for output streams
+ *
+ */
 void  process_mpu( 
                    hls::stream<ap_uint<W_PU> > c_istrms[NPU],
                    hls::stream<bool> e_c_istrms[NPU],
@@ -43,6 +60,14 @@ void  process_mpu(
   }
 }
 
+/**
+ * @brief Simutlate that a big task is coumputed by Mutiple Process Units.   
+ * Assume each input data is a package which could be splitted to a few of small width data, and each small data is processed by a Process Uint(PU) 
+ * @param istrm input stream
+ * @param e_istrm end flag for input stream
+ * @param ostrm input stream
+ * @param e_ostrm end flag for output stream
+ */
 void round_robin_mpu(hls::stream<ap_uint<W_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<W_STRM> >& ostrm,
