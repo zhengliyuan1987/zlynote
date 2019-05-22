@@ -3,41 +3,34 @@
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
+#include "code.h"
 
-
-#include "xf_utils_hw/stream_one_to_n/round_robin.h"
-#include "xf_utils_hw/stream_n_to_one/round_robin.h"
+/*
+//#include "xf_utils_hw/stream_one_to_n/round_robin.h"
+//#include "xf_utils_hw/stream_n_to_one/round_robin.h"
+//#include "xf_utils_hw/stream_one_to_n.h"
+//#include "xf_utils_hw/stream_n_to_one.h"
 
 #define WIN_STRM  512 
 #define WOUT_STRM 64
-#define NS       1024*8
+#define NS       (1024*8)
 #define NSTRM    8
+*/
 
-
-void test_core(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
-                   hls::stream<bool>& e_istrm,
-                   hls::stream<ap_uint<WIN_STRM> >& ostrm,
-                   hls::stream<bool>& e_ostrm) {
-#pragma dataflow
-
-     hls::stream<ap_uint<WOUT_STRM> > data_inner_strms[NSTRM];
-#pragma HLS stream variable = data_inner_strms depth = 32              
-//#pragma HLS array_partition variable = data_inner_strms dim = 1
-     hls::stream<bool> e_data_inner_strms[NSTRM];
-#pragma HLS stream variable = e_data_inner_strms depth = 32              
-//#pragma HLS array_partition variable = e_data_inner_strms dim = 1
-
-  xf::common::utils_hw::stream_one_to_n<WIN_STRM, WOUT_STRM,NSTRM>(
-                         data_istrm,  e_istrm,
-                         data_inner_strms, e_data_inner_strms,
-                         xf::common::utils_hw::round_robin_t());
-                        
-  xf::common::utils_hw::stream_n_to_one<WOUT_STRM, WIN_STRM,NSTRM>(
-                        data_inner_strms, e_data_inner_strms,
-                        ostrm, e_ostrm,
-                        xf::common::utils_hw::round_robin_t());
-}
-
+ap_uint<WOUT_STRM> compute(int d) {
+   ap_uint<WOUT_STRM> nd = d;
+/*   int id = d % NSTRM % 4;
+//   int id = d % NSTRM +1;
+   if ( id ==0 )
+     nd *= nd ;
+   else if( id ==1 )
+     nd += nd;
+   else if( id ==2 )
+     nd /= 2;
+*/
+//   nd = nd * id;
+   return nd;
+};
 
 int test() {
 
@@ -74,17 +67,17 @@ int test() {
   
   while(!e_ostrm.read())  {
     ap_uint<WIN_STRM> d = ostrm.read(); 
-    if ( first ) {
-     first=false;
-    }
-    else {
-      if (count <= comp_count && d != last_data+1) {
+      ap_uint<WOUT_STRM> gld = compute(count);
+      if (count <= comp_count && d != gld) {
         nerror=1;
-        std::cout<< "erro: last_data="<< last_data <<", "<< "current data="<<d <<std::endl;
+        std::cout<< "erro: "<<"c="<<count<<", gld="<< gld <<", "<< "current data="<<d <<std::endl;
        } 
-     }
-     last_data=d;
      count++;
+  }
+  std::cout << "\n read: " << count <<std::endl;
+  if( count != NS){
+    nerror=1;
+    std::cout << "\n error  read: " << count <<std::endl;
   }
   if (nerror) {
      std::cout << "\nFAIL: " << nerror << "the order is wrong.\n";
