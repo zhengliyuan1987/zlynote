@@ -7,10 +7,8 @@
 #define NS       (1024*2*2)
 #define NSTRM    32
 
-// a duplicate of input stream
-
+// a duplicate of input stream, left shift each data 
 void process_core(
-            //       int op,
                    hls::stream<ap_uint<WOUT_STRM> >& c_istrm,
                    hls::stream<bool>& e_c_istrm,
                    hls::stream<ap_uint<WOUT_STRM> >& c_ostrm,
@@ -21,15 +19,7 @@ void process_core(
     while(!last) {
       #pragma HLS pipeline II=1
               ap_uint<WOUT_STRM> d    = c_istrm.read();
-           /*   ap_uint<WOUT_STRM> doub = d << 1;
-              ap_uint<WOUT_STRM> pw   = d * d ;
-              ap_uint<WOUT_STRM> half = d>>1;
-              ap_uint<WOUT_STRM> od = (op == 0) ? pw   :
-                                      (op == 1) ? doub :
-                                      (op == 2) ? half :
-                                                  d    ;
-          */   
-              ap_uint<WOUT_STRM> od = d  ;
+              ap_uint<WOUT_STRM> od = d<<1  ;
               c_ostrm.write(od);
               e_c_ostrm.write(false);
               last = e_c_istrm.read();
@@ -50,7 +40,6 @@ void  process_mpu(
    for( int i=0; i< NSTRM; ++i) {
       #pragma HLS unroll
        process_core (
-          //           i%4,
                      c_istrms[i],
                      e_c_istrms[i],
                      c_ostrms[i],
@@ -59,12 +48,42 @@ void  process_mpu(
    }
 }
 
-void test_core(hls::stream<ap_uint<WIN_STRM> >& istrm,
+void round_robin_mpu(hls::stream<ap_uint<WIN_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<WIN_STRM> >& ostrm,
                    hls::stream<bool>& e_ostrm) {
-#pragma HLS dataflow
+/*
+ * One input stream(istrm) is splitted to multitple streams, and each services a PU.
+ * All output streams from PUs are merged to one stream(ostrm).
+ * For example, there are 8 PUs, like this:
+ *
+ *              split           merge
+ *              1-->8           8-->1 
+ *
+ *                |----> PU0 ---->| 
+ *                |               |
+ *                |----> PU1 ---->|
+ *                |               |
+ *                |----> PU2 ---->|
+ *                |               |
+ *                |----> PU3 ---->|
+ * istrm  ----->  |               |-----> ostrm
+ *                |----> PU4 ---->|
+ *                |               |
+ *                |----> PU5 ---->|
+ *                |               |
+ *                |----> PU6 ---->|
+ *                |               |
+ *                |----> PU7 ---->|
+ *
+ */
 
+ /*       one to n                     PUs                   n to one 
+ * istrm ---------> data_inner_strms -------> new_data_strms ----------> ostrms
+ *
+ */
+
+#pragma HLS dataflow
      hls::stream<ap_uint<WOUT_STRM> > data_inner_strms[NSTRM];
 #pragma HLS stream variable = data_inner_strms depth = 8              
      hls::stream<bool> e_data_inner_strms[NSTRM];

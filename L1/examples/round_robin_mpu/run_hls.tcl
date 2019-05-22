@@ -6,7 +6,7 @@ open_project -reset "test.prj"
 add_files code.cpp -cflags "-I../../include/"  
 add_files -tb code.cpp -cflags "-I../../include/"
 
-set_top  test_core
+set_top  round_robin_mpu
 
 open_solution -reset "solution1"
 set_part virtexuplus
