@@ -25,13 +25,13 @@ void process_core(
   bool last= e_c_istrm.read(); 
   while(!last) {
 #pragma HLS pipeline II=1
-            ap_uint<W_PU> d  = c_istrm.read();
-            ap_uint<W_PU> od = d<<1;
-            c_ostrm.write(od);
-            e_c_ostrm.write(false);
-            last = e_c_istrm.read();
-   } //while
-   e_c_ostrm.write(true);
+    ap_uint<W_PU> d  = c_istrm.read();
+    ap_uint<W_PU> od = d<<1;
+    c_ostrm.write(od);
+    e_c_ostrm.write(false);
+    last = e_c_istrm.read();
+  } //while
+  e_c_ostrm.write(true);
 }
 
 /**
@@ -49,14 +49,14 @@ void  process_mpu(
                    hls::stream<ap_uint<W_PU> > c_ostrms[NPU],
                    hls::stream<bool> e_c_ostrms[NPU])
 {
-#pragma dataflow
+#pragma HLS dataflow
  for( int i=0; i< NPU; ++i) {
-     #pragma HLS unroll
-      process_core (
-                    c_istrms[i],
-                    e_c_istrms[i],
-                    c_ostrms[i],
-                    e_c_ostrms[i]);
+#pragma HLS unroll
+   process_core (
+                 c_istrms[i],
+                 e_c_istrms[i],
+                 c_ostrms[i],
+                 e_c_ostrms[i]);
   }
 }
 
