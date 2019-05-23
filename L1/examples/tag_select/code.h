@@ -8,8 +8,7 @@
 #define NTAG     (1<<W_TAG) 
 #define NS       8*1024
 /**
- * * @brief a duplicate of input stream, double each data as output
- *
+ * * @brief a duplicate of input stream, updata each data as output
  * @param c_istrm input stream
  * @param e_c_istrm end flag for input stream
  * @param c_ostrm output stream
@@ -17,16 +16,16 @@
  *
  */
 void process_core(
-                   hls::stream<ap_uint<W_TAG> >& c_istrm,
+                   hls::stream<ap_uint<W_STRM> >& c_istrm,
                    hls::stream<bool>& e_c_istrm,
-                   hls::stream<ap_uint<W_TAG> >& c_ostrm,
+                   hls::stream<ap_uint<W_STRM> >& c_ostrm,
                    hls::stream<bool>& e_c_ostrm)
 {
   bool last= e_c_istrm.read(); 
   while(!last) {
 #pragma HLS pipeline II=1
-    ap_uint<W_TAG> d  = c_istrm.read();
-    ap_uint<W_TAG> od = d<<1;
+    ap_uint<W_STRM> d  = c_istrm.read();
+    ap_uint<W_STRM> od = d+1;
     c_ostrm.write(od);
     e_c_ostrm.write(false);
     last = e_c_istrm.read();
@@ -44,9 +43,9 @@ void process_core(
  *
  */
 void  process_mpu( 
-                   hls::stream<ap_uint<W_TAG> > c_istrms[NTAG],
+                   hls::stream<ap_uint<W_STRM> > c_istrms[NTAG],
                    hls::stream<bool> e_c_istrms[NTAG],
-                   hls::stream<ap_uint<W_TAG> > c_ostrms[NTAG],
+                   hls::stream<ap_uint<W_STRM> > c_ostrms[NTAG],
                    hls::stream<bool> e_c_ostrms[NTAG])
 {
 #pragma HLS dataflow
@@ -62,9 +61,12 @@ void  process_mpu(
 
 /**
  * @brief Simutlate that a big task is coumputed by Mutiple Process Units.   
- * Assume each input data is a package which could be splitted to a few of small width data, and each small data is processed by a Process Uint(PU) 
+ * Assume each input data has a tag which stands for the index of PUs that the tag-th PU will process the data.
+ *
  * @param istrm input stream
  * @param e_istrm end flag for input stream
+ * @param tg_strms tag streams, tg_strms[0] for one to n,and tg_strms[1] for n to one
+ * @param e_tg_istrms end flag for tag streams
  * @param ostrm input stream
  * @param e_ostrm end flag for output stream
  */
@@ -72,16 +74,15 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<W_TAG> > tg_strms[2],
                    hls::stream<bool> e_tg_strms[2],
-                  // hls::stream<ap_uint<W_TAG> >& tg_strm,
-                  // hls::stream<bool>& e_tg_strm,
                    hls::stream<ap_uint<W_STRM> >& ostrm,
                    hls::stream<bool>& e_ostrm) {
 /*
- * One input stream(istrm) is splitted to multitple streams, and each services a PU.
+ * The data from input stream are distributed to different PUs according their tag(tg_strms[0]).
+ * The data from PUs are collected to one stream according their new tag(tg_strms[1]).
  * All output streams from PUs are merged to one stream(ostrm).
  * For example, there are 8 PUs, like this:
  *
- *              split           merge
+ *             dispatch        collect
  *              1-->8           8-->1 
  *
  *                |----> PU0 ---->| 
@@ -112,40 +113,24 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
 #pragma HLS stream variable = data_inner_strms depth = 8              
      hls::stream<bool> e_data_inner_strms[NTAG];
 #pragma HLS stream variable = e_data_inner_strms depth = 8              
-/*
     hls::stream<ap_uint<W_STRM> > new_data_strms[NTAG];
 #pragma HLS stream variable = new_data_strms depth = 8              
      hls::stream<bool> e_new_data_strms[NTAG];
 #pragma HLS stream variable = e_new_data_strms depth = 8              
-*/
 
-/*    hls::stream<ap_uint<W_TAG> > du_tag_strms[2];
-#pragma HLS stream variable = du_tag_strms depth = 8              
-     hls::stream<bool> e_du_tag_strms[2];
-#pragma HLS stream variable = e_du_tag_strms depth = 8              
-
- xf::common::utils_hw::stream_dup<ap_uint<W_TAG>, 2>(
-                     tg_strm, e_tg_strm,
-                     du_tag_strms, e_du_tag_strms);
-
-*/ 
  xf::common::utils_hw::stream_one_to_n<W_STRM,W_TAG>(
                          istrm,  e_istrm,
                          tg_strms[0], e_tg_strms[0],
-                        // du_tag_strms[0],e_du_tag_strms[0],
                          data_inner_strms, e_data_inner_strms,
                          xf::common::utils_hw::tag_select_t());
-                       
-/*
+
  process_mpu( data_inner_strms, e_data_inner_strms,
                 new_data_strms,   e_new_data_strms);
-*/
  
  xf::common::utils_hw::stream_n_to_one<W_STRM, W_TAG>(
-                        data_inner_strms, e_data_inner_strms,
-                  //      new_data_strms, e_new_data_strms,
+                   //     data_inner_strms, e_data_inner_strms,
+                        new_data_strms, e_new_data_strms,
                         tg_strms[1], e_tg_strms[1],
-                        //du_tag_strms[1],e_du_tag_strms[1],
                         ostrm, e_ostrm,
                         xf::common::utils_hw::tag_select_t());
 }
