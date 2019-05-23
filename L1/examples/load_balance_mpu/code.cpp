@@ -64,6 +64,7 @@ int test() {
     total += mult(d); 
     count++;
   }
+  std::cout << "\n  total=" << total << "   gld="<<gld <<std::endl;
   if( total != gld){
     nerror=1;
     std::cout << "\n error: total" << total << "   gld="<<gld <<std::endl;
