@@ -21,7 +21,7 @@
 
 int test() {
 
-   hls::stream<ap_uint<W_STRM> > data_istrm;
+   hls::stream<ap_uint<W_STRM> > istrm;
    hls::stream<bool> e_istrm;
    hls::stream<ap_uint<W_STRM> > ostrm;
    hls::stream<bool> e_ostrm;
@@ -36,22 +36,25 @@ int test() {
   std::cout<<std::dec<< "NS        = "<< NS <<std::endl;
   ap_uint<W_STRM> gld=0; 
   for(int i=0; i< NS; ++i)  { 
-
-    ap_uint<W_PRC> p = i;
-    ap_uint<W_DSC> d = i%10;
-    ap_uint<W_PU> data;
-    
-    data.range(W_PRC-1,0)= p ;
-    data.range(W_DSC+W_PRC-1,W_PRC)= d;
-    data_istrm.write(data);
+   
+    ap_uint<W_STRM> bd = 0 ;
+    for( int j=0; j < W_STRM/W_PU; ++j) {
+      ap_uint<W_PRC> p = i;
+      ap_uint<W_DSC> d = i%10;
+      ap_uint<W_PU> data=0;
+      data.range(W_PRC-1,0)= p ;
+      data.range(W_DSC+W_PRC-1,W_PRC)= d;
+      bd.range((j+1)*W_PU-1, j*W_PU)=data;
+      ap_uint<W_PU> nd = update_data(data) ;
+      gld += calculate(nd);
+    }
+    istrm.write(bd);
     e_istrm.write(false);
     
-    ap_uint<W_PU> nd = update_data(data) ;
-    gld += mult(nd);
   } 
   e_istrm.write(true);
 
-  test_core( data_istrm, e_istrm,
+  test_core( istrm, e_istrm,
               ostrm, e_ostrm);
 
   int nerror=0;
@@ -60,8 +63,11 @@ int test() {
   ap_uint<W_STRM> total=0; 
   
   while(!e_ostrm.read())  {
-    ap_uint<W_STRM> d = ostrm.read(); 
-    total += mult(d); 
+    ap_uint<W_STRM> bd = ostrm.read(); 
+    for( int j=0; j < W_STRM/W_PU; ++j) {
+      ap_uint<W_PU> data = bd.range((j+1)*W_PU-1, j*W_PU);
+      total += calculate(data); 
+    }
     count++;
   }
   std::cout << "\n  total=" << total << "   gld="<<gld <<std::endl;

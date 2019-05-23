@@ -9,20 +9,21 @@
 #define NS      (1024*2*2)
 #define NPU     8
 
+// extract the meaningful data from the input data, and updata it.
 ap_uint<W_PU> update_data( ap_uint<W_PU> data) {
  #pragma HLS inline
   ap_uint<W_PRC> p = data.range(W_PRC - 1, 0);
-  ap_uint<W_DSC> d = data.range(W_PRC + W_DSC - 1, 0);
+  ap_uint<W_DSC> d = data.range(W_PRC + W_DSC - 1, W_PRC);
   ap_uint<W_PU> nd;
   nd.range(W_PRC-1,0)= p * 2;
   nd.range(W_DSC+W_PRC-1,W_PRC)= d + 2;
   return nd; 
 }
-
-ap_uint<W_PU> mult( ap_uint<W_PU> data) {
+// extract the meaningful data from the input data, then calculate.
+ap_uint<W_PU> calculate( ap_uint<W_PU> data) {
  #pragma HLS inline
-  ap_uint<W_STRM> p  = data.range(W_PRC - 1, 0);
-  ap_uint<W_STRM> d  = data.range(W_PRC + W_DSC - 1, 0);
+  ap_uint<W_PU> p  = data.range(W_PRC - 1, 0);
+  ap_uint<W_PU> d  = data.range(W_PRC + W_DSC - 1, 0);
   ap_uint<W_PU>   nd = p * d;
   return nd; 
 }
@@ -78,19 +79,20 @@ void process_core_intermission (
                    hls::stream<ap_uint<W_PU> >& c_ostrm,
                    hls::stream<bool>& e_c_ostrm)
 {
-/*****************************************************************
-* for example, an ideal case as
-* when f_sw = true, prd =4
-*
-*    sleep    --   work   --   sleep    --   work     ...  
-*   4 cycles      4 cycles    4 cycles     4 cycles   
-*
-*
-* when f_sw = false, prd =4
-*
-*     work    --   sleep   --   work    --   sleep     ...  
-*   4 cycles      4 cycles    4 cycles     4 cycles   
-******************************************************************/
+/*
+ *****************************************************************
+ * for example, an ideal case as
+ * when f_sw = true, prd =4
+ *
+ *    sleep    --   work   --   sleep    --   work     ...  
+ *   4 cycles      4 cycles    4 cycles     4 cycles   
+ *
+ *
+ * when f_sw = false, prd =4
+ *
+ *     work    --   sleep   --   work    --   sleep     ...  
+ *   4 cycles      4 cycles    4 cycles     4 cycles   
+ ******************************************************************/
   int c=0;
   bool sw=f_sw;
   bool last= e_c_istrm.read(); 
@@ -114,26 +116,6 @@ void process_core_intermission (
  } //while
  e_c_ostrm.write(true);
 }
-// case0
-void  process_pass( 
-                   hls::stream<ap_uint<W_PU> > c_istrms[NPU],
-                   hls::stream<bool> e_c_istrms[NPU],
-                   hls::stream<ap_uint<W_PU> > c_ostrms[NPU],
-                   hls::stream<bool> e_c_ostrms[NPU])
-{
-
-   #pragma dataflow
-   for( int i=0; i< NPU; ++i) {
-      #pragma HLS unroll
-       process_core_pass (
-                     c_istrms[i],
-                     e_c_istrms[i],
-                     c_ostrms[i],
-                     e_c_ostrms[i]);
-   }
-}
-
-
 
 /**
  * @brief Multiple  PUs work in parallel
@@ -183,9 +165,9 @@ void  process_mpu(
                      c_ostrms[i],
                      e_c_ostrms[i]);
    }
+     //The other PUs work at sometimes 
    for( int i=2; i< NPU; ++i) {
       #pragma HLS unroll
-     // PU2 and PU3 work at sometimes 
       if( i<4)
        process_core_intermission (
                      i%2==0,
@@ -194,7 +176,6 @@ void  process_mpu(
                      e_c_istrms[i],
                      c_ostrms[i],
                      e_c_ostrms[i]);
-      // PU4 ~ PU7 work at sometimes 
       else if (i<8)
        process_core_intermission (
                      i%4==0,
@@ -262,7 +243,6 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
  * istrm ---------> data_inner_strms -------> new_data_strms ----------> ostrms
  *
  */
-
 
 #pragma HLS dataflow
 
