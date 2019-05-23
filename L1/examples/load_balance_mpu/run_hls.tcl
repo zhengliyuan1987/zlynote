@@ -19,6 +19,6 @@ csynth_design
 cosim_design
 #cosim_design -wave_debug -tool xsim -trace_level all
 
-#export_design -flow impl -rtl verilog -format ip_catalog
+export_design -flow impl -rtl verilog -format ip_catalog
 
 exit

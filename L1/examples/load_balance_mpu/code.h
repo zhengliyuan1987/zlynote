@@ -14,7 +14,7 @@ ap_uint<W_PU> update_data( ap_uint<W_PU> data) {
  #pragma HLS inline
   ap_uint<W_PRC> p = data.range(W_PRC - 1, 0);
   ap_uint<W_DSC> d = data.range(W_PRC + W_DSC - 1, W_PRC);
-  ap_uint<W_PU> nd;
+  ap_uint<W_PU> nd = 0 ;
   nd.range(W_PRC-1,0)= p * 2;
   nd.range(W_DSC+W_PRC-1,W_PRC)= d + 2;
   return nd; 
@@ -24,7 +24,7 @@ ap_uint<W_PU> calculate( ap_uint<W_PU> data) {
  #pragma HLS inline
   ap_uint<W_PU> p  = data.range(W_PRC - 1, 0);
   ap_uint<W_PU> d  = data.range(W_PRC + W_DSC - 1, 0);
-  ap_uint<W_PU>   nd = p * d;
+  ap_uint<W_PU> nd = p * d;
   return nd; 
 }
 
@@ -43,23 +43,21 @@ void process_core_pass (
                    hls::stream<ap_uint<W_PU> >& c_ostrm,
                    hls::stream<bool>& e_c_ostrm)
 {
+  bool last= e_c_istrm.read(); 
+  while(!last) {
+#pragma HLS pipeline II=1
+    bool em= c_istrm.empty();
+    if ( false == em) 
+    {  
+          ap_uint<W_PU> d =  c_istrm.read();
+          ap_uint<W_PU> nd = update_data(d) ;
+          c_ostrm.write(nd);
+          e_c_ostrm.write(false);
+          last = e_c_istrm.read();
+    }
+   } //while
 
-    bool last= e_c_istrm.read(); 
-    while(!last) {
-      #pragma HLS pipeline II=1
-        bool em= c_istrm.empty();
-        if ( false == em) 
-        {  
-              ap_uint<W_PU> d =  c_istrm.read();
-              ap_uint<W_PU> nd = update_data(d) ;
-              c_ostrm.write(nd);
-              e_c_ostrm.write(false);
-              last = e_c_istrm.read();
-        }
-     } //while
- 
-     e_c_ostrm.write(true);
-
+   e_c_ostrm.write(true);
 }
 /**
  * @brief  update each data as output, but work intermittently. 
@@ -261,11 +259,8 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
                          data_inner_strms, e_data_inner_strms,
                          xf::common::utils_hw::load_balance_t());
                        
-
   process_mpu( data_inner_strms, e_data_inner_strms,
                 new_data_strms,   e_new_data_strms);
-
-
  
   xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         new_data_strms, e_new_data_strms,
