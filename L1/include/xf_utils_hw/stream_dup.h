@@ -33,6 +33,25 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]);
 
+/**
+ * @brief Duplicate stream.
+ *
+ * @tparam _TIn input stream width.
+ * @tparam _NStrm number of output stream.
+ *
+ * @param istrm input data stream.
+ * @param e_istrm end flag stream for input data.
+ * @param ostrms output data streams.
+ * @param e_ostrms end flag streams, one for each output data stream.
+ */
+template <typename _TIn, int _NIStrm, int _NDStrm>
+void stream_dup(const int choose[_NIStrm],
+				hls::stream<_TIn> istrm[_NIStrm],
+                hls::stream<bool>& e_istrm,
+                hls::stream<_TIn> ostrms[_NIStrm],
+				hls::stream<_TIn> dstrms[_NDStrm],
+                hls::stream<bool>& e_ostrms);
+
 } // utils_hw
 } // common
 } // xf
@@ -64,6 +83,42 @@ void stream_dup(hls::stream<_TIn>& istrm,
 #pragma HLS unroll
     e_ostrms[i].write(1);
   }
+}
+
+template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
+void stream_dup(const int choose[_NIStrm],
+				hls::stream<_TIn> istrm[_NIStrm],
+                hls::stream<bool>& e_istrm,
+                hls::stream<_TIn> ostrms[_NIStrm],
+				hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
+                hls::stream<bool>& e_ostrms){
+
+	bool e = e_istrm.read();
+	int i;
+	while(!e) {
+#pragma HLS PIPELINE II=1
+		_TIn tmp[_NIStrm];
+		for(i=0;i<_NIStrm;i++){
+#pragma HLS UNROLL
+			tmp[i]=istrm[i].read();
+		}
+
+		for(i=0;i<_NIStrm;i++){
+#pragma HLS UNROLL
+			for(int j=0;j<_NDCopy;j++){
+#pragma HLS UNROLL
+				if(choose[i]>=0) dstrms[j][choose[i]].write(tmp[i]);
+			}
+		}
+
+		for(i=0;i<_NIStrm;i++){
+#pragma HLS UNROLL
+			ostrms[i].write(tmp[i]);
+		}
+		e = e_istrm.read();
+		e_ostrms.write(false);
+	}
+	e_ostrms.write(true);
 }
 
 } // utils_hw

@@ -7,94 +7,164 @@
 #include "ap_int.h"
 #include "hls_stream.h"
 
-typedef uint32_t TIN;
+typedef uint32_t TYPE;
 #define NSTRM 16
 
-extern "C" void dut(hls::stream<TIN>& istrm,
+extern "C" void dut0(hls::stream<TYPE>& istrm,
                     hls::stream<bool>& e_istrm,
-                    hls::stream<TIN> ostrms[NSTRM],
+                    hls::stream<TYPE> ostrms[NSTRM],
                     hls::stream<bool> e_ostrms[NSTRM]) {
-  xf::common::utils_hw::stream_dup<TIN, NSTRM>(
+  xf::common::utils_hw::stream_dup<TYPE, NSTRM>(
       istrm, e_istrm, ostrms, e_ostrms);
+}
+
+extern "C" void dut1(hls::stream<TYPE> istrm[8],
+                    hls::stream<bool>& e_istrm,
+                    hls::stream<TYPE> ostrms[8],
+                    hls::stream<TYPE> dstrms[16][4],
+                    hls::stream<bool>& e_ostrms) {
+	const int choose[8]={0,1,2,3,-1,-1,-1,-1};
+  xf::common::utils_hw::stream_dup<TYPE, 8,4,1>(
+		  choose, istrm, e_istrm, ostrms, dstrms, e_ostrms);
 }
 
 #ifndef __SYNTHESIS__
 
-// generate a random integer sequence between specified limits a and b (a<b);
-uint rand_uint(uint a, uint b) { return rand() % (b - a + 1) + a; }
+int test_dut0(){
+	int nerr = 0;
+	int i;
 
-// generate test data
-template <typename _TIn, int _NStrm>
-void generate_test_data(uint64_t len, std::vector<_TIn>& testvector) {
-  for (int i = 0; i < len; i++) {
-    _TIn a;
-    uint randnum = rand_uint(1, 15);
-    testvector.push_back((_TIn)randnum);
-    std::cout << randnum << std::endl;
-  }
-  std::cout << " random test data generated! " << std::endl;
+	TYPE testdata[8][10];
+	TYPE glddata[64][10];
+
+	for(i=0;i<4;i++){
+	  for(int j=0;j<10;j++){
+		  testdata[i][j]=i*10+j;//rand()%1000;
+		  for(int k=0;k<16;k++){
+			  glddata[i*16+k][j]=testdata[i][j];
+		  }
+	  }
+	}
+
+	for(;i<8;i++){
+	  for(int j=0;j<10;j++){
+		  testdata[i][j]=i*10+j;//rand()%1000;
+	  }
+	}
+
+	hls::stream<TYPE> istrm[8];
+	hls::stream<bool> e_istrm[8];
+	hls::stream<TYPE> ostrms[4][NSTRM];
+	hls::stream<bool> e_ostrms[4][NSTRM];
+
+	for(i=0;i<8;i++){
+	  for(int j=0;j<10;j++){
+		  istrm[i].write(testdata[i][j]);
+		  e_istrm[i].write(0);
+	  }
+	  e_istrm[i].write(1);
+	}
+
+	for(i=0;i<4;i++){
+	  dut0(istrm[i],e_istrm[i],ostrms[i],e_ostrms[i]);
+	}
+
+	for(i=0;i<4;i++){
+	  for(int k=0;k<16;k++){
+		  for(int j=0;j<10;j++){
+			  e_ostrms[i][k].read();
+			  if(glddata[i*16+k][j]!=ostrms[i][k].read()) nerr++;
+		  }
+		  e_ostrms[i][k].read();
+	  }
+	}
+
+	for(;i<8;i++){
+	  for(int j=0;j<10;j++){
+		  e_istrm[i].read();
+		  if(testdata[i][j]!=istrm[i].read()) nerr++;
+	  }
+	  e_istrm[i].read();
+	}
+
+	return nerr;
 }
 
+int test_dut1(){
+	int nerr = 0;
+	int i;
+
+	TYPE testdata[8][10];
+	TYPE glddata[64][10];
+
+	for(i=0;i<4;i++){
+	  for(int j=0;j<10;j++){
+		  testdata[i][j]=i*10+j;//rand()%1000;
+		  for(int k=0;k<16;k++){
+			  glddata[i*16+k][j]=testdata[i][j];
+		  }
+	  }
+	}
+
+	for(;i<8;i++){
+	  for(int j=0;j<10;j++){
+		  testdata[i][j]=i*10+j;//rand()%1000;
+	  }
+	}
+
+	hls::stream<TYPE> istrm[8];
+	hls::stream<bool> e_istrm;
+	hls::stream<TYPE> ostrms[8];
+	hls::stream<TYPE> dstrms[16][4];
+	hls::stream<bool> e_ostrms;
+
+	std::cout<<"!!!"<<std::endl;
+
+	for(int j=0;j<10;j++){
+		for(i=0;i<8;i++){
+		  istrm[i].write(testdata[i][j]);
+		}
+		e_istrm.write(0);
+	}
+	  e_istrm.write(1);
+	std::cout<<"@@@"<<std::endl;
+	dut1(istrm,e_istrm,ostrms,dstrms,e_ostrms);
+
+	for(i=0;i<4;i++){
+	  for(int k=0;k<16;k++){
+		  for(int j=0;j<10;j++){
+			  if(glddata[i*16+k][j]!=dstrms[k][i].read()) nerr++;
+		  }
+	  }
+	}
+	std::cout<<"###"<<std::endl;
+	for(i=0;i<8;i++){
+	  for(int j=0;j<10;j++){
+		  e_istrm.read();
+		  if(testdata[i][j]!=istrm[i].read()) nerr++;
+	  }
+	  e_istrm.read();
+	}
+	std::cout<<"$$$"<<std::endl;
+	return nerr;
+}
+
+
 int main(int argc, const char* argv[]) {
-  int err = 0; // 0 for pass, 1 for error
+	int nerr = 0;
 
-  int len = 10;
-  std::vector<TIN> testvector;
-  hls::stream<TIN> istrm;
-  hls::stream<TIN> ostrms[NSTRM];
-  hls::stream<bool> e_istrm;
-  hls::stream<bool> e_ostrms[NSTRM];
+	if(argv[1][0]=='0')
+		nerr=nerr+test_dut0();
+	else if(argv[1][0]=='1')
+		nerr=nerr+test_dut1();
 
-  // reference vector
-  std::vector<TIN> refvec;
-  // generate test data
-  generate_test_data<TIN, NSTRM>(len, testvector);
-  // prepare data to stream
-  for (std::string::size_type i = 0; i < len; i++) {
-    TIN tmp = testvector[i];
-    refvec.push_back(tmp);
-    istrm.write(tmp);
-    e_istrm.write(0);
-  }
-  e_istrm.write(1);
-  // run hls::func
-  dut(istrm, e_istrm, ostrms, e_ostrms);
-  // compare hls::func and reference result
-  for (std::string::size_type i = 0; i < len; i++) {
-    TIN out_res[NSTRM];
-    std::cout << refvec[i] << std::endl;
-    for (int j = 0; j < NSTRM; j++) {
-      out_res[j] = ostrms[j].read();
-      std::cout << out_res[j] << "   ";
-      if (refvec[i] != out_res[j]) {
-        err++;
-      }
-    }
-    std::cout << err << std::endl;
-  }
-  // compare e flag
-  for (std::string::size_type i = 0; i < len; i++) {
-    for (int j = 0; j < NSTRM; j++) {
-      bool estrm = e_ostrms[j].read();
-      if (estrm) {
-        err++;
-      }
-    }
-  }
-  for (int j = 0; j < NSTRM; j++) {
-    bool estrm = e_ostrms[j].read();
-    if (!estrm) {
-      err++;
-    }
-  }
-
-  // TODO check out, eout
-  if (err) {
-    std::cout << "\nFAIL: nerror= " << err << " errors found.\n";
-  } else {
-    std::cout << "\nPASS: no error found.\n";
-  }
-  return err;
+	// TODO check out, eout
+	if (nerr) {
+	std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
+	} else {
+	std::cout << "\nPASS: no error found.\n";
+	}
+	return nerr;
 }
 
 #endif
