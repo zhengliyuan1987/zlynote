@@ -124,18 +124,6 @@ void combine_streams(
     }
  }
 
-/*
-   #pragma HLS unroll
-      while( !e_istrms[j].read()){
-   #pragma HLS pipeline II=1 
-        ap_uint<WIN_STRM> d = istrms[i][j].read();
-        ostrms[i*NSTRM+j].write(d);
-        e_ostrms[i*NSTRM+j].write(false);
-      }
-      e_ostrms[i*NSTRM+j].write(true);
-    }
-   }
-*/
 }
 
 
