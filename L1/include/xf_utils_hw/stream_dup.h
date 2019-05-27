@@ -2,6 +2,7 @@
 #define XF_UTILS_HW_STREAM_DUP_H
 
 #include "xf_utils_hw/types.h"
+#include "xf_utils_hw/common.h"
 
 /**
  * @file stream_dup.h
@@ -38,7 +39,7 @@ void stream_dup(hls::stream<_TIn>& istrm,
  *
  * @tparam _TIn input stream width.
  * @tparam _NIStrm number of input stream.
- * @tparam _NDStrm number of streams to be duplicated
+ * @tparam _NDStrm number of streams to be duplicated. Should be smaller than _NIStrm.
  * @tparam _NDCopy number of copies of duplicated streams to be generated
  *
  * @param choose option to choose which input streams will be duplicated and configure the order of the out duplicated streams. Minus value means do not duplicate the streams.
@@ -96,6 +97,9 @@ void stream_dup(const int choose[_NIStrm],
                 hls::stream<_TIn> ostrms[_NIStrm],
 				hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
                 hls::stream<bool>& e_ostrms){
+
+	XF_UTILS_HW_STATIC_ASSERT(_NDStrm <= _NIStrm,
+							"stream_dup cannot have more duplicated output than input.");
 
 	bool e = e_istrm.read();
 	int i;
