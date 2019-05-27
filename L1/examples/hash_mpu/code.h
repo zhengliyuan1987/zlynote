@@ -37,7 +37,7 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
  }
 }
 
-template<typename TIn , int NStrm>
+template<typename TIn , int NSTRM>
 void dup_stream(
                     hls::stream<TIn > &istrm,
                     hls::stream<bool> &e_istrm,
@@ -80,15 +80,15 @@ void dup_stream(
 
 template<int WIN_STRM, int WL >
 void collect_stream(
-                    hls::stream<ap_uint<WIN_STRM> > &istrm,
+                    hls::stream<ap_uint<WIN_STRM> >& istrm,
                     hls::stream<bool> &e_istrm,
-                    hls::stream<ap_uint<WIN_STRM*WL> > &istrm,
+                    hls::stream<ap_uint<WIN_STRM * WL> >& ostrm,
                     hls::stream<bool> &e_ostrm ) {
 int c=0;
  ap_uint<WIN_STRM*WL>  bd=0;
  while(!e_istrm.read()){
 #pragma HLS pipeline II = 1
-   ap_uint<WIN_STRM>  d = istrm.read(;
+   ap_uint<WIN_STRM>  d = istrm.read();
    bd.range( (c+1)*WIN_STRM-1, c*WIN_STRM)=d;
    if( ++c == WL) {
      ostrm.write(bd);
@@ -133,8 +133,8 @@ ap_uint<W_PU> update_data( ap_uint<W_PU> data) {
   ap_uint<W_PRC> p = data.range(W_PRC - 1, 0);
   ap_uint<W_DSC> d = data.range(W_PRC + W_DSC - 1, W_PRC);
   ap_uint<W_PU> nd = 0 ;
-  nd.range(W_PRC-1,0)= p * 2;
-  nd.range(W_DSC+W_PRC-1,W_PRC)= d + 2;
+  nd.range(W_PRC-1,0)= p ;//* 2;
+  nd.range(W_DSC+W_PRC-1,W_PRC)= d;// + 2;
   return nd; 
 }
 // extract the meaningful data from the input data, then calculate.
@@ -358,7 +358,7 @@ const int pus = NPU/HP;
 }
 
 
-void test_core(hls::stream<ap_uint<32> >& istrm,
+void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
 //void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<W_STRM> >& ostrm,
@@ -388,13 +388,14 @@ void test_core(hls::stream<ap_uint<32> >& istrm,
 #pragma HLS stream variable = inner_strms depth = 8              
      hls::stream<bool> e_inner_strms[NPU];
 #pragma HLS stream variable = e_inner_strms depth = 8
-
+/*
 collect_stream<32,16 >(istrm,e_istrm,
                        w_istrm,e_w_istrm);
-
+*/
 
  stream_split<W_STRM, W_STRM/HP, HP>(
-                         w_istrm, e_w_istrm,
+                         //w_istrm, e_w_istrm,
+                         istrm, e_istrm,
                          data_inner_strms, e_data_inner_strms);
  for(int i=0; i< HP; ++i) {
 #pragma HLS unroll
