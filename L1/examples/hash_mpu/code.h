@@ -2,7 +2,7 @@
 #include "xf_utils_hw/stream_one_to_n.h"
 #include "xf_utils_hw/stream_n_to_one.h"
 
-#define W_STRM  512 
+#define W_STRM  128 
 #define W_PU    64
 #define W_PRC   32
 #define W_DSC   32
@@ -349,7 +349,8 @@ const int pus = NPU/HP;
  xf::common::utils_hw::stream_one_to_n<W_STRM/HP, W_PU,NPU/HP>(
                          istrm,  e_istrm,
                          data_inner_strms, e_data_inner_strms,
-                         xf::common::utils_hw::load_balance_t());
+                         xf::common::utils_hw::round_robin_t());
+                 //        xf::common::utils_hw::load_balance_t());
                        
   process_mpu( offset,data_inner_strms, e_data_inner_strms,
                ostrms,  e_ostrms);
@@ -358,7 +359,7 @@ const int pus = NPU/HP;
 }
 
 
-void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
+void test_core1(hls::stream<ap_uint<W_STRM> >& istrm,
 //void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<W_STRM> >& ostrm,
@@ -412,7 +413,8 @@ collect_stream<32,16 >(istrm,e_istrm,
   xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         inner_strms, e_inner_strms,
                         ostrm, e_ostrm,
-                        xf::common::utils_hw::load_balance_t());
+                        xf::common::utils_hw::round_robin_t());
+                        //xf::common::utils_hw::load_balance_t());
 /*
   xf::common::utils_hw::stream_n_to_one<W_P, W_STRM,NPU>(
                         inner_strms, e_inner_strms,
@@ -420,7 +422,7 @@ collect_stream<32,16 >(istrm,e_istrm,
                         xf::common::utils_hw::load_balance_t());
 */
 }
-void test_core1(hls::stream<ap_uint<W_STRM> >& istrm,
+void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<W_STRM> >& ostrm,
                    hls::stream<bool>& e_ostrm) {
@@ -473,7 +475,8 @@ void test_core1(hls::stream<ap_uint<W_STRM> >& istrm,
  xf::common::utils_hw::stream_one_to_n<W_STRM, W_PU,NPU>(
                          istrm,  e_istrm,
                          data_inner_strms, e_data_inner_strms,
-                         xf::common::utils_hw::load_balance_t());
+                         xf::common::utils_hw::round_robin_t());
+                         //xf::common::utils_hw::load_balance_t());
                        
   process_mpu(0, data_inner_strms, e_data_inner_strms,
                 new_data_strms,   e_new_data_strms);
@@ -481,7 +484,8 @@ void test_core1(hls::stream<ap_uint<W_STRM> >& istrm,
   xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         new_data_strms, e_new_data_strms,
                         ostrm, e_ostrm,
-                        xf::common::utils_hw::load_balance_t());
+                        xf::common::utils_hw::round_robin_t());
+                        //xf::common::utils_hw::load_balance_t());
 
 }
 
