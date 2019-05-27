@@ -2,7 +2,7 @@
 #include "xf_utils_hw/stream_one_to_n.h"
 #include "xf_utils_hw/stream_n_to_one.h"
 
-#define W_STRM  128 
+#define W_STRM  512 
 #define W_PU    64
 #define W_PRC   32
 #define W_DSC   32
@@ -485,7 +485,7 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
                         new_data_strms, e_new_data_strms,
                         ostrm, e_ostrm,
                         xf::common::utils_hw::round_robin_t());
-                        //xf::common::utils_hw::load_balance_t());
+                         //xf::common::utils_hw::load_balance_t());
 
 }
 

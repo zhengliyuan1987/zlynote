@@ -7,12 +7,12 @@
 #include "xf_utils_hw/axi_to_stream.h"
 #include "xf_utils_hw/stream_to_axi.h"
 #include "code.h"
-#define AXI_WIDTH     128
+#define AXI_WIDTH     512
 #define BURST_LENTH   32
 #define SCAL_AXI      (AXI_WIDTH/8)
 #define DATA_NUM      4096
 #define DATA_LEN      4096
-#define STRM_WIDTH    128
+#define STRM_WIDTH    512
 typedef ap_uint<STRM_WIDTH> TYPE_Strm;
 const int DDR_DEPTH = (DATA_NUM / SCAL_AXI);
 

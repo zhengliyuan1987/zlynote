@@ -39,6 +39,8 @@ csim_design -compiler gcc -argv "$host_args"
 
 csynth_design
 
+#cosim_design -wave_debug -tool xsim -trace_level all
+
 cosim_design -compiler gcc -argv "$host_args"
 
 #export_design -flow impl -rtl verilog -format ip_catalog
