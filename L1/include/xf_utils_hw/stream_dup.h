@@ -53,7 +53,7 @@ void stream_dup(hls::stream<_TIn>& istrm,
  * @param e_ostrms end flag streams.
  */
 template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
-void stream_dup(const int choose[_NIStrm],
+void stream_dup(const int choose[_NDStrm],
                 hls::stream<_TIn> istrm[_NIStrm],
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NIStrm],
@@ -115,11 +115,11 @@ void stream_dup(const int choose[_NIStrm],
       tmp[i] = istrm[i].read();
     }
 
-    for (i = 0; i < _NIStrm; i++) {
+    for (i = 0; i < _NDStrm; i++) {
 #pragma HLS UNROLL
       for (int j = 0; j < _NDCopy; j++) {
 #pragma HLS UNROLL
-        if (choose[i] >= 0) dstrms[j][choose[i]].write(tmp[i]);
+        if (choose[i] >= 0) dstrms[j][i].write(tmp[choose[i]]);
       }
     }
 
