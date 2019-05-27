@@ -44,8 +44,7 @@ void stream_dup(hls::stream<_TIn>& istrm,
  * @tparam _NDCopy number of copies of duplicated streams to be generated
  *
  * @param choose option to choose which input streams will be duplicated and
- * configure the order of the out duplicated streams. Minus value means do not
- * duplicate the streams.
+ * configure the order of the out duplicated streams.
  * @param istrm input data stream.
  * @param e_istrm end flag stream for input data.
  * @param ostrms output data streams.
