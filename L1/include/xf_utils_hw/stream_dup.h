@@ -37,19 +37,23 @@ void stream_dup(hls::stream<_TIn>& istrm,
  * @brief Duplicate stream.
  *
  * @tparam _TIn input stream width.
- * @tparam _NStrm number of output stream.
+ * @tparam _NIStrm number of input stream.
+ * @tparam _NDStrm number of streams to be duplicated
+ * @tparam _NDCopy number of copies of duplicated streams to be generated
  *
+ * @param choose option to choose which input streams will be duplicated and configure the order of the out duplicated streams. Minus value means do not duplicate the streams.
  * @param istrm input data stream.
  * @param e_istrm end flag stream for input data.
  * @param ostrms output data streams.
- * @param e_ostrms end flag streams, one for each output data stream.
+ * @param dstrms output duplicated streams.
+ * @param e_ostrms end flag streams.
  */
-template <typename _TIn, int _NIStrm, int _NDStrm>
+template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
 void stream_dup(const int choose[_NIStrm],
 				hls::stream<_TIn> istrm[_NIStrm],
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NIStrm],
-				hls::stream<_TIn> dstrms[_NDStrm],
+				hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
                 hls::stream<bool>& e_ostrms);
 
 } // utils_hw
@@ -97,6 +101,7 @@ void stream_dup(const int choose[_NIStrm],
 	int i;
 	while(!e) {
 #pragma HLS PIPELINE II=1
+
 		_TIn tmp[_NIStrm];
 		for(i=0;i<_NIStrm;i++){
 #pragma HLS UNROLL
