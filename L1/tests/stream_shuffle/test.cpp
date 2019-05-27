@@ -25,7 +25,7 @@ void gld(ap_int<8> gld_cfg[NUM_INPUT],
   }
 }
 
-void top(hls::stream<ap_uint<8 * NUM_INPUT> >& order_cfg,
+void top(hls::stream<ap_uint<8 * NUM_OUTPUT> >& order_cfg,
 
          hls::stream<DATA_TYPE> istrms[NUM_INPUT],
          hls::stream<bool>& e_istrm,
@@ -38,8 +38,8 @@ void top(hls::stream<ap_uint<8 * NUM_INPUT> >& order_cfg,
 
 int main() {
   nerror = 0;
-  ap_uint<8 * NUM_INPUT> orders = 0;
-  hls::stream<ap_uint<8 * NUM_INPUT> > order_cfg;
+  ap_uint<8 * NUM_OUTPUT> orders = 0;
+  hls::stream<ap_uint<8 * NUM_OUTPUT> > order_cfg;
 
   hls::stream<DATA_TYPE> istrms[NUM_INPUT];
   hls::stream<bool> e_istrm;
@@ -57,10 +57,6 @@ int main() {
     gld_cfg[i] = i;
   }
 
-  for (; i < NUM_INPUT; i++) {
-    orders.range(8 * i + 7, 8 * i) = ap_int<8>(-1);
-    gld_cfg[i] = -1;
-  }
   order_cfg.write(orders);
 
   for (int j = 0; j < STRM_LEN; j++) {

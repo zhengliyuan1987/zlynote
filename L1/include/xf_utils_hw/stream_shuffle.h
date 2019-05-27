@@ -67,7 +67,7 @@ namespace common {
 namespace utils_hw {
 
 template <int _INStrm, int _ONstrm, typename _TIn>
-void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
+void stream_shuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
                     hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
@@ -81,19 +81,18 @@ void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
   XF_UTILS_HW_STATIC_ASSERT(_INStrm <= 128,
                             "stream_shuffle cannot handle more than 128 streams.");
 
-  ap_uint<7> route[_INStrm];
+  ap_uint<7> route[_ONstrm];
 #pragma HLS ARRAY_PARTITION variable = route complete
 
   _TIn reg_i[_INStrm];
 #pragma HLS ARRAY_PARTITION variable = reg_i complete
-  _TIn reg_o[_ONstrm + 1];
+  _TIn reg_o[_ONstrm];
 #pragma HLS ARRAY_PARTITION variable = reg_o complete
 
-  ap_uint<8 * _INStrm> orders = order_cfg.read();
-  for (int i = 0; i < _INStrm; i++) {
+  ap_uint<8 * _ONstrm> orders = order_cfg.read();
+  for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
     route[i] = orders.range(8 * i + 6, 8 * i);
-    route[i] += 1; // -1 to 0
   }
 
   bool e = e_istrm.read();
@@ -111,14 +110,14 @@ void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
       reg_o[i] = 0;
     }
 
-    for (int i = 0; i < _INStrm; i++) {
+    for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      reg_o[route[i]] = reg_i[i]; // critical path
+      reg_o[i] = reg_i[route[i]]; // critical path
     }
 
     for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      ostrms[i].write(reg_o[i + 1]); // shift by 1
+      ostrms[i].write(reg_o[i]);
     }
 
     e_ostrm.write(false);
