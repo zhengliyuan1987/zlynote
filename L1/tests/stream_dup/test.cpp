@@ -15,228 +15,257 @@ typedef uint32_t TYPE;
 #define NUM_COPY 16
 
 extern "C" void dut0(hls::stream<TYPE>& istrm,
-                    hls::stream<bool>& e_istrm,
-                    hls::stream<TYPE> ostrms[NUM_COPY],
-                    hls::stream<bool> e_ostrms[NUM_COPY]) {
+                     hls::stream<bool>& e_istrm,
+                     hls::stream<TYPE> ostrms[NUM_COPY],
+                     hls::stream<bool> e_ostrms[NUM_COPY]) {
   xf::common::utils_hw::stream_dup<TYPE, NUM_COPY>(
       istrm, e_istrm, ostrms, e_ostrms);
 }
 
 extern "C" void dut1(hls::stream<TYPE> istrm[NUM_ISTRM],
-                    hls::stream<bool>& e_istrm,
-                    hls::stream<TYPE> ostrms[NUM_ISTRM],
-                    hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM],
-                    hls::stream<bool>& e_ostrms) {
-	const int choose[8]={0,1,2,3,-1,-1,-1,-1};
-  xf::common::utils_hw::stream_dup<TYPE, NUM_ISTRM,NUM_DSTRM,NUM_COPY>(
-		  choose, istrm, e_istrm, ostrms, dstrms, e_ostrms);
+                     hls::stream<bool>& e_istrm,
+                     hls::stream<TYPE> ostrms[NUM_ISTRM],
+                     hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM],
+                     hls::stream<bool>& e_ostrms) {
+  const int choose[8] = {0, 1, 2, 3, -1, -1, -1, -1};
+  xf::common::utils_hw::stream_dup<TYPE, NUM_ISTRM, NUM_DSTRM, NUM_COPY>(
+      choose, istrm, e_istrm, ostrms, dstrms, e_ostrms);
 }
 
 #ifndef __SYNTHESIS__
 
-int test_dut0(){
-	int nerr = 0;
-	int i;
+int test_dut0() {
+  int nerr = 0;
+  int i;
 
-//================generate test data=========================
+  //================generate test data=========================
 
-	TYPE testdata[NUM_ISTRM][LEN_STRM];
-	TYPE glddata[NUM_COPY*NUM_DSTRM][LEN_STRM];
+  TYPE testdata[NUM_ISTRM][LEN_STRM];
+  TYPE glddata[NUM_COPY * NUM_DSTRM][LEN_STRM];
 
-	for(i=0;i<NUM_DSTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  testdata[i][j]=i*10+j;//rand()%1000;
-		  for(int k=0;k<16;k++){
-			  glddata[i*16+k][j]=testdata[i][j];
-		  }
-	  }
-	}
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+      for (int k = 0; k < 16; k++) {
+        glddata[i * 16 + k][j] = testdata[i][j];
+      }
+    }
+  }
 
-	for(;i<NUM_ISTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  testdata[i][j]=i*10+j;//rand()%1000;
-	  }
-	}
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+    }
+  }
 
-	hls::stream<TYPE> istrm[NUM_ISTRM];
-	hls::stream<bool> e_istrm[NUM_ISTRM];
-	hls::stream<TYPE> ostrms[NUM_DSTRM][NUM_COPY];
-	hls::stream<bool> e_ostrms[NUM_DSTRM][NUM_COPY];
+  hls::stream<TYPE> istrm[NUM_ISTRM];
+  hls::stream<bool> e_istrm[NUM_ISTRM];
+  hls::stream<TYPE> ostrms[NUM_DSTRM][NUM_COPY];
+  hls::stream<bool> e_ostrms[NUM_DSTRM][NUM_COPY];
 
-	for(i=0;i<NUM_ISTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  istrm[i].write(testdata[i][j]);
-		  e_istrm[i].write(0);
-	  }
-	  e_istrm[i].write(1);
-	}
+  for (i = 0; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      istrm[i].write(testdata[i][j]);
+      e_istrm[i].write(0);
+    }
+    e_istrm[i].write(1);
+  }
 
-//================test module===============================
+  //================test module===============================
 
-	for(i=0;i<NUM_DSTRM;i++){
-	  dut0(istrm[i],e_istrm[i],ostrms[i],e_ostrms[i]);
-	}
+  for (i = 0; i < NUM_DSTRM; i++) {
+    dut0(istrm[i], e_istrm[i], ostrms[i], e_ostrms[i]);
+  }
 
-//================check result==============================
+  //================check result==============================
 
-	bool rd_success;
-	TYPE outdata;
-	bool e;
+  bool rd_success;
+  TYPE outdata;
+  bool e;
 
-	//check duplicated data
-	for(i=0;i<NUM_DSTRM;i++){
-	  for(int k=0;k<NUM_COPY;k++){
-		  for(int j=0;j<LEN_STRM;j++){
-			  rd_success=ostrms[i][k].read_nb(outdata);
-			  if(!rd_success){ nerr++; std::cout<< "\n error: data loss\n";}
-			  if(glddata[i*NUM_COPY+k][j]!=outdata) nerr++;
-		  }
-	  }
-	}
+  // check duplicated data
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int k = 0; k < NUM_COPY; k++) {
+      for (int j = 0; j < LEN_STRM; j++) {
+        rd_success = ostrms[i][k].read_nb(outdata);
+        if (!rd_success) {
+          nerr++;
+          std::cout << "\n error: data loss\n";
+        }
+        if (glddata[i * NUM_COPY + k][j] != outdata) nerr++;
+      }
+    }
+  }
 
-	//check non-duplicated data
-	for(;i<NUM_ISTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  rd_success=istrm[i].read_nb(outdata);
-		  if(!rd_success){ nerr++; std::cout<< "\n error: data loss\n";}
-		  if(testdata[i][j]!=outdata) nerr++;
-	  }
-	}
+  // check non-duplicated data
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      rd_success = istrm[i].read_nb(outdata);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: data loss\n";
+      }
+      if (testdata[i][j] != outdata) nerr++;
+    }
+  }
 
-	//check duplicated data end flag
-	for(i=0;i<NUM_DSTRM;i++){
-	  for(int k=0;k<NUM_COPY;k++){
-		  for(int j=0;j<LEN_STRM;j++){
-			  rd_success=e_ostrms[i][k].read_nb(e);
-			  if(!rd_success){ nerr++; std::cout<< "\n error: end flag loss\n";}
-			  if(e) nerr++;
-		  }
-		  rd_success=e_ostrms[i][k].read_nb(e);
-		  if(!rd_success){ nerr++; std::cout<< "\n error: end flag loss\n";}
-		  if(!e) nerr++;
-	  }
-	}
+  // check duplicated data end flag
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int k = 0; k < NUM_COPY; k++) {
+      for (int j = 0; j < LEN_STRM; j++) {
+        rd_success = e_ostrms[i][k].read_nb(e);
+        if (!rd_success) {
+          nerr++;
+          std::cout << "\n error: end flag loss\n";
+        }
+        if (e) nerr++;
+      }
+      rd_success = e_ostrms[i][k].read_nb(e);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: end flag loss\n";
+      }
+      if (!e) nerr++;
+    }
+  }
 
-	//check non-duplicated data end flag
-	for(;i<NUM_ISTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  rd_success=e_istrm[i].read_nb(e);
-		  if(!rd_success){ nerr++; std::cout<< "\n error: end flag loss\n";}
-		  if(e) nerr++;
-	  }
-	  rd_success=e_istrm[i].read_nb(e);
-	  if(!rd_success){ nerr++; std::cout<< "\n error: end flag loss\n";}
-	  if(!e) nerr++;;
-	}
+  // check non-duplicated data end flag
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      rd_success = e_istrm[i].read_nb(e);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: end flag loss\n";
+      }
+      if (e) nerr++;
+    }
+    rd_success = e_istrm[i].read_nb(e);
+    if (!rd_success) {
+      nerr++;
+      std::cout << "\n error: end flag loss\n";
+    }
+    if (!e) nerr++;
+    ;
+  }
 
-	return nerr;
+  return nerr;
 }
 
-int test_dut1(){
-	int nerr = 0;
-	int i;
+int test_dut1() {
+  int nerr = 0;
+  int i;
 
-//================generate test data=========================
+  //================generate test data=========================
 
-	TYPE testdata[NUM_ISTRM][LEN_STRM];
-	TYPE glddata[NUM_COPY*NUM_DSTRM][LEN_STRM];
+  TYPE testdata[NUM_ISTRM][LEN_STRM];
+  TYPE glddata[NUM_COPY * NUM_DSTRM][LEN_STRM];
 
-	for(i=0;i<NUM_DSTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  testdata[i][j]=i*10+j;//rand()%1000;
-		  for(int k=0;k<NUM_COPY;k++){
-			  glddata[i*NUM_COPY+k][j]=testdata[i][j];
-		  }
-	  }
-	}
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+      for (int k = 0; k < NUM_COPY; k++) {
+        glddata[i * NUM_COPY + k][j] = testdata[i][j];
+      }
+    }
+  }
 
-	for(;i<NUM_ISTRM;i++){
-	  for(int j=0;j<LEN_STRM;j++){
-		  testdata[i][j]=i*10+j;//rand()%1000;
-	  }
-	}
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+    }
+  }
 
-	hls::stream<TYPE> istrm[NUM_ISTRM];
-	hls::stream<bool> e_istrm;
-	hls::stream<TYPE> ostrms[NUM_ISTRM];
-	hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM];
-	hls::stream<bool> e_ostrms;
+  hls::stream<TYPE> istrm[NUM_ISTRM];
+  hls::stream<bool> e_istrm;
+  hls::stream<TYPE> ostrms[NUM_ISTRM];
+  hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM];
+  hls::stream<bool> e_ostrms;
 
-	for(int j=0;j<LEN_STRM;j++){
-		for(i=0;i<NUM_ISTRM;i++){
-		  istrm[i].write(testdata[i][j]);
-		}
-		e_istrm.write(0);
-	}
-	  e_istrm.write(1);
+  for (int j = 0; j < LEN_STRM; j++) {
+    for (i = 0; i < NUM_ISTRM; i++) {
+      istrm[i].write(testdata[i][j]);
+    }
+    e_istrm.write(0);
+  }
+  e_istrm.write(1);
 
-//================test module===============================
+  //================test module===============================
 
-	dut1(istrm,e_istrm,ostrms,dstrms,e_ostrms);
+  dut1(istrm, e_istrm, ostrms, dstrms, e_ostrms);
 
-//================check result==============================
+  //================check result==============================
 
-	bool rd_success;
-	TYPE outdata;
-	bool e;
+  bool rd_success;
+  TYPE outdata;
+  bool e;
 
-	//check duplicated data
-	for(i=0;i<NUM_DSTRM;i++){
-	  for(int k=0;k<NUM_COPY;k++){
-		  for(int j=0;j<LEN_STRM;j++){
-			  rd_success=dstrms[k][i].read_nb(outdata);
-			  if(!rd_success){ nerr++; std::cout<< "\n error: data loss\n";}
-			  if(glddata[i*NUM_COPY+k][j]!=outdata) nerr++;
-		  }
-	  }
-	}
+  // check duplicated data
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int k = 0; k < NUM_COPY; k++) {
+      for (int j = 0; j < LEN_STRM; j++) {
+        rd_success = dstrms[k][i].read_nb(outdata);
+        if (!rd_success) {
+          nerr++;
+          std::cout << "\n error: data loss\n";
+        }
+        if (glddata[i * NUM_COPY + k][j] != outdata) nerr++;
+      }
+    }
+  }
 
-	//check non-duplicated data
-	for(i=0;i<NUM_ISTRM;i++){
-		for(int j=0;j<LEN_STRM;j++){
-		  rd_success=ostrms[i].read_nb(outdata);
-		  if(!rd_success){ nerr++; std::cout<< "\n error: data loss\n";}
-		  if(testdata[i][j]!=outdata) nerr++;
-		}
-	}
+  // check non-duplicated data
+  for (i = 0; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      rd_success = ostrms[i].read_nb(outdata);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: data loss\n";
+      }
+      if (testdata[i][j] != outdata) nerr++;
+    }
+  }
 
-	//check end flag
-	for(int j=0;j<LEN_STRM;j++){
-	  rd_success=e_ostrms.read_nb(e);
-	  if(!rd_success){ nerr++; std::cout<< "\n error: end flag loss\n";}
-	  if(e) nerr++;
-	}
-	  rd_success=e_ostrms.read_nb(e);
-	  if(!rd_success){ nerr++; std::cout<< "\n error: end flag loss\n";}
-	  if(!e) nerr++;
+  // check end flag
+  for (int j = 0; j < LEN_STRM; j++) {
+    rd_success = e_ostrms.read_nb(e);
+    if (!rd_success) {
+      nerr++;
+      std::cout << "\n error: end flag loss\n";
+    }
+    if (e) nerr++;
+  }
+  rd_success = e_ostrms.read_nb(e);
+  if (!rd_success) {
+    nerr++;
+    std::cout << "\n error: end flag loss\n";
+  }
+  if (!e) nerr++;
 
-	return nerr;
+  return nerr;
 }
-
 
 int main(int argc, const char* argv[]) {
-	int nerr = 0;
+  int nerr = 0;
 
-	if(argv[1][0]=='0'){
-		nerr=nerr+test_dut0();
-		if (nerr) {
-		std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
-		} else {
-		std::cout << "\nPASS: no error found.\n";
-		}
-	}
-	else if(argv[1][0]=='1'){
-		nerr=nerr+test_dut1();
-		if (nerr) {
-		std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
-		} else {
-		std::cout << "\nPASS: no error found.\n";
-		}
-	} else {
-		std::cout << "\nFAIL: test not found.\n";
-		nerr++;
-	}
-	return nerr;
+  if (argv[1][0] == '0') {
+    nerr = nerr + test_dut0();
+    if (nerr) {
+      std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
+    } else {
+      std::cout << "\nPASS: no error found.\n";
+    }
+  } else if (argv[1][0] == '1') {
+    nerr = nerr + test_dut1();
+    if (nerr) {
+      std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
+    } else {
+      std::cout << "\nPASS: no error found.\n";
+    }
+  } else {
+    std::cout << "\nFAIL: test not found.\n";
+    nerr++;
+  }
+  return nerr;
 }
 
 #endif
