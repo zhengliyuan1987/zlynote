@@ -484,8 +484,8 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
   xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         new_data_strms, e_new_data_strms,
                         ostrm, e_ostrm,
-                        xf::common::utils_hw::round_robin_t());
-                         //xf::common::utils_hw::load_balance_t());
+                        //xf::common::utils_hw::round_robin_t());
+                        xf::common::utils_hw::load_balance_t());
 
 }
 
