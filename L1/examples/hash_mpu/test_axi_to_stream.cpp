@@ -1,35 +1,45 @@
-//#ifndef __SYNTHESIS__
 #include <cstring>
 #include <iostream>
 #include <stdlib.h>
-//#endif
 
 #include "xf_utils_hw/axi_to_stream.h"
 #include "xf_utils_hw/stream_to_axi.h"
 #include "code.h"
-#define AXI_WIDTH     256
+#define W_AXI         W_STRM
 #define BURST_LENTH   32
 #define DATA_LEN      (4096*16)
-#define STRM_WIDTH    256
-#define INPUT_WIDTH   32
-typedef ap_uint<STRM_WIDTH> TYPE_Strm;
-typedef ap_uint<INPUT_WIDTH> TYPE_Input;
+#define W_DATA        W_PU
 
-// DDR_DEPTH * AXI_WIDTH >= INPUT_WIDTH * DATA_LEN
-const int DDR_DEPTH = DATA_LEN * INPUT_WIDTH / AXI_WIDTH;
+// the type of input and output data
+typedef ap_uint<W_DATA> t_data;
+// the type of inner stream
+typedef ap_uint<W_STRM> t_strm;
+
+// the depth of axi port
+// It must meet  DDR_DEPTH * W_AXI >= W_DATA * DATA_LEN
+const int DDR_DEPTH = DATA_LEN * W_DATA / W_AXI;
 
 // ------------------------------------------------------------
-// top functions for general data
-void top_core(ap_uint<AXI_WIDTH>* in_buf,
-              ap_uint<AXI_WIDTH>* out_buf,
-              const int len,
-              const int offset) {
+// top functions
+/**
+ * @brief Update data
+ * A few of data are packeged to a wide width data which is tranferred by axi-port. Extract and update each data from the wide width data.
+ * For example, 8 32-bit data are combined to a 256-bit data. Each 32-bit data is updated and output in the same form as input.
+ * Here, each W_AXI bits data in in_buf includes multiple data( ap_uint<W_DATA>) which will be updated.
+ *
+ * @param in_buf the input buffer
+ * @param out_buf the output buffer
+ * @param len the number of input data in in_buf 
+ *
+ */
+void top_core(ap_uint<W_AXI>* in_buf,
+              ap_uint<W_AXI>* out_buf,
+              const int len) {
 #pragma HLS INTERFACE m_axi port = in_buf depth = DDR_DEPTH offset = \
     slave bundle = gmem_in0 latency = 8 num_read_outstanding =     \
         32 max_read_burst_length = 32
 
 #pragma HLS INTERFACE s_axilite port = in_buf bundle = control
-
 
 #pragma HLS INTERFACE m_axi port = out_buf depth = DDR_DEPTH offset = \
     slave bundle = gmem_out1 latency = 8 num_write_outstanding =     \
@@ -37,84 +47,97 @@ void top_core(ap_uint<AXI_WIDTH>* in_buf,
 
 #pragma HLS INTERFACE s_axilite port = out_buf bundle = control
 
-
 #pragma HLS INTERFACE s_axilite port = return bundle = control
 
 #pragma HLS dataflow
-    hls::stream<TYPE_Strm> axi_istrm;
+    hls::stream<t_strm> axi_istrm;
 #pragma HLS stream variable = axi_istrm depth = 8              
     hls::stream<bool> e_axi_istrm;
 #pragma HLS stream variable = e_axi_istrm depth = 8              
 
-    hls::stream<TYPE_Strm> axi_ostrm;
+    hls::stream<t_strm> axi_ostrm;
 #pragma HLS stream variable = axi_ostrm depth = 8              
     hls::stream<bool> e_axi_ostrm;
 #pragma HLS stream variable = e_axi_ostrm depth = 8              
-  
-  
-  xf::common::utils_hw::axi_to_stream<BURST_LENTH, AXI_WIDTH,TYPE_Strm>(
-      in_buf, axi_istrm, e_axi_istrm, len, offset);
 
-  test_core(axi_istrm,e_axi_istrm,axi_ostrm,e_axi_ostrm);
+// axi --> stream --> compute  --> stream --> axi
+  
+// in_buf        axi_port     inner_stream   axi_port   out_buf
+// W_DATA ------> W_AXI ------> W_STRM -----> W_AXI ---> W_DATA
 
-  xf::common::utils_hw::stream_to_axi<BURST_LENTH,AXI_WIDTH,STRM_WIDTH >(
+// axi to stream
+// in_buf --> axi_istrm
+  xf::common::utils_hw::axi_to_stream<BURST_LENTH, W_AXI,t_strm>(
+      in_buf, axi_istrm, e_axi_istrm, len, 0);
+
+// compute by mutiple process uinits
+// axi_istrm --> axi_ostrm
+  compute(axi_istrm,e_axi_istrm,axi_ostrm,e_axi_ostrm);
+
+// stream to axi
+// axi_ostrm --> out_buf
+  xf::common::utils_hw::stream_to_axi<BURST_LENTH,W_AXI,W_STRM >(
       out_buf,axi_ostrm, e_axi_ostrm);
-}
-
-#ifndef __SYNTHESIS_
-
-ap_uint<INPUT_WIDTH> rand_t() {
-   int min = INPUT_WIDTH >= 16? 16: INPUT_WIDTH;
-   ap_uint<INPUT_WIDTH> c = rand() % (1<<min);
-   return c; 
-
-}
-
-
-void gen_data(TYPE_Input* data, const int len) {
-
-   for(int i=0; i< len ;++i)
-     data[i]=rand_t();
-
-}
-
-int check_data( TYPE_Input* data, TYPE_Input *res, const int len) {
-//  std::cout<<"test data:";
-  int sum_gld = 0;
-  int sum_res = 0;
-  for(int i=0; i< len; ++i) {
-     sum_gld += data[i];
-     sum_res += res[i];
-//   std::cout<< res[i];
-//   if( data[i]!=res[i])
-//     return 1;
-  }
-  
-  std::cout<<std::endl<< "--------------------"<<std::endl;
-  return (sum_gld != sum_res);
-
 }
 
 // ------------------------------------------------------------
 
-int main( ) {
-  TYPE_Input* data_ddr = (TYPE_Input*)malloc(DATA_LEN * sizeof(TYPE_Input));
-  TYPE_Input* res_ddr  = (TYPE_Input*)malloc(DATA_LEN * sizeof(TYPE_Input));
+#ifndef __SYNTHESIS_
+// random data
+ap_uint<W_DATA> rand_t() {
+   int min = W_DATA >= 16? 16: W_DATA;
+   ap_uint<W_DATA> c = rand() % (1<<min);
+   return c; 
 
-  //generate data
-  int offset    = 0;
-  // reshape:  total bits = DATA_LEN*sizeof(TYPE_Input)*8 = AXI_WIDTH * num
-  int num       = DATA_LEN * sizeof(TYPE_Input) * 8 / (AXI_WIDTH);
+}
+
+/**
+ * @brief generate test data
+ * @param data_buf stored data
+ * @param num  the number of generated data 
+ */
+void gen_data(t_data* data_buf, const int num) {
+
+   for(int i=0; i< num ;++i)
+     data_buf[i]=rand_t();
+
+}
+/**
+ * @brief check the result
+ * @param data_buf  original data
+ * @param res_buf   updated data
+ * @param num  the number of checking data
+ * @return 0-pass, 1-fail 
+ */
+int check_data( t_data* data_buf, t_data *res_buf, const int num) {
+ // check the result by their sums because distribution on load balance is NOT order-preserving.
+  int sum_gld = 0;
+  int sum_res = 0;
+  for(int i=0; i< num; ++i) {
+     t_data new_data = update_data(data_buf[i]);
+     sum_gld += calculate(new_data);
+     sum_res += calculate(res_buf[i]);
+  }
+  return (sum_gld != sum_res);
+}
+
+
+int main( ) {
+  t_data* data_ddr = (t_data*)malloc(DATA_LEN * sizeof(t_data));
+  t_data* res_ddr  = (t_data*)malloc(DATA_LEN * sizeof(t_data));
+
+  // reshape:  total bits = DATA_LEN*sizeof(t_data)*8 = W_AXI * num
+  int num       = DATA_LEN * sizeof(t_data) * 8 / (W_AXI);
   const int len = DATA_LEN;
+  //generate data
   gen_data(data_ddr,len);
-  std::cout << " AXI_WIDTH = " << AXI_WIDTH << "   num = "<< num << std::endl; 
-  std::cout << " INPUT_WIDTH = " << INPUT_WIDTH <<  "  len = " << len  << std::endl; 
-  std::cout << " sizeof(TYPE_Input) = " << sizeof(TYPE_Input) << std::endl; 
+  std::cout << " W_AXI  = " << W_AXI << "  num = "<< num << std::endl; 
+  std::cout << " W_DATA = " << W_DATA <<  "  len = " << len  << std::endl; 
   // core
   top_core(
-        (ap_uint<AXI_WIDTH>*) data_ddr,
-        (ap_uint<AXI_WIDTH>*) res_ddr,
-         num, offset);
+        (ap_uint<W_AXI>*) data_ddr,
+        (ap_uint<W_AXI>*) res_ddr,
+         num);
 
 //  check result 
   int err= check_data( data_ddr, res_ddr, len);
