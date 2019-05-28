@@ -7,94 +7,265 @@
 #include "ap_int.h"
 #include "hls_stream.h"
 
-typedef uint32_t TIN;
-#define NSTRM 16
+typedef uint32_t TYPE;
 
-extern "C" void dut(hls::stream<TIN>& istrm,
-                    hls::stream<bool>& e_istrm,
-                    hls::stream<TIN> ostrms[NSTRM],
-                    hls::stream<bool> e_ostrms[NSTRM]) {
-  xf::common::utils_hw::stream_dup<TIN, NSTRM>(
+#define LEN_STRM 10
+#define NUM_ISTRM 8
+#define NUM_DSTRM 4
+#define NUM_COPY 16
+
+extern "C" void dut0(hls::stream<TYPE>& istrm,
+                     hls::stream<bool>& e_istrm,
+                     hls::stream<TYPE> ostrms[NUM_COPY],
+                     hls::stream<bool> e_ostrms[NUM_COPY]) {
+  xf::common::utils_hw::stream_dup<TYPE, NUM_COPY>(
       istrm, e_istrm, ostrms, e_ostrms);
+}
+
+extern "C" void dut1(hls::stream<TYPE> istrm[NUM_ISTRM],
+                     hls::stream<bool>& e_istrm,
+                     hls::stream<TYPE> ostrms[NUM_ISTRM],
+                     hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM],
+                     hls::stream<bool>& e_ostrms) {
+  const int choose[4] = {0, 1, 2, 3};
+  xf::common::utils_hw::stream_dup<TYPE, NUM_ISTRM, NUM_DSTRM, NUM_COPY>(
+      choose, istrm, e_istrm, ostrms, dstrms, e_ostrms);
 }
 
 #ifndef __SYNTHESIS__
 
-// generate a random integer sequence between specified limits a and b (a<b);
-uint rand_uint(uint a, uint b) { return rand() % (b - a + 1) + a; }
+int test_dut0() {
+  int nerr = 0;
+  int i;
 
-// generate test data
-template <typename _TIn, int _NStrm>
-void generate_test_data(uint64_t len, std::vector<_TIn>& testvector) {
-  for (int i = 0; i < len; i++) {
-    _TIn a;
-    uint randnum = rand_uint(1, 15);
-    testvector.push_back((_TIn)randnum);
-    std::cout << randnum << std::endl;
+  //================generate test data=========================
+
+  TYPE testdata[NUM_ISTRM][LEN_STRM];
+  TYPE glddata[NUM_COPY * NUM_DSTRM][LEN_STRM];
+
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+      for (int k = 0; k < 16; k++) {
+        glddata[i * 16 + k][j] = testdata[i][j];
+      }
+    }
   }
-  std::cout << " random test data generated! " << std::endl;
+
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+    }
+  }
+
+  hls::stream<TYPE> istrm[NUM_ISTRM];
+  hls::stream<bool> e_istrm[NUM_ISTRM];
+  hls::stream<TYPE> ostrms[NUM_DSTRM][NUM_COPY];
+  hls::stream<bool> e_ostrms[NUM_DSTRM][NUM_COPY];
+
+  for (i = 0; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      istrm[i].write(testdata[i][j]);
+      e_istrm[i].write(0);
+    }
+    e_istrm[i].write(1);
+  }
+
+  //================test module===============================
+
+  for (i = 0; i < NUM_DSTRM; i++) {
+    dut0(istrm[i], e_istrm[i], ostrms[i], e_ostrms[i]);
+  }
+
+  //================check result==============================
+
+  bool rd_success;
+  TYPE outdata;
+  bool e;
+
+  // check duplicated data
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int k = 0; k < NUM_COPY; k++) {
+      for (int j = 0; j < LEN_STRM; j++) {
+        rd_success = ostrms[i][k].read_nb(outdata);
+        if (!rd_success) {
+          nerr++;
+          std::cout << "\n error: data loss\n";
+        }
+        if (glddata[i * NUM_COPY + k][j] != outdata) nerr++;
+      }
+    }
+  }
+
+  // check non-duplicated data
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      rd_success = istrm[i].read_nb(outdata);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: data loss\n";
+      }
+      if (testdata[i][j] != outdata) nerr++;
+    }
+  }
+
+  // check duplicated data end flag
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int k = 0; k < NUM_COPY; k++) {
+      for (int j = 0; j < LEN_STRM; j++) {
+        rd_success = e_ostrms[i][k].read_nb(e);
+        if (!rd_success) {
+          nerr++;
+          std::cout << "\n error: end flag loss\n";
+        }
+        if (e) nerr++;
+      }
+      rd_success = e_ostrms[i][k].read_nb(e);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: end flag loss\n";
+      }
+      if (!e) nerr++;
+    }
+  }
+
+  // check non-duplicated data end flag
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      rd_success = e_istrm[i].read_nb(e);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: end flag loss\n";
+      }
+      if (e) nerr++;
+    }
+    rd_success = e_istrm[i].read_nb(e);
+    if (!rd_success) {
+      nerr++;
+      std::cout << "\n error: end flag loss\n";
+    }
+    if (!e) nerr++;
+    ;
+  }
+
+  return nerr;
 }
 
-int main(int argc, const char* argv[]) {
-  int err = 0; // 0 for pass, 1 for error
+int test_dut1() {
+  int nerr = 0;
+  int i;
 
-  int len = 10;
-  std::vector<TIN> testvector;
-  hls::stream<TIN> istrm;
-  hls::stream<TIN> ostrms[NSTRM];
+  //================generate test data=========================
+
+  TYPE testdata[NUM_ISTRM][LEN_STRM];
+  TYPE glddata[NUM_COPY * NUM_DSTRM][LEN_STRM];
+
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+      for (int k = 0; k < NUM_COPY; k++) {
+        glddata[i * NUM_COPY + k][j] = testdata[i][j];
+      }
+    }
+  }
+
+  for (; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      testdata[i][j] = i * 10 + j; // rand()%1000;
+    }
+  }
+
+  hls::stream<TYPE> istrm[NUM_ISTRM];
   hls::stream<bool> e_istrm;
-  hls::stream<bool> e_ostrms[NSTRM];
+  hls::stream<TYPE> ostrms[NUM_ISTRM];
+  hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM];
+  hls::stream<bool> e_ostrms;
 
-  // reference vector
-  std::vector<TIN> refvec;
-  // generate test data
-  generate_test_data<TIN, NSTRM>(len, testvector);
-  // prepare data to stream
-  for (std::string::size_type i = 0; i < len; i++) {
-    TIN tmp = testvector[i];
-    refvec.push_back(tmp);
-    istrm.write(tmp);
+  for (int j = 0; j < LEN_STRM; j++) {
+    for (i = 0; i < NUM_ISTRM; i++) {
+      istrm[i].write(testdata[i][j]);
+    }
     e_istrm.write(0);
   }
   e_istrm.write(1);
-  // run hls::func
-  dut(istrm, e_istrm, ostrms, e_ostrms);
-  // compare hls::func and reference result
-  for (std::string::size_type i = 0; i < len; i++) {
-    TIN out_res[NSTRM];
-    std::cout << refvec[i] << std::endl;
-    for (int j = 0; j < NSTRM; j++) {
-      out_res[j] = ostrms[j].read();
-      std::cout << out_res[j] << "   ";
-      if (refvec[i] != out_res[j]) {
-        err++;
+
+  //================test module===============================
+
+  dut1(istrm, e_istrm, ostrms, dstrms, e_ostrms);
+
+  //================check result==============================
+
+  bool rd_success;
+  TYPE outdata;
+  bool e;
+
+  // check duplicated data
+  for (i = 0; i < NUM_DSTRM; i++) {
+    for (int k = 0; k < NUM_COPY; k++) {
+      for (int j = 0; j < LEN_STRM; j++) {
+        rd_success = dstrms[k][i].read_nb(outdata);
+        if (!rd_success) {
+          nerr++;
+          std::cout << "\n error: data loss\n";
+        }
+        if (glddata[i * NUM_COPY + k][j] != outdata) nerr++;
       }
-    }
-    std::cout << err << std::endl;
-  }
-  // compare e flag
-  for (std::string::size_type i = 0; i < len; i++) {
-    for (int j = 0; j < NSTRM; j++) {
-      bool estrm = e_ostrms[j].read();
-      if (estrm) {
-        err++;
-      }
-    }
-  }
-  for (int j = 0; j < NSTRM; j++) {
-    bool estrm = e_ostrms[j].read();
-    if (!estrm) {
-      err++;
     }
   }
 
-  // TODO check out, eout
-  if (err) {
-    std::cout << "\nFAIL: nerror= " << err << " errors found.\n";
-  } else {
-    std::cout << "\nPASS: no error found.\n";
+  // check non-duplicated data
+  for (i = 0; i < NUM_ISTRM; i++) {
+    for (int j = 0; j < LEN_STRM; j++) {
+      rd_success = ostrms[i].read_nb(outdata);
+      if (!rd_success) {
+        nerr++;
+        std::cout << "\n error: data loss\n";
+      }
+      if (testdata[i][j] != outdata) nerr++;
+    }
   }
-  return err;
+
+  // check end flag
+  for (int j = 0; j < LEN_STRM; j++) {
+    rd_success = e_ostrms.read_nb(e);
+    if (!rd_success) {
+      nerr++;
+      std::cout << "\n error: end flag loss\n";
+    }
+    if (e) nerr++;
+  }
+  rd_success = e_ostrms.read_nb(e);
+  if (!rd_success) {
+    nerr++;
+    std::cout << "\n error: end flag loss\n";
+  }
+  if (!e) nerr++;
+
+  return nerr;
+}
+
+int main(int argc, const char* argv[]) {
+  int nerr = 0;
+
+  if (argv[1][0] == '0') {
+    nerr = nerr + test_dut0();
+    if (nerr) {
+      std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
+    } else {
+      std::cout << "\nPASS: no error found.\n";
+    }
+  } else if (argv[1][0] == '1') {
+    nerr = nerr + test_dut1();
+    if (nerr) {
+      std::cout << "\nFAIL: nerror= " << nerr << " errors found.\n";
+    } else {
+      std::cout << "\nPASS: no error found.\n";
+    }
+  } else {
+    std::cout << "\nFAIL: test not found.\n";
+    nerr++;
+  }
+  return nerr;
 }
 
 #endif
