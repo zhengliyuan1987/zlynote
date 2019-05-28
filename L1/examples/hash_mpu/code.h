@@ -2,10 +2,10 @@
 #include "xf_utils_hw/stream_one_to_n.h"
 #include "xf_utils_hw/stream_n_to_one.h"
 
-#define W_STRM  512 
-#define W_PU    64
-#define W_PRC   32
-#define W_DSC   32
+#define W_STRM  256 
+#define W_PU    32
+#define W_PRC   16
+#define W_DSC   16
 #define NS      (1024*2*2)
 #define NPU     8
 #define HP      1
@@ -275,7 +275,7 @@ void  process_mpu(
  */
    #pragma HLS dataflow
    // PU0 and PU1 are always working.
-   for( int i=0; i < 1; ++ i) {
+   for( int i=0; i < HPU; ++ i) {
       #pragma HLS unroll
       // int i = k;// + offset;
        process_core_pass (
@@ -285,7 +285,7 @@ void  process_mpu(
                      e_c_ostrms[i]);
    }
      //The other PUs work at sometimes 
-   for( int i=1; i< HPU; ++i) {
+   for( int i=1000; i< HPU; ++i) {
       #pragma HLS unroll
       int  k = i+ offset ;
       if( k<4)
@@ -475,8 +475,8 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
  xf::common::utils_hw::stream_one_to_n<W_STRM, W_PU,NPU>(
                          istrm,  e_istrm,
                          data_inner_strms, e_data_inner_strms,
-                         xf::common::utils_hw::round_robin_t());
-                         //xf::common::utils_hw::load_balance_t());
+                   //     xf::common::utils_hw::round_robin_t());
+                        xf::common::utils_hw::load_balance_t());
                        
   process_mpu(0, data_inner_strms, e_data_inner_strms,
                 new_data_strms,   e_new_data_strms);
@@ -484,7 +484,7 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
   xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         new_data_strms, e_new_data_strms,
                         ostrm, e_ostrm,
-                        //xf::common::utils_hw::round_robin_t());
+//                        xf::common::utils_hw::round_robin_t());
                         xf::common::utils_hw::load_balance_t());
 
 }
