@@ -60,8 +60,18 @@ void top_core(ap_uint<W_AXI>* in_buf,
     hls::stream<bool> e_axi_ostrm;
 #pragma HLS stream variable = e_axi_ostrm depth = 8              
 
-// axi --> stream --> compute  --> stream --> axi
+/*
+ ----------------         --------------------------------------------------------         -------------------
+|                |       |                                                        |       |                   |
+|                |       |                                                        |       |                   |
+| axi to stream  |  -->  | stream to n streams   --> MPU  ---> n streams to one   |  -->  |  stream to axi    |
+|                |       |                                                        |       |                   |
+|                |       |                                                        |       |                   |
+ ----------------         ---------------------------------------------------------        -------------------
+*/
+
   
+// axi --> stream --> compute  --> stream --> axi
 // in_buf        axi_port     inner_stream   axi_port   out_buf
 // W_DATA ------> W_AXI ------> W_STRM -----> W_AXI ---> W_DATA
 
