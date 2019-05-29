@@ -5,7 +5,7 @@
 #include "xf_utils_hw/axi_to_stream.h"
 #include "xf_utils_hw/stream_to_axi.h"
 #include "code.h"
-#define W_AXI         W_STRM
+#define W_AXI         (W_STRM*2)
 #define BURST_LENTH   32
 #define DATA_LEN      (4096*16)
 #define W_DATA        W_PU
@@ -24,8 +24,8 @@ const int DDR_DEPTH = DATA_LEN * W_DATA / W_AXI;
 /**
  * @brief Update data
  * A few of data are packeged to a wide width data which is tranferred by axi-port. Extract and update each data from the wide width data.
- * For example, 8 32-bit data are combined to a 256-bit data. Each 32-bit data is updated and output in the same form as input.
- * Here, each W_AXI bits data in in_buf includes multiple data( ap_uint<W_DATA>) which will be updated.
+ * For example, 8 32-bit data are combined to a 256-bit data. Each 32-bit data is updated and output in the same formart as input.
+ * Here, each W_AXI bits data in in_buf includes multiple data(ap_uint<W_DATA>) which will be updated.
  *
  * @param in_buf the input buffer
  * @param out_buf the output buffer
@@ -136,8 +136,8 @@ int main( ) {
   t_data* data_ddr = (t_data*)malloc(DATA_LEN * sizeof(t_data));
   t_data* res_ddr  = (t_data*)malloc(DATA_LEN * sizeof(t_data));
 
-  // reshape:  total bits = DATA_LEN*sizeof(t_data)*8 = W_AXI * num
-  int num       = DATA_LEN * sizeof(t_data) * 8 / (W_AXI);
+  // reshape:  total bits = DATA_LEN*sizeof(t_data)*8 = W_STRM * num
+  int num       = DATA_LEN * sizeof(t_data) * 8 / (W_STRM);
   const int len = DATA_LEN;
   //generate data
   gen_data(data_ddr,len);
