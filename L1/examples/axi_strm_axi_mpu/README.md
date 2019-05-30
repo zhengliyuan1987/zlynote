@@ -35,7 +35,7 @@ The design of this example inludes three modules:
    3. New data stream are ouput to axi port.
            xf::common::utils_hw::stream<BURST_LENTH, W_AXI,ap_uint<W_STRM> >(in_buf, axi_strm, e_axi_strm );
   
-  
+ ``` 
     axi_to_stream                                 update_mpu                                    stream_to_axi 
   +----------------+       +--------------------------------------------------------+       +-------------------+
   |                |       |                                                        |       |                   |
@@ -44,10 +44,11 @@ The design of this example inludes three modules:
   |                |       |                                                        |       |                   |
   |                |       |                                                        |       |                   |
   +----------------+       +--------------------------------------------------------+       +-------------------+
-  
+ ```
    
  The detials inside update_mpu(8 PUs) like this:
  
+```
                split                    merge
                1-->8                    8-->1 
  
@@ -67,8 +68,11 @@ The design of this example inludes three modules:
                    |---------> PU6 --------->|
                    |                         |
                    |---------> PU7 --------->|
+```
 
   All PUs work in parellel at an ideal case as belows:
+
+```
    PU0   ------------------------------------
    PU1   ------------------------------------
    PU2   --  --  --  --  --  --  --  --  -- 
@@ -77,5 +81,6 @@ The design of this example inludes three modules:
    PU5       ----    ----    ----    ----    
    PU6       ----    ----    ----    ----    
    PU7       ----    ----    ----    ----    
+```
   Here, the mark(-) stands for work and blank does sleep(does nothing).
 
