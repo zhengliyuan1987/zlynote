@@ -206,7 +206,7 @@ void  process_mpu(
  * @param ostrm input stream
  * @param e_ostrm end flag for output stream
  **/
-void compute(hls::stream<ap_uint<W_STRM> >& istrm,
+void update_mpu(hls::stream<ap_uint<W_STRM> >& istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<W_STRM> >& ostrm,
                    hls::stream<bool>& e_ostrm) {

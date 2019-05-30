@@ -82,7 +82,7 @@ void top_core(ap_uint<W_AXI>* in_buf,
 
 // compute by mutiple process uinits
 // axi_istrm --> axi_ostrm
-  compute(axi_istrm,e_axi_istrm,axi_ostrm,e_axi_ostrm);
+  update_mpu(axi_istrm,e_axi_istrm,axi_ostrm,e_axi_ostrm);
 
 // stream to axi
 // axi_ostrm --> out_buf
