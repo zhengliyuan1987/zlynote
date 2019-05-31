@@ -7,29 +7,29 @@ It asssumes that a few data will be updated by MPUs in the example.
 The design of this example inludes three modules:
 
   1. Dispatch data to PUs by one stream to n distribution on round robin. 
-         The wide width stream are splitted to n streams and each feeds to a PU.
+        The wide width stream are splitted to n streams and each feeds to a PU.
       
         ``` 
            xf::common::utils_hw::stream_one_to_n<W_STRM, W_PU,NPU>(
                        istrm,  e_istrm,
                        data_inner_strms, e_data_inner_strms,
                        xf::common::utils_hw::round_robin_t());
-         ``` 
+        ``` 
 
   2. All PUs process data in parallel.
-         ``` 
+        ``` 
            process_mpu( 
                         data_inner_strms, e_data_inner_strms,
                          new_data_strms,   e_new_data_strms);
-         ```                                
+        ```                                
 
   3. The new data in n streams from PUs are merged to a wide width stream.
-         ``` 
+        ``` 
            xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         new_data_strms, e_new_data_strms,
                         ostrm, e_ostrm,
                         xf::common::utils_hw::round_robin_t());
-         ``` 
+        ``` 
  ``` 
       stream_one_n                        process_mpu                      stream_n_to_one 
   +-------------------+       +----------------------------------+       +-------------------+
