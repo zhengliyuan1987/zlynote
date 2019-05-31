@@ -6,7 +6,7 @@ It asssumes that a few data will be updated by MPUs in the example.
 
 The design of this example inludes three modules:
 
-  1. Dispatch data to PUs by one stream to n distribution on round robin. 
+  1. Dispatch data to PUs by one stream to n distribution on load balance. 
         The wide width stream are splitted to n streams and each feeds to a PU.
       
         ``` 
