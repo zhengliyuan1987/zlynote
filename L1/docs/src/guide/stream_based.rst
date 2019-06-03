@@ -23,7 +23,7 @@ Stream-Based API Design
    :maxdepth: 1
 
 Stream-based Interface
-----------------------
+======================
 
 The interface of primitives in this library are mostly HLS streams, with a single bit stream
 along with the main data stream throughout the dataflow.

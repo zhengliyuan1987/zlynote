@@ -23,34 +23,47 @@ Internals of uram_array
    :hidden:
    :maxdepth: 2
 
-This document describes the class and execution of uram_array,
-implemented as :ref:`uram_array <cid-xf::common::utils_hw::uram_array>` class.
+The :ref:`uram_array <cid-xf::common::utils_hw::uram_array>` class aims to
+help users to achive faster update rate to data stored in URAM blocks.
 
-
-.. _my-figure-uram_array:
-.. figure:: /images/uram_array.png
-    :alt: bit field
-    :width: 80%
-    :align: center
-
-
-    :ref:`uram_array workflow`
-
-The uram_array primitive access URAM array that can be update every cycle and URAMs are 72 bit fixed. We can be read/write URAM with given width 2^n(0,1,...10) in template parameter. The uram_array provides bypass that can take out value  from cache instead of accessing URAM, and it will be improve uram_array work efficiency. 
-
-There are Applicable conditions:
-
-1. When _WData <= 72, there are ``_elem_per_line`` data store in the 72 bits. For example, data for 16-bit and 20k elements, need 2 URAMs.  
-
-2. When _WData > 72, there are ``_num_parallel_block`` 72-bit in parallel blocks. For example, data for 128-bit and 10k elements, need 6 URAMs.
-
-
-Profiling
+Work Flow
 =========
 
-The hardware resources for 10k elements are listed in :numref:`tabURAM`. (vivado result)
+.. figure:: /images/uram_array.png
+    :alt: bit field
+    :align: center
 
-.. _tabURAM:
+This module enables fast data update by creating a small history cache of
+recently written data in register beside the URAM blocks.
+Upon data read, it will lookup the address in recent writes, and forward
+the result if match is found.
+
+It also provides a handy interface for initializing multiple URAM blocks
+used as an array in parallel.
+
+Storage Layout
+==============
+
+URAM blocks have fixed width of 72-bit, so our storage layout depends on how
+wide each element is.
+
+When the data element has no more than 72bits, the helper class will try to
+store as many as possible within 72bits and pad zeros when space is left.
+For example, to store 20k 16-bit elements, 2 URAMs would be used,
+as each line can store 4 elements and each URAM has fixed depth of 4k.
+
+When the data element has more than 72bits, the helper class will use line of
+multiple URAM blocks to store each element. This ensures that each cycle
+we can initiate an element access.
+So to store 10k 128-bit elements, 6 URAM blocks are required.
+There are Applicable conditions:
+
+
+Resources
+=========
+
+The hardware resources for 10k elements in post-Vivado report are listed in
+table below:
 
 .. table:: Hardware resources for URAM
     :align: center
@@ -62,10 +75,4 @@ The hardware resources for 10k elements are listed in :numref:`tabURAM`. (vivado
     +-------------+----------+----------+-----------+-----------+-------------+
     |      128    |     6    |   4000   |   2457    |   10243   |    2.046    |
     +-------------+----------+----------+-----------+-----------+-------------+
-
-
-
-.. CAUTION::
-   When _WData <= 36, need to determine Cosim result.
-
 
