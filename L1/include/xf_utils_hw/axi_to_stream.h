@@ -33,7 +33,7 @@ namespace utils_hw {
 // ---------------------- APIs ---------------------------------
 
 /**
- * @brief Loading data from AXI master to stream.
+ * @brief Loading data elements from AXI master to stream.
  *
  * This module requires the data elements to align to its size in buffer.
  * In another word, the start offset is specified by element count from
@@ -42,7 +42,8 @@ namespace utils_hw {
  * This primitive assumes the width of AXI port width is positive integer
  * multiple of data element's alignment width.
  *
- * Both AXI port and alignment width are assumed to be multiple of 8-bit char.
+ * The alignment width is assumed to be multiple of 8-bit char.
+ * The AXI master port width is power of two, and no less than 8.
  *
  * \rst
  * ::
@@ -63,7 +64,7 @@ namespace utils_hw {
  * stream.
  *
  * @param rbuf input AXI port.
- * @param num number of data to load from AXI port.
+ * @param num number of data elements to load from AXI port.
  * @param ostrm output stream.
  * @param e_ostrm end flag for output stream.
  * @param offset_num offset from the beginning of the buffer, by num of element.
@@ -83,7 +84,8 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
  * The last word may contain invalid data in high-bits if enough char has
  * already been packed.
  *
- * Both AXI port and output stream are assumed to have width of multiple of 8.
+ * The alignment width is assumed to be multiple of 8-bit char.
+ * The AXI master port width is power of two, and no less than 8.
  *
  * \rst
  * ::

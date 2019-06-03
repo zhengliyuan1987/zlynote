@@ -18,29 +18,21 @@ Module Design Internals
 **************************************
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   ./axi_to_stream/axi_to_stream.rst
-   ./axi_to_multi_stream/axi_to_multi_stream.rst
-   ./stream_split/stream_split_lsb.rst
-   ./stream_split/stream_split_msb.rst
-   ./stream_combine/stream_combine_lsb.rst
-   ./stream_combine/stream_combine_msb.rst
-   ./stream_reorder/stream_reorder.rst
-   ./stream_sync/stream_sync.rst
-   ./stream_discard/stream_discard_single.rst
-   ./stream_discard/stream_discard_array.rst
-   ./stream_discard/stream_discard_share.rst
-   ./stream_n_to_one/round_robin/stream_n_to_one_round_robin.rst
-   ./stream_n_to_one/round_robin/stream_n_to_one_round_robin_type.rst
-   ./stream_n_to_one/load_balance/stream_n_to_one_load_balance.rst
-   ./stream_n_to_one/load_balance/stream_n_to_one_load_balance_type.rst
-   ./stream_n_to_one/tag_select/stream_n_to_one_tag_select.rst
-   ./stream_n_to_one/tag_select/stream_n_to_one_tag_select_type.rst
-   ./stream_one_to_n/round_robin/stream_one_to_n_round_robin.rst
-   ./stream_one_to_n/round_robin/stream_one_to_n_round_robin_type.rst
-   ./stream_one_to_n/load_balance/stream_one_to_n_load_balance.rst
-   ./stream_one_to_n/load_balance/stream_one_to_n_load_balance_type.rst
-   ./stream_one_to_n/tag_select/stream_one_to_n_tag_select.rst
-   ./stream_one_to_n/tag_select/stream_one_to_n_tag_select_type.rst
+   ./m_axi/axi_to_stream.rst
+   ./m_axi/axi_to_multi_stream.rst
+   ./m_axi/stream_to_axi.rst
+
+   ./uram_array.rst
+
+   ./movement/stream_one_to_n.rst
+   ./movement/stream_n_to_one.rst
+   ./movement/stream_discard.rst
+
+   ./synced/stream_split.rst
+   ./synced/stream_combine.rst
+   ./synced/stream_sync.rst
+
+   ./windowed/stream_reorder.rst
 

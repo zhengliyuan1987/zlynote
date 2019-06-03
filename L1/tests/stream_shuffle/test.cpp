@@ -1,8 +1,9 @@
 #include "xf_utils_hw/stream_shuffle.h"
 #include <iostream>
+#include <stdlib.h>
 
 #define NUM_INPUT 16
-#define NUM_OUTPUT 14
+#define NUM_OUTPUT 20
 
 #define STRM_LEN 10
 
@@ -10,17 +11,12 @@
 
 int nerror;
 
-void gld(ap_int<8> gld_cfg[NUM_INPUT],
+void gld(ap_int<8> gld_cfg[NUM_OUTPUT],
          DATA_TYPE gld_input[NUM_INPUT][STRM_LEN],
          DATA_TYPE gld_output[NUM_OUTPUT][STRM_LEN]) {
   for (int i = 0; i < NUM_OUTPUT; i++) {
     for (int j = 0; j < STRM_LEN; j++) {
-      if (gld_cfg >= 0)
-        gld_output[gld_cfg[i]][j] = gld_input[i][j];
-      else if (gld_cfg[i][j] != -1) {
-        std::cout << "error: illegal config value" << std::endl;
-        nerror++;
-      }
+      if (gld_cfg[i] >= 0) gld_output[i][j] = gld_input[gld_cfg[i]][j];
     }
   }
 }
@@ -44,17 +40,29 @@ int main() {
   hls::stream<DATA_TYPE> istrms[NUM_INPUT];
   hls::stream<bool> e_istrm;
 
-  hls::stream<DATA_TYPE> ostrms[NUM_INPUT];
+  hls::stream<DATA_TYPE> ostrms[NUM_OUTPUT];
   hls::stream<bool> e_ostrm;
 
-  ap_int<8> gld_cfg[NUM_INPUT];
+  ap_int<8> gld_cfg[NUM_OUTPUT];
   DATA_TYPE gld_input[NUM_INPUT][STRM_LEN];
   DATA_TYPE gld_output[NUM_OUTPUT][STRM_LEN];
 
   int i;
+
   for (i = 0; i < NUM_OUTPUT; i++) {
+    for (int j = 0; j < STRM_LEN; j++) {
+      gld_output[i][j] = 0;
+    }
+  }
+
+  for (i = 0; i < NUM_INPUT / 2; i++) {
     orders.range(8 * i + 7, 8 * i) = ap_int<8>(i);
     gld_cfg[i] = i;
+  }
+
+  for (; i < NUM_OUTPUT; i++) {
+    orders.range(8 * i + 7, 8 * i) = ap_int<8>(-10);
+    gld_cfg[i] = -10;
   }
 
   order_cfg.write(orders);

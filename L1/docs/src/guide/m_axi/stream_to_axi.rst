@@ -24,11 +24,9 @@ Internals of stream_to_axi
    :maxdepth: 2
 
 This document describes the structure and execution of stream_to_axi,
-implemented as :ref:`stream_to_axi <cid-xf::common::utils_hw::stream_to_axi>` function. The stream_to_axi for stream to axi master in burst. API can burst write to axi, the default burst length 32. If stream width is not enough to make a AXI port, the method would instead of 0. 
+implemented as :ref:`stream_to_axi <cid-xf::common::utils_hw::stream_to_axi>` function.
 
-stream_to_axi workflow:
--------------
-
+This function is designed for writing data into AXI master in burst mode.
 
 .. _my-figure-strem_to_axi:
 .. figure:: /images/stream_to_axi.png
@@ -36,19 +34,19 @@ stream_to_axi workflow:
     :width: 80%
     :align: center
 
-
-    :ref:`stream to axi workflow`
-
+    stream to axi workflow
 
 Applicable conditions:
 
-1. AXI port width should be multiple of stream width. 
+1. AXI port width should be multiple of stream width.
+   This primitive performs stream_to_axi in two modules working simultaneously.
 
-This primitive performs stream_to_axi in two modules working simultaneously. 
+2. countForBurst: convert stream width from _WStrm to _WAxi and count burst number.
 
-1. countForBurst: convert stream width from _WStrm to _WAxi and count burst number.
+3. burstWrite: It reads the number of burst from stream, then burst write to axi port in dataflow.
 
-2. burstWrite: It reads the number of burst from stream, then burst write to axi port in dataflow.
+.. CAUTION::
+   These Applicable conditions.
 
 The two modules imprementation details as show follows,
 
@@ -58,14 +56,10 @@ The two modules imprementation details as show follows,
     :width: 80%
     :align: center
 
+    countForBurst imprementation details
 
-    :ref:`countForBurst imprementation details`
-
-
-where ``N = _WAxi/_WStrm`` , ``not enough one axi`` is the state of ``counter_for_axi < N`` and it would be instead of 0. ``not enough one burst`` is the state of ``counter_for_burst < NBurst`` and it would be as a burst to write. 
-
-.. CAUTION::
-   These Applicable conditions.
+where ``N = _WAxi/_WStrm`` , ``not enough one axi`` is the state of ``counter_for_axi < N`` and it would be instead of 0.
+``not enough one burst`` is the state of ``counter_for_burst < NBurst`` and it would be as a burst to write.
 
 This ``stream_to_axi`` primitve has only one port for axi ptr and one port for stream output.
 
