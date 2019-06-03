@@ -240,7 +240,7 @@ void top_for_co_sim(
     hls::stream<bool>      e_ostrm1;
     hls::stream<TYPE_Strm2 > ostrm2;
     hls::stream<bool>      e_ostrm2;
-
+    const int NONBLOCK_DEPTH ={256};
 #pragma HLS RESOURCE variable= ostrm0   core  = FIFO_LUTRAM
 #pragma HLS STREAM   variable= ostrm0   depth = NONBLOCK_DEPTH
 #pragma HLS RESOURCE variable= e_ostrm0 core  = FIFO_LUTRAM
@@ -254,7 +254,7 @@ void top_for_co_sim(
 #pragma HLS RESOURCE variable= e_ostrm2 core  = FIFO_LUTRAM
 #pragma HLS STREAM   variable= e_ostrm2 depth = NONBLOCK_DEPTHS
 
-    xf::common::utils_hw::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
+    xf::common::utils_hw::axi_to_multi_stream<BURST_LENTH, AXI_WIDTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
     (rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
     //Stream Consumers
     readbatchToPrintII1(ostrm0, e_ostrm0, r_strm0,  num0 );
