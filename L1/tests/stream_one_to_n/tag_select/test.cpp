@@ -37,7 +37,7 @@ int test_1_n_select() {
 
    std::cout<< "NS    = "<< NS <<std::endl;
    std::cout<< "NSTRM = "<< NSTRM <<std::endl;
-   std::cout<< "pow   = "<< PowerOf2<WTAG_STRM>::value <<std::endl;
+   std::cout<< "pow   = "<< xf::common::utils_hw::power_of_2<WTAG_STRM>::value <<std::endl;
    for(int j=0; j< NS; ++j) {
       ap_uint<WTAG_STRM> id =j % NSTRM; 
       data_istrm.write(j);

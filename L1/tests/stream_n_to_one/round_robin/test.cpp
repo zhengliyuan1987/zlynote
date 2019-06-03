@@ -6,10 +6,10 @@
 
 #include "xf_utils_hw/stream_n_to_one/round_robin.h"
 
-#define WIN_STRM  15 
+#define WIN_STRM  12 
 #define WOUT_STRM 64
 #define NS       1024*8-3
-#define NSTRM    11
+#define NSTRM    8
 
 
 void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > istrms[NSTRM],
