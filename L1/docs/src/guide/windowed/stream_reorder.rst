@@ -26,7 +26,7 @@ Internals of stream_reorder
 This document describes the structure and execution of stream_reorder,
 implemented as :ref:`stream_reorder <cid-xf::common::utils_hw::stream_reorder>` function.
 
-.. image:: /images/stream_reorder/stream_reorder.png
+.. image:: /images/stream_reorder.png
    :alt: stream reoder Structure
    :width: 80%
    :align: center

@@ -26,7 +26,7 @@ Internals of stream_sync
 This document describes the structure and execution of stream_sync,
 implemented as :ref:`stream_sync <cid-xf::common::utils_hw::stream_sync>` function.
 
-.. image:: /images/stream_sync/stream_sync.png
+.. image:: /images/stream_sync.png
    :alt: stream sync Structure
    :width: 80%
    :align: center
