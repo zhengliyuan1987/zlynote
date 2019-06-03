@@ -1,25 +1,58 @@
-open_project -reset "stream_shuffle.prj"
+#
+# Copyright 2019 Xilinx, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-add_files test.cpp -cflags "-I../../include/"  
-add_files -tb test.cpp -cflags "-I../../include/"
+source settings.tcl
 
+set PROJ "test.prj"
+set SOLN "solution1"
+set CLKP 2.5
+
+open_project -reset $PROJ
+
+add_files test.cpp -cflags "-I${CASE_ROOT}/../../include"
+add_files -tb test.cpp -cflags "-I${CASE_ROOT}/../../include"
 set_top  top
 
-open_solution -reset "solution1"
-set_part virtexuplus
+open_solution -reset $SOLN
 
-create_clock -period 2.5
+set_part $XPART
+create_clock -period $CLKP
 
-csim_design -compiler gcc
+if {$CSIM == 1} {
+  csim_design -compiler gcc
+}
 
-csynth_design
+if {$CSYNTH == 1} {
+  csynth_design
+}
 
+if {$COSIM == 1} {
+  cosim_design
+}
 
-#cosim_design -wave_debug -tool xsim -trace_level all
+if {$VIVADO_SYN == 1} {
+  export_design -flow syn -rtl verilog
+}
 
-cosim_design 
+if {$VIVADO_IMPL == 1} {
+  export_design -flow impl -rtl verilog
+}
 
-
-#export_design -flow impl -rtl verilog -format ip_catalog
+if {$QOR_CHECK == 1} {
+  puts "QoR check not implemented yet"
+}
 
 exit
