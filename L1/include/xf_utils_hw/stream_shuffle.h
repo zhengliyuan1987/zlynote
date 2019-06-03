@@ -49,7 +49,7 @@ namespace utils_hw {
  * @param e_ostrm end flag for output.
  */
 template <int _INStrm, int _ONstrm, typename _TIn>
-void stream_shuffle(hls::stream<ap_uint<8 * _INStrm> >& order_cfg,
+void stream_shuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
                     hls::stream<_TIn> istrms[_INStrm],
                     hls::stream<bool>& e_istrm,
