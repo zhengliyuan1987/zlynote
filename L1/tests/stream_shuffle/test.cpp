@@ -16,8 +16,7 @@ void gld(ap_int<8> gld_cfg[NUM_OUTPUT],
          DATA_TYPE gld_output[NUM_OUTPUT][STRM_LEN]) {
   for (int i = 0; i < NUM_OUTPUT; i++) {
     for (int j = 0; j < STRM_LEN; j++) {
-      if (gld_cfg[i] >= 0)
-        gld_output[i][j] = gld_input[gld_cfg[i]][j];
+      if (gld_cfg[i] >= 0) gld_output[i][j] = gld_input[gld_cfg[i]][j];
     }
   }
 }
@@ -50,20 +49,20 @@ int main() {
 
   int i;
 
-  for (i = 0;i < NUM_OUTPUT; i++) {
-	  for(int j = 0;j<STRM_LEN;j++){
-		  gld_output[i][j]=0;
-	  }
+  for (i = 0; i < NUM_OUTPUT; i++) {
+    for (int j = 0; j < STRM_LEN; j++) {
+      gld_output[i][j] = 0;
+    }
   }
 
-  for (i = 0; i < NUM_INPUT/2; i++) {
+  for (i = 0; i < NUM_INPUT / 2; i++) {
     orders.range(8 * i + 7, 8 * i) = ap_int<8>(i);
     gld_cfg[i] = i;
   }
 
-  for (;i<NUM_OUTPUT;i++){
-	    orders.range(8 * i + 7, 8 * i) = ap_int<8>(-10);
-	    gld_cfg[i] = -10;
+  for (; i < NUM_OUTPUT; i++) {
+    orders.range(8 * i + 7, 8 * i) = ap_int<8>(-10);
+    gld_cfg[i] = -10;
   }
 
   order_cfg.write(orders);

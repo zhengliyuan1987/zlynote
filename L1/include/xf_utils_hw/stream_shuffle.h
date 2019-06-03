@@ -31,7 +31,8 @@ namespace utils_hw {
  * This module supports up to 128 input streams, and works efficiently within
  * 16.
  *
- * If minus value is used as the source index, the corresponding stream will be filled with zero.
+ * If minus value is used as the source index, the corresponding stream will be
+ * filled with zero.
  *
  * If a source index is specified twice, the behavior is undefined.
  *
@@ -73,7 +74,6 @@ void stream_shuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
                     hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm) {
-
   XF_UTILS_HW_STATIC_ASSERT(
       _INStrm <= 128, "stream_shuffle cannot handle more than 128 streams.");
 
@@ -108,7 +108,7 @@ void stream_shuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
     for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      if(!route[i][7]) reg_o[i] = reg_i[route[i]]; // critical path
+      if (!route[i][7]) reg_o[i] = reg_i[route[i]]; // critical path
     }
 
     for (int i = 0; i < _ONstrm; i++) {
