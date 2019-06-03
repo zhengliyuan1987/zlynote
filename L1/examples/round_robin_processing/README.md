@@ -1,4 +1,4 @@
-# Round-Robin PU Example
+# Round-Robin Processing
 
 This example shows how to share work between multiple Process Units (PU) in round-robin fashion.
 
