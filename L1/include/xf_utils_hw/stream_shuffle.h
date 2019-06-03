@@ -26,12 +26,6 @@ namespace utils_hw {
  * Here, ``2`` is the new index for data at old stream index ``0``,
  * and ``0`` is the new index for data at old stream index ``2``.
  *
- * If ``-1`` is used as the destination index, the stream will be discarded.
- * Other minus value is illegal.
- *
- * If an output index is not specified, corresponding stream will be filled
- * with zero. If an output index is specified twice, the behavior is undefined.
- *
  * The configuration is load once in one invocation, and reused until the end.
  * This module supports up to 128 input streams, and works efficiently within
  * 16.
@@ -41,8 +35,7 @@ namespace utils_hw {
  * _INStrm.
  * @tparam _TIn input type.
  *
- * @param order_cfg the new order within the window. Each 8bit specifies a new
- * order, starting from the stream with old order 0.
+ * @param order_cfg each 8 bit assigns the source stream for the corresponding output stream. 
  * @param istrms input data streams.
  * @param e_istrm end flags for input.
  * @param ostrms output data streams.

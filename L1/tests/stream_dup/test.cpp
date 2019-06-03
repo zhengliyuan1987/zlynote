@@ -27,7 +27,7 @@ extern "C" void dut1(hls::stream<TYPE> istrm[NUM_ISTRM],
                      hls::stream<TYPE> ostrms[NUM_ISTRM],
                      hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM],
                      hls::stream<bool>& e_ostrms) {
-  const int choose[4] = {0, 1, 2, 3};
+  const unsigned int choose[4] = {0, 1, 2, 3};
   xf::common::utils_hw::stream_dup<TYPE, NUM_ISTRM, NUM_DSTRM, NUM_COPY>(
       choose, istrm, e_istrm, ostrms, dstrms, e_ostrms);
 }

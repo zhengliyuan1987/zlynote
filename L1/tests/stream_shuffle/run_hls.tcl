@@ -20,6 +20,6 @@ csynth_design
 cosim_design 
 
 
-export_design -flow impl -rtl verilog -format ip_catalog
+#export_design -flow impl -rtl verilog -format ip_catalog
 
 exit
