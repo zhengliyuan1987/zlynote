@@ -35,7 +35,9 @@ namespace utils_hw {
  * _INStrm.
  * @tparam _TIn input type.
  *
- * @param order_cfg the new order within the window. Each 8bit specifies the source stream for the corresponding output stream, starting from the stream with new order 0.
+ * @param order_cfg the new order within the window. Each 8bit specifies the
+ * source stream for the corresponding output stream, starting from the stream
+ * with new order 0.
  * @param istrms input data streams.
  * @param e_istrm end flags for input.
  * @param ostrms output data streams.
@@ -67,12 +69,11 @@ void stream_shuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
                     hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm) {
+  XF_UTILS_HW_STATIC_ASSERT(
+      _ONstrm <= _INStrm, "stream_shuffle cannot have more output than input.");
 
-  XF_UTILS_HW_STATIC_ASSERT(_ONstrm <= _INStrm,
-                            "stream_shuffle cannot have more output than input.");
-
-  XF_UTILS_HW_STATIC_ASSERT(_INStrm <= 128,
-                            "stream_shuffle cannot handle more than 128 streams.");
+  XF_UTILS_HW_STATIC_ASSERT(
+      _INStrm <= 128, "stream_shuffle cannot handle more than 128 streams.");
 
   ap_uint<7> route[_ONstrm];
 #pragma HLS ARRAY_PARTITION variable = route complete
