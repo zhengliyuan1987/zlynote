@@ -35,7 +35,7 @@ namespace utils_hw {
  * _INStrm.
  * @tparam _TIn input type.
  *
- * @param order_cfg each 8 bit assigns the source stream for the corresponding output stream. 
+ * @param order_cfg the new order within the window. Each 8bit specifies the source stream for the corresponding output stream, starting from the stream with new order 0.
  * @param istrms input data streams.
  * @param e_istrm end flags for input.
  * @param ostrms output data streams.
