@@ -53,31 +53,32 @@ an array of units.
 Vector Output
 ~~~~~~~~~~~~~
 
-With output casted to a long ``ap_uint`` vector, higher throughput rate can be
-reached.
-This implementation consists of two dataflow processes working in parallel.
-The first one breaks the vector into a ping-pong buffer,
-while the second one reads from the buffers and schedules output in
-round-robin order.
+
+The design of the primitive includes 3 modules:
+
+1. fetch: attempt to read data from the n input streams.
+
+2. vectorize: Inner buffers as wide as the least common multiple of  ``N * Win``
+   and ``Wout`` are used to combine the inputs into vectors.
+
+3. emit: read vectorized data and emit to output stream.
 
 .. image:: /images/stream_n_to_one_round_robin_detail.png
-   :alt: structure of vectorized round-robin collect
+   :alt: structure of vectorized round-robin collection
    :width: 100%
    :align: center
 
-The ping-pong buffers are implemented as two ``ap_uint`` of width as least
-common multiple (LCM) of input width and total output stream width.
-This imposes a limitation, as the LCM should be no more than
-``AP_INT_MAX_W``, which is default to 1024 in HLS.
+.. ATTENTION::
+   Current implementation has the following limitations:
 
-.. CAUTION::
-   Though ``AP_INT_MAX_W`` can be set to larger values, it may slow down HLS
-   synthesis, and to effectively override ``AP_INT_MAX_W``, the macro must be
-   set before first inclusion of ``ap_int.h`` header.
+   * It uses a wide ``ap_uint`` as internal buffer. The buffer is as wide as
+     the least common multiple (LCM) of input width and total output width.
+     The width is limited by ``AP_INT_MAX_W``, which defaults to 1024.
+   * This library will try to override ``AP_INT_MAX_W`` to 4096, but user
+     should ensure that ``ap_int.h`` has not be included before the library
+     headers.
+   * Too large ``AP_INT_MAX_W`` will significantly slow down HLS synthesis.
 
-   This library tries to override ``AP_INT_MAX_W`` to 4096, but it's only
-   effective when ``ap_int.h`` has not be included before utility library
-   headers.
 
 Load-Balancing
 ==============
