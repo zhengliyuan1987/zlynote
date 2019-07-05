@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_ENUMS_H
 
 /**
- * @file enums.h
+ * @file enums.hpp
  * @brief Enum and tag-class definition.
  *
  * This file is part of XF Hardware Utilities Library.
@@ -24,7 +24,7 @@ struct round_robin_t {};
 struct lsb_side_t {};
 struct msb_side_t {};
 
-//shuffle
+// shuffle
 struct shuffle_left_t {};
 struct shuffle_right_t {};
 

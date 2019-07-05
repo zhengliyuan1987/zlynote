@@ -1,11 +1,11 @@
 #ifndef XF_UTILS_HW_STREAM_COMBINE_H
 #define XF_UTILS_HW_STREAM_COMBINE_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/enums.hpp"
 
 /**
- * @file stream_combine.h
+ * @file stream_combine.hpp
  * @brief combine multiple streams into a wider one to share end signal.
  *
  * This file is part of XF Hardware Utilities Library.
@@ -148,59 +148,59 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<bool>& e_ostrm,
 
                     lsb_side_t alg) {
-  bool e = e_istrm.read();
-  ap_uint<_NStrm> bb = select_cfg.read();
-  bool b[_NStrm][_NStrm];
+    bool e = e_istrm.read();
+    ap_uint<_NStrm> bb = select_cfg.read();
+    bool b[_NStrm][_NStrm];
 #pragma HLS array_partition variable = b complete dim = 1
-  // b record output payload of colum
-  ap_uint<_WIn * _NStrm> tmp_pld;
-  ap_uint<_WIn> tmp[_NStrm][_NStrm];
+    // b record output payload of colum
+    ap_uint<_WIn * _NStrm> tmp_pld;
+    ap_uint<_WIn> tmp[_NStrm][_NStrm];
 #pragma HLS array_partition variable = tmp complete dim = 1
 
 loop:
-  while (!e) {
+    while (!e) {
 #pragma HLS pipeline II = 1
-    for (int i = 0; i < _NStrm; i++) {
+        for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-      tmp[0][i] = istrms[i].read();
-      b[0][i] = bb[i];
-    }
-    for (int k = 0; k < _NStrm - 1; k++) {
-#pragma HLS unroll
-      int flag = 0;
-      for (int j = 0; j < _NStrm; j++) {
-#pragma HLS unroll
-        if (b[k][j] == 1 && flag == 0) {
-          // if b == 1,column stay the same
-          b[k + 1][j] = b[k][j];
-          tmp[k + 1][j] = tmp[k][j];
+            tmp[0][i] = istrms[i].read();
+            b[0][i] = bb[i];
         }
-        if ((b[k][j] == 0 && flag == 0) || (flag == 1)) {
-          // if b == 0,columns all on the right side shift one step
-          if (j < _NStrm - 1) {
-            b[k + 1][j] = b[k][j + 1];
-            tmp[k + 1][j] = tmp[k][j + 1];
-          }
-          // padding zero at the last column
-          if (j == _NStrm - 1) {
-            b[k + 1][_NStrm - 1] = 0;
-            tmp[k + 1][_NStrm - 1] = 0;
-          }
-          flag = 1;
-        }
-      }
-    }
-    for (int i = 0; i < _NStrm; i++) {
+        for (int k = 0; k < _NStrm - 1; k++) {
 #pragma HLS unroll
-      tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm - 1][i];
+            int flag = 0;
+            for (int j = 0; j < _NStrm; j++) {
+#pragma HLS unroll
+                if (b[k][j] == 1 && flag == 0) {
+                    // if b == 1,column stay the same
+                    b[k + 1][j] = b[k][j];
+                    tmp[k + 1][j] = tmp[k][j];
+                }
+                if ((b[k][j] == 0 && flag == 0) || (flag == 1)) {
+                    // if b == 0,columns all on the right side shift one step
+                    if (j < _NStrm - 1) {
+                        b[k + 1][j] = b[k][j + 1];
+                        tmp[k + 1][j] = tmp[k][j + 1];
+                    }
+                    // padding zero at the last column
+                    if (j == _NStrm - 1) {
+                        b[k + 1][_NStrm - 1] = 0;
+                        tmp[k + 1][_NStrm - 1] = 0;
+                    }
+                    flag = 1;
+                }
+            }
+        }
+        for (int i = 0; i < _NStrm; i++) {
+#pragma HLS unroll
+            tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm - 1][i];
+        }
+        {
+            ostrm.write(tmp_pld);
+            e_ostrm.write(0);
+        }
+        e = e_istrm.read();
     }
-    {
-      ostrm.write(tmp_pld);
-      e_ostrm.write(0);
-    }
-    e = e_istrm.read();
-  }
-  e_ostrm.write(1);
+    e_ostrm.write(1);
 }
 
 // combine right
@@ -214,59 +214,59 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<bool>& e_ostrm,
 
                     msb_side_t alg) {
-  bool e = e_istrm.read();
-  ap_uint<_NStrm> bb = select_cfg.read();
-  bool b[_NStrm][_NStrm];
+    bool e = e_istrm.read();
+    ap_uint<_NStrm> bb = select_cfg.read();
+    bool b[_NStrm][_NStrm];
 #pragma HLS array_partition variable = b complete dim = 1
-  // b record output payload of colum
-  ap_uint<_WIn * _NStrm> tmp_pld;
-  ap_uint<_WIn> tmp[_NStrm][_NStrm];
+    // b record output payload of colum
+    ap_uint<_WIn * _NStrm> tmp_pld;
+    ap_uint<_WIn> tmp[_NStrm][_NStrm];
 #pragma HLS array_partition variable = tmp complete dim = 1
 
 loop:
-  while (!e) {
+    while (!e) {
 #pragma HLS pipeline II = 1
-    for (int i = 0; i < _NStrm; i++) {
+        for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-      tmp[0][i] = istrms[i].read();
-      b[0][i] = bb[i];
-    }
-    for (int k = 0; k < _NStrm - 1; k++) {
-#pragma HLS unroll
-      int flag = 0;
-      for (int j = 0; j < _NStrm; j++) {
-#pragma HLS unroll
-        if (b[k][j] == 1 && flag == 0) {
-          // if b == 1,column stay the same
-          b[k + 1][j] = b[k][j];
-          tmp[k + 1][j] = tmp[k][j];
+            tmp[0][i] = istrms[i].read();
+            b[0][i] = bb[i];
         }
-        if ((b[k][j] == 0 && flag == 0) || (flag == 1)) {
-          // if b == 0,columns all on the right side shift one step
-          if (j < _NStrm - 1) {
-            b[k + 1][j] = b[k][j + 1];
-            tmp[k + 1][j] = tmp[k][j + 1];
-          }
-          // padding zero at the last column
-          if (j == _NStrm - 1) {
-            b[k + 1][_NStrm - 1] = 0;
-            tmp[k + 1][_NStrm - 1] = 0;
-          }
-          flag = 1;
-        }
-      }
-    }
-    for (int i = 0; i < _NStrm; i++) {
+        for (int k = 0; k < _NStrm - 1; k++) {
 #pragma HLS unroll
-      tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm - 1][_NStrm - i - 1];
+            int flag = 0;
+            for (int j = 0; j < _NStrm; j++) {
+#pragma HLS unroll
+                if (b[k][j] == 1 && flag == 0) {
+                    // if b == 1,column stay the same
+                    b[k + 1][j] = b[k][j];
+                    tmp[k + 1][j] = tmp[k][j];
+                }
+                if ((b[k][j] == 0 && flag == 0) || (flag == 1)) {
+                    // if b == 0,columns all on the right side shift one step
+                    if (j < _NStrm - 1) {
+                        b[k + 1][j] = b[k][j + 1];
+                        tmp[k + 1][j] = tmp[k][j + 1];
+                    }
+                    // padding zero at the last column
+                    if (j == _NStrm - 1) {
+                        b[k + 1][_NStrm - 1] = 0;
+                        tmp[k + 1][_NStrm - 1] = 0;
+                    }
+                    flag = 1;
+                }
+            }
+        }
+        for (int i = 0; i < _NStrm; i++) {
+#pragma HLS unroll
+            tmp_pld(_WIn * (i + 1) - 1, _WIn * i) = tmp[_NStrm - 1][_NStrm - i - 1];
+        }
+        {
+            ostrm.write(tmp_pld);
+            e_ostrm.write(0);
+        }
+        e = e_istrm.read();
     }
-    {
-      ostrm.write(tmp_pld);
-      e_ostrm.write(0);
-    }
-    e = e_istrm.read();
-  }
-  e_ostrm.write(1);
+    e_ostrm.write(1);
 }
 
 template <int _WIn, int _WOut, int _NStrm>
@@ -275,31 +275,31 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
                     lsb_side_t alg) {
-  /*
-   * stream
-   *   [0]      0    4    8
-   *   [1]      1    5    9
-   *   [2]      2    6    a
-   *   [3]      3    7    b
-   *
-   * output  3210 7654 ba98
-   */
+    /*
+     * stream
+     *   [0]      0    4    8
+     *   [1]      1    5    9
+     *   [2]      2    6    a
+     *   [3]      3    7    b
+     *
+     * output  3210 7654 ba98
+     */
 
-  const int max = _WIn * _NStrm > _WOut ? _WIn * _NStrm : _WOut;
-  bool last = e_istrm.read();
-  while (!last) {
+    const int max = _WIn * _NStrm > _WOut ? _WIn * _NStrm : _WOut;
+    bool last = e_istrm.read();
+    while (!last) {
 #pragma HLS pipeline II = 1
-    last = e_istrm.read();
-    ap_uint<max> cmb = 0;
-    for (int i = 0; i < _NStrm; ++i) {
+        last = e_istrm.read();
+        ap_uint<max> cmb = 0;
+        for (int i = 0; i < _NStrm; ++i) {
 #pragma HLS unroll
-      cmb.range((i + 1) * _WIn - 1, i * _WIn) = istrms[i].read();
+            cmb.range((i + 1) * _WIn - 1, i * _WIn) = istrms[i].read();
+        }
+        ap_uint<_WOut> o_cmb = cmb;
+        ostrm.write(o_cmb);
+        e_ostrm.write(false);
     }
-    ap_uint<_WOut> o_cmb = cmb;
-    ostrm.write(o_cmb);
-    e_ostrm.write(false);
-  }
-  e_ostrm.write(true);
+    e_ostrm.write(true);
 }
 
 template <int _WIn, int _WOut, int _NStrm>
@@ -308,34 +308,34 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
                     msb_side_t alg) {
-  /*
-   * stream
-   *   [0]      0    4   8
-   *   [1]      1    5   9
-   *   [2]      2    6   a
-   *   [3]      3    7   b
-   *
-   * output  0123 4567 89ab
-   */
+    /*
+     * stream
+     *   [0]      0    4   8
+     *   [1]      1    5   9
+     *   [2]      2    6   a
+     *   [3]      3    7   b
+     *
+     * output  0123 4567 89ab
+     */
 
-  const int max = _WIn * _NStrm > _WOut ? _WIn * _NStrm : _WOut;
-  const int df = _WOut - _WIn * _NStrm;
-  const int rdf = df < 0 ? (-df) : df;
-  const int w = _WIn * _NStrm;
-  bool last = e_istrm.read();
-  while (!last) {
+    const int max = _WIn * _NStrm > _WOut ? _WIn * _NStrm : _WOut;
+    const int df = _WOut - _WIn * _NStrm;
+    const int rdf = df < 0 ? (-df) : df;
+    const int w = _WIn * _NStrm;
+    bool last = e_istrm.read();
+    while (!last) {
 #pragma HLS pipeline II = 1
-    last = e_istrm.read();
-    ap_uint<max> cmb = 0;
-    for (int i = 0, j = _NStrm - 1; i < _NStrm; ++i, --j) {
+        last = e_istrm.read();
+        ap_uint<max> cmb = 0;
+        for (int i = 0, j = _NStrm - 1; i < _NStrm; ++i, --j) {
 #pragma HLS unroll
-      cmb.range((j + 1) * _WIn - 1, j * _WIn) = istrms[i].read();
+            cmb.range((j + 1) * _WIn - 1, j * _WIn) = istrms[i].read();
+        }
+        ap_uint<_WOut> o_cmb = (df >= 0) ? (cmb << df) : (cmb >> rdf);
+        ostrm.write(o_cmb);
+        e_ostrm.write(false);
     }
-    ap_uint<_WOut> o_cmb = (df >= 0) ? (cmb << df) : (cmb >> rdf);
-    ostrm.write(o_cmb);
-    e_ostrm.write(false);
-  }
-  e_ostrm.write(true);
+    e_ostrm.write(true);
 }
 
 } // utils_hw

@@ -1,11 +1,11 @@
 #ifndef XF_UTILS_HW_STREAM_DUP_H
 #define XF_UTILS_HW_STREAM_DUP_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/common.hpp"
 
 /**
- * @file stream_dup.h
+ * @file stream_dup.hpp
  * @brief duplicate stream and attach end signal to each dup.
  *
  * This file is part of XF Hardware Utilities Library.
@@ -74,22 +74,22 @@ void stream_dup(hls::stream<_TIn>& istrm,
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]) {
-  bool e = e_istrm.read();
-  while (!e) {
+    bool e = e_istrm.read();
+    while (!e) {
 #pragma HLS pipeline II = 1
-    _TIn tmp;
-    e = e_istrm.read();
-    tmp = istrm.read();
+        _TIn tmp;
+        e = e_istrm.read();
+        tmp = istrm.read();
+        for (int i = 0; i < _NStrm; i++) {
+#pragma HLS unroll
+            ostrms[i].write(tmp);
+            e_ostrms[i].write(0);
+        }
+    }
     for (int i = 0; i < _NStrm; i++) {
 #pragma HLS unroll
-      ostrms[i].write(tmp);
-      e_ostrms[i].write(0);
+        e_ostrms[i].write(1);
     }
-  }
-  for (int i = 0; i < _NStrm; i++) {
-#pragma HLS unroll
-    e_ostrms[i].write(1);
-  }
 }
 
 template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
@@ -99,37 +99,35 @@ void stream_dup(const unsigned int choose[_NDStrm],
                 hls::stream<_TIn> ostrms[_NIStrm],
                 hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
                 hls::stream<bool>& e_ostrms) {
-  XF_UTILS_HW_STATIC_ASSERT(
-      _NDStrm <= _NIStrm,
-      "stream_dup cannot have more duplicated output than input.");
+    XF_UTILS_HW_STATIC_ASSERT(_NDStrm <= _NIStrm, "stream_dup cannot have more duplicated output than input.");
 
-  bool e = e_istrm.read();
-  int i;
-  while (!e) {
+    bool e = e_istrm.read();
+    int i;
+    while (!e) {
 #pragma HLS PIPELINE II = 1
 
-    _TIn tmp[_NIStrm];
-    for (i = 0; i < _NIStrm; i++) {
+        _TIn tmp[_NIStrm];
+        for (i = 0; i < _NIStrm; i++) {
 #pragma HLS UNROLL
-      tmp[i] = istrm[i].read();
-    }
+            tmp[i] = istrm[i].read();
+        }
 
-    for (i = 0; i < _NDStrm; i++) {
+        for (i = 0; i < _NDStrm; i++) {
 #pragma HLS UNROLL
-      for (int j = 0; j < _NDCopy; j++) {
+            for (int j = 0; j < _NDCopy; j++) {
 #pragma HLS UNROLL
-        dstrms[j][i].write(tmp[choose[i]]);
-      }
-    }
+                dstrms[j][i].write(tmp[choose[i]]);
+            }
+        }
 
-    for (i = 0; i < _NIStrm; i++) {
+        for (i = 0; i < _NIStrm; i++) {
 #pragma HLS UNROLL
-      ostrms[i].write(tmp[i]);
+            ostrms[i].write(tmp[i]);
+        }
+        e = e_istrm.read();
+        e_ostrms.write(false);
     }
-    e = e_istrm.read();
-    e_ostrms.write(false);
-  }
-  e_ostrms.write(true);
+    e_ostrms.write(true);
 }
 
 } // utils_hw

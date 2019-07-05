@@ -34,3 +34,7 @@
 # Vim temp
 *.swp
 *.swo
+
+# Test temp
+TestResults
+jks.*
