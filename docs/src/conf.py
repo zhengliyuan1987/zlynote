@@ -121,9 +121,6 @@ html_context = {
     ],
 }
 
-html_copy_source = False
-html_show_sourcelink = False
-
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
@@ -134,6 +131,9 @@ html_show_sourcelink = False
 html_sidebars = {
     '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'],
 }
+
+html_copy_source = False
+html_show_sourcelink = False
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
