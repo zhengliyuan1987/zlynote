@@ -2,13 +2,13 @@
 #define XF_UTILS_HW_STREAM_1N_TAG_H
 
 /**
- * @file stream_one_to_n/tag_select.h
+ * @file stream_one_to_n/tag_select.hpp
  * @brief header for distribute in round-roubin order.
  */
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/enums.hpp"
+#include "xf_utils_hw/common.hpp"
 // Forward decl
 
 namespace xf {

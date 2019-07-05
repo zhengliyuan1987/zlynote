@@ -2,13 +2,13 @@
 #define XF_UTILS_HW_COMMON_H
 
 /**
- * @file common.h
+ * @file common.hpp
  * @brief Shared logic in utilities library.
  *
  * This file is part of XF Hardware Utilities Library.
  */
 
-#include "xf_utils_hw/types.h"
+#include "xf_utils_hw/types.hpp"
 
 namespace xf {
 namespace common {

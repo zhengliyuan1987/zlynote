@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "dut.h"
+#include "dut.hpp"
 
 int main(int argc, const char *argv[]) {
   int nerror = 0;

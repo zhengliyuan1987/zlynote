@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_ENUMS_H
 
 /**
- * @file enums.h
+ * @file enums.hpp
  * @brief Enum and tag-class definition.
  *
  * This file is part of XF Hardware Utilities Library.

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "xf_utils_hw/stream_to_axi.h"
+#include "xf_utils_hw/stream_to_axi.hpp"
 
 #define WAXI (512)
 #define WSTRM (32)

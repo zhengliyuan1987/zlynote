@@ -1,10 +1,10 @@
 #ifndef XF_UTILS_HW_STRM_REORDER_H
 #define XF_UTILS_HW_STRM_REORDER_H
 
-#include "xf_utils_hw/types.h"
+#include "xf_utils_hw/types.hpp"
 
 /**
- * @file stream_reorder.h
+ * @file stream_reorder.hpp
  * @brief utility to do window-reorder on a stream.
  *
  * This file is part of XF Hardware Utilities Library.

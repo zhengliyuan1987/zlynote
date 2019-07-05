@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
-#include "xf_utils_hw/stream_n_to_one/load_balance.h"
+#include "xf_utils_hw/stream_n_to_one/load_balance.hpp"
 
 #define WIN_STRM  16 
 #define WOUT_STRM 512

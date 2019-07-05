@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-#include "xf_utils_hw/stream_discard.h"
+#include "xf_utils_hw/stream_discard.hpp"
 
 #define NS       1024*8-3
 #define NSTRM    4

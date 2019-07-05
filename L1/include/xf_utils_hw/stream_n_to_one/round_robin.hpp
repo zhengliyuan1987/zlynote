@@ -2,13 +2,13 @@
 #define XF_UTILS_HW_STREAM_N1_RR
 
 /**
- * @file stream_n_to_one/round_robin.h
+ * @file stream_n_to_one/round_robin.hpp
  * @brief header for collect in round-roubin order.
  */
 
-#include "xf_utils_hw/enums.h"
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/enums.hpp"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/common.hpp"
 
 // Forward decl ===============================================================
 

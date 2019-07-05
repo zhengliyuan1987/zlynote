@@ -2,13 +2,13 @@
 #define XF_UTILS_HW_STREAM_1N_LB_H
 
 /**
- * @file stream_one_to_n/load_balance.h
+ * @file stream_one_to_n/load_balance.hpp
  * @brief header for distribute in load-balancing way.
  */
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/enums.hpp"
+#include "xf_utils_hw/common.hpp"
 
 // Forward decl ===============================================================
 

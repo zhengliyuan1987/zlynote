@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "xf_utils_hw/stream_sync.h"
+#include "xf_utils_hw/stream_sync.hpp"
 
 #define W_STRM   16 
 #define NSTRM    16

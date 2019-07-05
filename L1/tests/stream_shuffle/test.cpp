@@ -1,4 +1,4 @@
-#include "xf_utils_hw/stream_shuffle.h"
+#include "xf_utils_hw/stream_shuffle.hpp"
 #include <iostream>
 #include <stdlib.h>
 

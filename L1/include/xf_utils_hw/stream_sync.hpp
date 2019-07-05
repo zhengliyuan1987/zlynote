@@ -1,10 +1,10 @@
 #ifndef XF_UTILS_HW_STRM_SYNC_H
 #define XF_UTILS_HW_STRM_SYNC_H
 
-#include "xf_utils_hw/types.h"
+#include "xf_utils_hw/types.hpp"
 
 /**
- * @file stream_sync.h
+ * @file stream_sync.hpp
  * @brief Barrier-like logic.
  *
  * This file is part of XF Hardware Utilities Library.

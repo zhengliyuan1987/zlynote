@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-#include "xf_utils_hw/stream_one_to_n/load_balance.h"
+#include "xf_utils_hw/stream_one_to_n/load_balance.hpp"
 
 #define WIN_STRM  512 
 #define WOUT_STRM 16

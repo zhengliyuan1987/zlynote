@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "code.h"
+#include "code.hpp"
 
 // double input as output 
 ap_uint<W_PU> compute(int d) {

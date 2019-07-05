@@ -4,7 +4,7 @@
 #include <fstream>
 #endif
 
-#include "xf_utils_hw/axi_to_stream.h"
+#include "xf_utils_hw/axi_to_stream.hpp"
 
 #define AXI_WIDTH (128)
 #define BURST_LENTH (32)

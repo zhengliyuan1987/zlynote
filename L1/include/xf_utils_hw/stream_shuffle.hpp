@@ -1,11 +1,11 @@
 #ifndef XF_UTILS_HW_STREAM_SHUFFLE_H
 #define XF_UTILS_HW_STREAM_SHUFFLE_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/common.hpp"
 
 /**
- * @file stream_shuffle.h
+ * @file stream_shuffle.hpp
  * @brief Unidirectional cross-bar of streams.
  *
  * This file is part of XF Hardware Utilities Library.

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "code.h"
+#include "code.hpp"
 
 
 int test() {

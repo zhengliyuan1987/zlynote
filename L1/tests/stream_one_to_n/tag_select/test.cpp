@@ -1,7 +1,7 @@
 
 #include <vector>   // std::vector
 #include <iostream>
-#include "xf_utils_hw/stream_one_to_n/tag_select.h"
+#include "xf_utils_hw/stream_one_to_n/tag_select.hpp"
 
 #define WIN_STRM  8 
 #define WTAG_STRM 3

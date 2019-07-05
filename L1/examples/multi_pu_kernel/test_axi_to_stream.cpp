@@ -2,9 +2,9 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "xf_utils_hw/axi_to_stream.h"
-#include "xf_utils_hw/stream_to_axi.h"
-#include "code.h"
+#include "xf_utils_hw/axi_to_stream.hpp"
+#include "xf_utils_hw/stream_to_axi.hpp"
+#include "code.hpp"
 #define W_AXI         (W_STRM*2)
 #define BURST_LENTH   32
 #define DATA_LEN      (4096*16)

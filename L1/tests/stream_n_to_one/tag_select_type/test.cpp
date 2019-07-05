@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-#include "xf_utils_hw/stream_n_to_one/tag_select.h"
+#include "xf_utils_hw/stream_n_to_one/tag_select.hpp"
 
 #define WIN_STRM 16 
 #define WTAG_STRM 3

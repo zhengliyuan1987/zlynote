@@ -1,11 +1,11 @@
 #ifndef XF_UTILS_HW_STREAM_COMBINE_H
 #define XF_UTILS_HW_STREAM_COMBINE_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/enums.hpp"
 
 /**
- * @file stream_combine.h
+ * @file stream_combine.hpp
  * @brief combine multiple streams into a wider one to share end signal.
  *
  * This file is part of XF Hardware Utilities Library.

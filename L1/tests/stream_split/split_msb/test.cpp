@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-#include "xf_utils_hw/stream_split.h"
+#include "xf_utils_hw/stream_split.hpp"
 
 #define WOUT_STRM 16
 #define NSTRM    64

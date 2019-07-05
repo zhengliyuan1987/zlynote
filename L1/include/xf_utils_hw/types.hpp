@@ -2,7 +2,7 @@
 #define XF_UTILS_HW_TYPES_H
 
 /**
- * @file types.h
+ * @file types.hpp
  * @brief This file contains type definitions.
  *
  * This file is part of XF Hardware Utilities Library.

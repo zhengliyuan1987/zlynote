@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-#include "xf_utils_hw/stream_combine.h"
+#include "xf_utils_hw/stream_combine.hpp"
 
 #define WIN_STRM  16 
 #define WOUT_STRM 72

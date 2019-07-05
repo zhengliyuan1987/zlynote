@@ -15,7 +15,7 @@
  */
 
 /**
- * @file uram_array.h
+ * @file uram_array.hpp
  * @brief URAM_ARRAY template function implementation.
  *
  * This file is part of XF Common Utils Library.

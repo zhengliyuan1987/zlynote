@@ -1,10 +1,10 @@
 #ifndef XF_UTILS_HW_STRM_DISCARD_H
 #define XF_UTILS_HW_STRM_DISCARD_H
 
-#include "xf_utils_hw/types.h"
+#include "xf_utils_hw/types.hpp"
 
 /**
- * @file stream_discard.h
+ * @file stream_discard.hpp
  * @brief discard streams.
  *
  * This file is part of XF Hardware Utilities Library.

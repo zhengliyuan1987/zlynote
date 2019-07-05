@@ -15,7 +15,7 @@
  */
 
 /**
- * @file axi_to_multi_stream.h
+ * @file axi_to_multi_stream.hpp
  * @brief This file is a template implement of loading data from AXI master to multi stream.
  * Xilinx.
  *
@@ -25,8 +25,8 @@
 #ifndef XF_UTILS_HW_AXI_TO_MULTI_STRM_H
 #define XF_UTILS_HW_AXI_TO_MULTI_STRM_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/enums.hpp"
 
 // Forward decl
 

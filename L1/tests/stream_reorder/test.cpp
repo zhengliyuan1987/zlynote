@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "xf_utils_hw/stream_reorder.h"
+#include "xf_utils_hw/stream_reorder.hpp"
 
 #define WS      4
 #define W_STRM  16 

@@ -15,7 +15,7 @@
  */
 
 /**
- * @file axi_to_stream.h
+ * @file axi_to_stream.hpp
  * @brief This file provides loading data from AXI master to stream APIs.
  *
  * This file is part of XF Hardware Utilities Library.
@@ -24,7 +24,7 @@
 #ifndef XF_UTILS_HW_AXI_TO_STREAM_H
 #define XF_UTILS_HW_AXI_TO_STREAM_H
 
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/common.hpp"
 
 namespace xf {
 namespace common {

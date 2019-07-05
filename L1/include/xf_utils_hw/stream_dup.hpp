@@ -1,11 +1,11 @@
 #ifndef XF_UTILS_HW_STREAM_DUP_H
 #define XF_UTILS_HW_STREAM_DUP_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/common.hpp"
 
 /**
- * @file stream_dup.h
+ * @file stream_dup.hpp
  * @brief duplicate stream and attach end signal to each dup.
  *
  * This file is part of XF Hardware Utilities Library.

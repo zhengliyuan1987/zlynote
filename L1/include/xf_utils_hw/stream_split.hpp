@@ -1,11 +1,11 @@
 #ifndef XF_UTILS_HW_STREAM_SPLIT_H
 #define XF_UTILS_HW_STREAM_SPLIT_H
 
-#include "xf_utils_hw/types.h"
-#include "xf_utils_hw/enums.h"
+#include "xf_utils_hw/types.hpp"
+#include "xf_utils_hw/enums.hpp"
 
 /**
- * @file stream_split.h
+ * @file stream_split.hpp
  * @brief split one streams into multiple narrow ones.
  *
  * This file is part of XF Hardware Utilities Library.

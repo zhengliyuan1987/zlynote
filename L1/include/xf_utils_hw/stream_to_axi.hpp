@@ -15,7 +15,7 @@
  */
 
 /**
- * @file stream_to_axi.h
+ * @file stream_to_axi.hpp
  * @brief Stream_to_axi template function implementation.
  *
  * This file is part of XF Common Utils Library.
@@ -24,7 +24,7 @@
 #ifndef XF_UTILS_HW_STRM_TO_AXI_H
 #define XF_UTILS_HW_STRM_TO_AXI_H
 
-#include "xf_utils_hw/common.h"
+#include "xf_utils_hw/common.hpp"
 
 // Forward decl
 

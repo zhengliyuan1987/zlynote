@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-#include "xf_utils_hw/stream_one_to_n/round_robin.h"
+#include "xf_utils_hw/stream_one_to_n/round_robin.hpp"
 
 #define WIN_STRM  512 
 #define WOUT_STRM 16

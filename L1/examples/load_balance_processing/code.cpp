@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <stdlib.h>
-#include "code.h"
+#include "code.hpp"
 
 int test() {
   hls::stream<ap_uint<W_STRM> > istrm;

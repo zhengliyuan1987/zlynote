@@ -2,7 +2,7 @@
 #define _DUT_H_
 #include "ap_int.h"
 #include "hls_stream.h"
-#include "xf_utils_hw/uram_array.h"
+#include "xf_utils_hw/uram_array.hpp"
 
 // as reference uram size 4K*256
 #define WDATA (64)

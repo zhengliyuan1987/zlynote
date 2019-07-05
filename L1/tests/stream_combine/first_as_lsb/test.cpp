@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include "xf_utils_hw/stream_combine.h"
+#include "xf_utils_hw/stream_combine.hpp"
 
 #include "ap_int.h"
 #include "hls_stream.h"
