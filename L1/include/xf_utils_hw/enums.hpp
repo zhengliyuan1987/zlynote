@@ -24,7 +24,7 @@ struct round_robin_t {};
 struct lsb_side_t {};
 struct msb_side_t {};
 
-//shuffle
+// shuffle
 struct shuffle_left_t {};
 struct shuffle_right_t {};
 

@@ -11,6 +11,6 @@
 
 #define NUM_SIZE (1 << 10)
 
-void dut(ap_uint<WDATA> ii, hls::stream<ap_uint<WDATA> > &out_stream);
+void dut(ap_uint<WDATA> ii, hls::stream<ap_uint<WDATA> >& out_stream);
 
 #endif // _DUT_H_

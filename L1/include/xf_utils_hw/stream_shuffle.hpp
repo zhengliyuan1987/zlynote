@@ -74,51 +74,50 @@ void stream_shuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
                     hls::stream<_TIn> ostrms[_ONstrm],
                     hls::stream<bool>& e_ostrm) {
-  XF_UTILS_HW_STATIC_ASSERT(
-      _INStrm <= 128, "stream_shuffle cannot handle more than 128 streams.");
+    XF_UTILS_HW_STATIC_ASSERT(_INStrm <= 128, "stream_shuffle cannot handle more than 128 streams.");
 
-  ap_int<8> route[_ONstrm];
+    ap_int<8> route[_ONstrm];
 #pragma HLS ARRAY_PARTITION variable = route complete
 
-  _TIn reg_i[_INStrm];
+    _TIn reg_i[_INStrm];
 #pragma HLS ARRAY_PARTITION variable = reg_i complete
-  _TIn reg_o[_ONstrm];
+    _TIn reg_o[_ONstrm];
 #pragma HLS ARRAY_PARTITION variable = reg_o complete
 
-  ap_uint<8 * _ONstrm> orders = order_cfg.read();
-  for (int i = 0; i < _ONstrm; i++) {
+    ap_uint<8 * _ONstrm> orders = order_cfg.read();
+    for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-    route[i] = orders.range(8 * i + 7, 8 * i);
-  }
+        route[i] = orders.range(8 * i + 7, 8 * i);
+    }
 
-  bool e = e_istrm.read();
-  while (!e) {
+    bool e = e_istrm.read();
+    while (!e) {
 #pragma HLS PIPELINE II = 1
 
-    for (int i = 0; i < _INStrm; i++) {
+        for (int i = 0; i < _INStrm; i++) {
 #pragma HLS UNROLL
-      reg_i[i] = istrms[i].read();
-    }
-    e = e_istrm.read();
+            reg_i[i] = istrms[i].read();
+        }
+        e = e_istrm.read();
 
-    for (int i = 0; i < _ONstrm; i++) {
+        for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      reg_o[i] = 0;
-    }
+            reg_o[i] = 0;
+        }
 
-    for (int i = 0; i < _ONstrm; i++) {
+        for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      if (!route[i][7]) reg_o[i] = reg_i[route[i]]; // critical path
-    }
+            if (!route[i][7]) reg_o[i] = reg_i[route[i]]; // critical path
+        }
 
-    for (int i = 0; i < _ONstrm; i++) {
+        for (int i = 0; i < _ONstrm; i++) {
 #pragma HLS UNROLL
-      ostrms[i].write(reg_o[i]);
-    }
+            ostrms[i].write(reg_o[i]);
+        }
 
-    e_ostrm.write(false);
-  }
-  e_ostrm.write(true);
+        e_ostrm.write(false);
+    }
+    e_ostrm.write(true);
 }
 
 } // utils_hw
