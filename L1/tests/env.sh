@@ -14,14 +14,9 @@
 # limitations under the License.
 #
 
-case $(hostname) in
-  xsj*|xco*|xhd*|xbx*)
-    source /proj/xbuilds/2018.3_released/installs/lin64/Vivado/HEAD/settings64.sh
-    ;;
-  *)
-    source /opt/xilinx/Vivado/2018.3/settings64.sh
-    ;;
-esac
+export XILINX_XRT=/opt/xilinx/xrt
+export XILINX_SDX=/opt/xilinx/SDx
+export XILINX_VIVADO=/opt/xilinx/Vivado
 
 export XPART=xcu200-fsgd2104-2-e
-echo "XPART          : $XPART"
+echo "XPART: $XPART"
