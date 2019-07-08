@@ -1,22 +1,27 @@
 {
-    "case_name": "jks.L1_combine_msb_hls",
-    "disable": 0,
+    "case_name": "jks.L1_combine_msb", 
+    "disable": 0, 
     "jobs": [
         {
-            "cmd": "make check DEVICE=u200 PLATFORM_REPO_PATHS=/proj/autoesl/yuanjieh/nimbix/xilinx/platforms CSIM=1 COSIM=1",
-            "dependency": [],
-            "env": null,
-            "files": [],
-            "index": 0,
-            "max_memory_MB": 4096,
-            "max_time_min": 10,
+            "dependency": [], 
+            "env": null, 
+            "files": [], 
+            "index": 0, 
+            "max_memory_MB": 4096, 
+            "max_time_min": 10, 
             "server": "lsf"
         }
-    ],
+    ], 
     "machine": {
-        "dsa": "u200",
-        "os": "rhel74",
+        "dsa": "u200", 
+        "os": "rhel74", 
         "sdx": "2018.3"
-    },
-    "test_type": "sdx_sw_emu"
+    }, 
+    "test_type": [
+        "hls_csim", 
+        "hls_csynth", 
+        "hls_cosim", 
+        "hls_vivado_syn", 
+        "hls_vivado_impl"
+    ]
 }

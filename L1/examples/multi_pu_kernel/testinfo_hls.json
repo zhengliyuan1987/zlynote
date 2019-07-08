@@ -1,5 +1,5 @@
 {
-    "case_name": "jks.L1_axi_to_multi_stream", 
+    "case_name": "jks.L1_examples_multi_pu", 
     "disable": 0, 
     "jobs": [
         {
@@ -7,8 +7,8 @@
             "env": null, 
             "files": [], 
             "index": 0, 
-            "max_memory_MB": 8192, 
-            "max_time_min": 90, 
+            "max_memory_MB": 4096, 
+            "max_time_min": 10, 
             "server": "lsf"
         }
     ], 
