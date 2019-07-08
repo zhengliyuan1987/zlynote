@@ -14,70 +14,116 @@
  * limitations under the License.
  */
 
-
-#include <vector>
-#include <iostream>
-#include <stdlib.h>
-
 #include "code.hpp"
 
-// double input as output
-ap_uint<W_PU> compute(int d) {
-    ap_uint<W_PU> nd = d;
-    nd = nd << 1;
-    return nd;
-};
+#include "xf_utils_hw/stream_one_to_n.hpp"
+#include "xf_utils_hw/stream_n_to_one.hpp"
 
-int test() {
-    hls::stream<ap_uint<W_STRM> > istrm;
-    hls::stream<bool> e_istrm;
-    hls::stream<ap_uint<W_STRM> > ostrm;
-    hls::stream<bool> e_ostrm;
-
-    int tempa = W_STRM * NS / W_PU;
-    int tempb = tempa * W_PU;
-    int comp_count = tempb / W_STRM;
-
-    std::cout << std::dec << "W_STRM  = " << W_STRM << std::endl;
-    std::cout << std::dec << "W_PU = " << W_PU << std::endl;
-    std::cout << std::dec << "NPU     = " << NPU << std::endl;
-    std::cout << std::dec << "NS        = " << NS << std::endl;
-    for (int d = 0; d < NS; ++d) {
-        istrm.write(d);
-        e_istrm.write(false);
-    }
-    e_istrm.write(true);
-
-    round_robin_mpu(istrm, e_istrm, ostrm, e_ostrm);
-
-    int nerror = 0;
-    int count = 0;
-    bool first = true;
-
-    while (!e_ostrm.read()) {
-        ap_uint<W_STRM> d = ostrm.read();
-        ap_uint<W_PU> gld = compute(count);
-        if (count <= comp_count && d != gld) {
-            nerror = 1;
-            std::cout << "erro: "
-                      << "c=" << count << ", gld=" << gld << ", "
-                      << " data=" << d << std::endl;
-        }
-        count++;
+/**
+ * @brief a duplicate of input stream, double each data as output
+ *
+ * @param c_istrm input stream
+ * @param e_c_istrm end flag for input stream
+ * @param c_ostrm output stream
+ * @param e_c_ostrm end flag for output stream
+ *
+ */
+void process_core(hls::stream<ap_uint<W_PU> >& c_istrm,
+                  hls::stream<bool>& e_c_istrm,
+                  hls::stream<ap_uint<W_PU> >& c_ostrm,
+                  hls::stream<bool>& e_c_ostrm) {
+    bool last = e_c_istrm.read();
+    while (!last) {
+#pragma HLS pipeline II = 1
+        ap_uint<W_PU> d = c_istrm.read();
+        ap_uint<W_PU> od = d << 1;
+        c_ostrm.write(od);
+        e_c_ostrm.write(false);
+        last = e_c_istrm.read();
     } // while
-    std::cout << "\n total read: " << count << std::endl;
-    if (count != comp_count) {
-        nerror = 1;
-        std::cout << "\n error:  total read = " << count << ", comp_count = " << comp_count << std::endl;
-    }
-    if (nerror) {
-        std::cout << "\nFAIL: " << nerror << "the order is wrong.\n";
-    } else {
-        std::cout << "\nPASS: no error found.\n";
-    }
-    return nerror;
+    e_c_ostrm.write(true);
 }
 
-int main() {
-    return test();
+/**
+ * @brief Multiple  PUs work in parallel
+ *
+ * @param c_istrms input streams
+ * @param e_c_istrms end flag for input streams
+ * @param c_ostrms output stream
+ * @param e_c_ostrms end flag for output streams
+ *
+ */
+void process_mpu(hls::stream<ap_uint<W_PU> > c_istrms[NPU],
+                 hls::stream<bool> e_c_istrms[NPU],
+                 hls::stream<ap_uint<W_PU> > c_ostrms[NPU],
+                 hls::stream<bool> e_c_ostrms[NPU]) {
+#pragma HLS dataflow
+    for (int i = 0; i < NPU; ++i) {
+#pragma HLS unroll
+        process_core(c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
+    }
+}
+
+/**
+ * @brief Simutlate that a big task is coumputed by Mutiple Process Units.
+ * Assume each input data is a package which could be splitted to a few of small width data, and each small data is
+ * processed by a Process Uint(PU)
+ * @param istrm input stream
+ * @param e_istrm end flag for input stream
+ * @param ostrm input stream
+ * @param e_ostrm end flag for output stream
+ */
+void round_robin_mpu(hls::stream<ap_uint<W_STRM> >& istrm,
+                     hls::stream<bool>& e_istrm,
+                     hls::stream<ap_uint<W_STRM> >& ostrm,
+                     hls::stream<bool>& e_ostrm) {
+/*
+ * One input stream(istrm) is splitted to multitple streams, and each services a PU.
+ * All output streams from PUs are merged to one stream(ostrm).
+ * For example, there are 8 PUs, like this:
+ *
+ *              split           merge
+ *              1-->8           8-->1
+ *
+ *                |----> PU0 ---->|
+ *                |               |
+ *                |----> PU1 ---->|
+ *                |               |
+ *                |----> PU2 ---->|
+ *                |               |
+ *                |----> PU3 ---->|
+ * istrm  ----->  |               |-----> ostrm
+ *                |----> PU4 ---->|
+ *                |               |
+ *                |----> PU5 ---->|
+ *                |               |
+ *                |----> PU6 ---->|
+ *                |               |
+ *                |----> PU7 ---->|
+ *
+ */
+
+/*       one to n                     PUs                   n to one
+* istrm ---------> data_inner_strms -------> new_data_strms ----------> ostrms
+*
+*/
+
+#pragma HLS dataflow
+    hls::stream<ap_uint<W_PU> > data_inner_strms[NPU];
+#pragma HLS stream variable = data_inner_strms depth = 8
+    hls::stream<bool> e_data_inner_strms[NPU];
+#pragma HLS stream variable = e_data_inner_strms depth = 8
+
+    hls::stream<ap_uint<W_PU> > new_data_strms[NPU];
+#pragma HLS stream variable = new_data_strms depth = 8
+    hls::stream<bool> e_new_data_strms[NPU];
+#pragma HLS stream variable = e_new_data_strms depth = 8
+
+    xf::common::utils_hw::stream_one_to_n<W_STRM, W_PU, NPU>(istrm, e_istrm, data_inner_strms, e_data_inner_strms,
+                                                             xf::common::utils_hw::round_robin_t());
+
+    process_mpu(data_inner_strms, e_data_inner_strms, new_data_strms, e_new_data_strms);
+
+    xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM, NPU>(new_data_strms, e_new_data_strms, ostrm, e_ostrm,
+                                                             xf::common::utils_hw::round_robin_t());
 }

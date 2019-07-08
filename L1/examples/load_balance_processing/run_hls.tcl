@@ -14,26 +14,48 @@
 # limitations under the License.
 #
 
-open_project -reset "test.prj"
+source settings.tcl
 
-#add_files code.cpp -cflags "-I../../../include/"  
-#add_files -tb code.cpp -cflags "-I../../../include/"
-add_files code.cpp -cflags "-I../../include/"  
-add_files -tb code.cpp -cflags "-I../../include/"
+set PROJ "test.prj"
+set SOLN "sol1"
 
-set_top  test_core
+if {![info exists CLKP]} {
+  set CLKP 2.5
+}
 
-open_solution -reset "solution1"
-set_part virtexuplus
-create_clock -period 2.5
+open_project -reset $PROJ
 
-csim_design -compiler gcc
+add_files code.cpp -cflags "-I${CASE_ROOT}/../../include"
+add_files -tb tb.cpp -cflags "-I${CASE_ROOT}/../../include"
+set_top test_core
 
-csynth_design
+open_solution -reset $SOLN
 
-cosim_design
-#cosim_design -wave_debug -tool xsim -trace_level all
+set_part $XPART
+create_clock -period $CLKP
 
-export_design -flow impl -rtl verilog -format ip_catalog
+if {$CSIM == 1} {
+  csim_design -compiler gcc
+}
+
+if {$CSYNTH == 1} {
+  csynth_design
+}
+
+if {$COSIM == 1} {
+  cosim_design -bc
+}
+
+if {$VIVADO_SYN == 1} {
+  export_design -flow syn -rtl verilog
+}
+
+if {$VIVADO_IMPL == 1} {
+  export_design -flow impl -rtl verilog
+}
+
+if {$QOR_CHECK == 1} {
+  puts "QoR check not implemented yet"
+}
 
 exit

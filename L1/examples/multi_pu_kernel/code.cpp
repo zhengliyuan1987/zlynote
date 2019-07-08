@@ -16,10 +16,16 @@
 
 #include "code.hpp"
 
+#include "xf_utils_hw/axi_to_stream.hpp"
 #include "xf_utils_hw/stream_one_to_n.hpp"
 #include "xf_utils_hw/stream_n_to_one.hpp"
+#include "xf_utils_hw/stream_to_axi.hpp"
 
-// extract the meaningful data from the input data, and updata it.
+/**
+ * @brief extract the meaningful data from the input data, and updata it.
+ * @param data  input data
+ * @return updated data
+ */
 ap_uint<W_PU> update_data(ap_uint<W_PU> data) {
 #pragma HLS inline
     ap_uint<W_PRC> p = data.range(W_PRC - 1, 0);
@@ -27,6 +33,14 @@ ap_uint<W_PU> update_data(ap_uint<W_PU> data) {
     ap_uint<W_PU> nd = 0;
     nd.range(W_PRC - 1, 0) = p * 2;
     nd.range(W_DSC + W_PRC - 1, W_PRC) = d + 2;
+    return nd;
+}
+// extract the meaningful data from the input data, then calculate.
+ap_uint<W_PU> calculate(ap_uint<W_PU> data) {
+#pragma HLS inline
+    ap_uint<W_PU> p = data.range(W_PRC - 1, 0);
+    ap_uint<W_PU> d = data.range(W_PRC + W_DSC - 1, 0);
+    ap_uint<W_PU> nd = p * d;
     return nd;
 }
 
@@ -152,17 +166,19 @@ void process_mpu(hls::stream<ap_uint<W_PU> > c_istrms[NPU],
     // PU0 and PU1 are always working.
     for (int i = 0; i < 2; ++i) {
 #pragma HLS unroll
+        // int i = k;// + offset;
         process_core_pass(c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
     }
     // The other PUs work at sometimes
     for (int i = 2; i < NPU; ++i) {
 #pragma HLS unroll
-        if (i < 4)
-            process_core_intermission(i % 2 == 0, 2, c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
-        else if (i < 8)
-            process_core_intermission(i % 4 == 0, 4, c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
+        int k = i;
+        if (k < 4)
+            process_core_intermission(k % 2 == 0, 2, c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
+        else if (k < 8)
+            process_core_intermission(k % 4 == 0, 4, c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
         else
-            process_core_intermission(i % 4 == 0, 8, c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
+            process_core_intermission(k % 4 == 0, 8, c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
     }
 }
 
@@ -178,10 +194,10 @@ void process_mpu(hls::stream<ap_uint<W_PU> > c_istrms[NPU],
  * @param ostrm input stream
  * @param e_ostrm end flag for output stream
  **/
-void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
-               hls::stream<bool>& e_istrm,
-               hls::stream<ap_uint<W_STRM> >& ostrm,
-               hls::stream<bool>& e_ostrm) {
+void update_mpu(hls::stream<ap_uint<W_STRM> >& istrm,
+                hls::stream<bool>& e_istrm,
+                hls::stream<ap_uint<W_STRM> >& ostrm,
+                hls::stream<bool>& e_ostrm) {
 /*
  * One input stream(istrm) is splitted to multitple streams, and each services a PU.
  * All output streams from PUs are merged to one stream(ostrm).
@@ -228,10 +244,80 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
 #pragma HLS stream variable = e_new_data_strms depth = 8
 
     xf::common::utils_hw::stream_one_to_n<W_STRM, W_PU, NPU>(istrm, e_istrm, data_inner_strms, e_data_inner_strms,
+                                                             //   xf::common::utils_hw::round_robin_t());
                                                              xf::common::utils_hw::load_balance_t());
 
     process_mpu(data_inner_strms, e_data_inner_strms, new_data_strms, e_new_data_strms);
 
-    xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM, NPU>(new_data_strms, e_new_data_strms, ostrm, e_ostrm,
-                                                             xf::common::utils_hw::load_balance_t());
+    xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM, NPU>(
+        new_data_strms, e_new_data_strms, ostrm, e_ostrm,
+        //                        xf::common::utils_hw::round_robin_t());
+        xf::common::utils_hw::load_balance_t());
 }
+
+// ------------------------------------------------------------
+// top functions
+/**
+ * @brief Update data
+ * A few of data are packeged to a wide width data which is tranferred by axi-port. Extract and update each data from
+ * the wide width data.
+ * For example, 8 32-bit data are combined to a 256-bit data. Each 32-bit data is updated and output in the same formart
+ * as input.
+ * Here, each W_AXI bits data in in_buf includes multiple data(ap_uint<W_DATA>) which will be updated.
+ *
+ * @param in_buf the input buffer
+ * @param out_buf the output buffer
+ * @param len the number of input data in in_buf
+ *
+ */
+void top_core(ap_uint<W_AXI>* in_buf, ap_uint<W_AXI>* out_buf, const int len) {
+#pragma HLS INTERFACE m_axi port = in_buf depth = DDR_DEPTH offset = slave bundle = gmem_in0 latency = \
+    8 num_read_outstanding = 32 max_read_burst_length = 32
+
+#pragma HLS INTERFACE s_axilite port = in_buf bundle = control
+
+#pragma HLS INTERFACE m_axi port = out_buf depth = DDR_DEPTH offset = slave bundle = gmem_out1 latency = \
+    8 num_write_outstanding = 32 max_write_burst_length = 32
+
+#pragma HLS INTERFACE s_axilite port = out_buf bundle = control
+
+#pragma HLS INTERFACE s_axilite port = return bundle = control
+
+#pragma HLS dataflow
+    hls::stream<t_strm> axi_istrm;
+#pragma HLS stream variable = axi_istrm depth = 8
+    hls::stream<bool> e_axi_istrm;
+#pragma HLS stream variable = e_axi_istrm depth = 8
+
+    hls::stream<t_strm> axi_ostrm;
+#pragma HLS stream variable = axi_ostrm depth = 8
+    hls::stream<bool> e_axi_ostrm;
+#pragma HLS stream variable = e_axi_ostrm depth = 8
+
+    /*
+     ----------------         --------------------------------------------------------         -------------------
+    |                |       |                                                        |       |                   |
+    |                |       |                                                        |       |                   |
+    | axi to stream  |  -->  | stream to n streams   --> MPU  ---> n streams to one   |  -->  |  stream to axi    |
+    |                |       |                                                        |       |                   |
+    |                |       |                                                        |       |                   |
+     ----------------         ---------------------------------------------------------        -------------------
+    */
+
+    // axi --> stream --> compute  --> stream --> axi
+    // in_buf        axi_port     inner_stream   axi_port   out_buf
+    // W_DATA ------> W_AXI ------> W_STRM -----> W_AXI ---> W_DATA
+
+    // axi to stream
+    // in_buf --> axi_istrm
+    xf::common::utils_hw::axi_to_stream<BURST_LENTH, W_AXI, t_strm>(in_buf, axi_istrm, e_axi_istrm, len, 0);
+
+    // compute by mutiple process uinits
+    // axi_istrm --> axi_ostrm
+    update_mpu(axi_istrm, e_axi_istrm, axi_ostrm, e_axi_ostrm);
+
+    // stream to axi
+    // axi_ostrm --> out_buf
+    xf::common::utils_hw::stream_to_axi<BURST_LENTH, W_AXI, W_STRM>(out_buf, axi_ostrm, e_axi_ostrm);
+}
+

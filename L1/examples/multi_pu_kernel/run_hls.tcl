@@ -13,28 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-open_project -reset  axi_stream_mpu.prj
-config_debug
 
-add_files test_axi_to_stream.cpp  -cflags "-std=gnu++0x -g -I ../../include"
-add_files -tb test_axi_to_stream.cpp -cflags "-std=gnu++0x -g -I ../../include"
+source settings.tcl
 
+set PROJ "test.prj"
+set SOLN "sol1"
+
+if {![info exists CLKP]} {
+  set CLKP 2.5
+}
+
+open_project -reset $PROJ
+
+add_files code.cpp -cflags "-I${CASE_ROOT}/../../include"
+add_files -tb tb.cpp -cflags "-I${CASE_ROOT}/../../include"
 set_top top_core
-set host_args ""
 
-open_solution -reset "solution1"
-set_part virtexuplus
-create_clock -period 2.5 -name default
-set_clock_uncertainty 27.000000%
+open_solution -reset $SOLN
 
-csim_design -compiler gcc -argv "$host_args"
+set_part $XPART
+create_clock -period $CLKP
 
-csynth_design
+if {$CSIM == 1} {
+  csim_design -compiler gcc
+}
 
-cosim_design -wave_debug -tool xsim -trace_level all
+if {$CSYNTH == 1} {
+  csynth_design
+}
 
-#cosim_design -compiler gcc -argv "$host_args"
+if {$COSIM == 1} {
+  cosim_design -bc
+}
 
-#export_design -flow impl -rtl verilog -format ip_catalog
+if {$VIVADO_SYN == 1} {
+  export_design -flow syn -rtl verilog
+}
+
+if {$VIVADO_IMPL == 1} {
+  export_design -flow impl -rtl verilog
+}
+
+if {$QOR_CHECK == 1} {
+  puts "QoR check not implemented yet"
+}
 
 exit

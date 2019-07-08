@@ -40,7 +40,7 @@ The design of this example inludes three modules:
            xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM,NPU>(
                         new_data_strms, e_new_data_strms,
                         ostrm, e_ostrm,
-                       // xf::common::utils_hw::round_robin_t());
+                        xf::common::utils_hw::round_robin_t());
          ```
 
    3. New data stream are ouput to axi port.
@@ -62,7 +62,7 @@ The design of this example inludes three modules:
   +----------------+       +--------------------------------------------------------+       +-------------------+
  ```
 
-The detials inside update_mpu(8 PUs) like this:
+The detials inside ``update_mpu``(8 PUs) like this:
 
 ```
                split                    merge
