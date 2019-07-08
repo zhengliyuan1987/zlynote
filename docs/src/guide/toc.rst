@@ -26,5 +26,5 @@ L1 Module User Guide
    api.rst
    api_class.rst
    internals.rst
-   demos.rst
+   examples.rst
 

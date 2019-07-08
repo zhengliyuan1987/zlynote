@@ -13,13 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. demos:
+.. examples:
 
 *****************************
-Demos
+Examples
 *****************************
 
 .. toctree::
    :maxdepth: 1
 
-.. ERROR:: TODO need some demos, and explanations.
+A list of examples are shipped with the library in ``L1/examples`` folder.
+They demonstrate how to
+
+* process data with different dispatching and collecting algirithm, so that higher throughput or simpler design
+  can be reached.
+* read from and write to AXI master effciently using the utility modules.
