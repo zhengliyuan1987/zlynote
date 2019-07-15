@@ -22,8 +22,8 @@ set CLKP 2.5
 
 open_project -reset $PROJ
 
-add_files test_axi_to_stream.cpp -cflags "${XF_PROJ_ROOT}/L1/include"
-add_files -tb test_axi_to_stream.cpp -cflags "${XF_PROJ_ROOT}/L1/include"
+add_files test_axi_to_stream.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
+add_files -tb test_axi_to_stream.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
 add_files -tb l_discount_fix.bin
 add_files -tb l_orderkey_nfdint.bin
 add_files -tb l_orderkey_unaligned.bin

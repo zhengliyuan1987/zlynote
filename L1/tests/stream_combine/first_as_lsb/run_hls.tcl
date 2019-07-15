@@ -22,8 +22,8 @@ set CLKP 2.5
 
 open_project -reset $PROJ
 
-add_files test.cpp -cflags "${XF_PROJ_ROOT}/L1/include"
-add_files -tb test.cpp -cflags "${XF_PROJ_ROOT}/L1/include"
+add_files test.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
+add_files -tb test.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
 set_top dut
 
 open_solution -reset $SOLN
