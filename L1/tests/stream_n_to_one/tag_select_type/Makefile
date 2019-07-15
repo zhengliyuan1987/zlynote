@@ -16,7 +16,7 @@
 
 MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
-CASE_ROOT ?= $(CUR_DIR)
+XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%L1/tests/*}')
 
 # MK_INC_BEGIN hls_common.mk
 
@@ -182,7 +182,7 @@ setup:
 	@echo 'set VIVADO_SYN $(VIVADO_SYN)' >> ./settings.tcl
 	@echo 'set VIVADO_IMPL $(VIVADO_IMPL)' >> ./settings.tcl
 	@echo 'set QOR_CHECK $(QOR_CHECK)' >> ./settings.tcl
-	@echo 'set CASE_ROOT "$(CASE_ROOT)"' >> ./settings.tcl
+	@echo 'set XF_PROJ_ROOT "$(XF_PROJ_ROOT)"' >> ./settings.tcl
 	@echo "Configured: settings.tcl"
 	@echo "----"
 	@cat ./settings.tcl

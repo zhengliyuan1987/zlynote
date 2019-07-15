@@ -22,8 +22,8 @@ set CLKP 2.5
 
 open_project -reset $PROJ
 
-add_files test_axi_to_multi_stream.cpp -cflags "-std=gnu++0x -g -I${CASE_ROOT}/../../include"
-add_files -tb  test_axi_to_multi_stream.cpp -cflags "-std=gnu++0x -g -I${CASE_ROOT}/../../include"
+add_files test_axi_to_multi_stream.cpp -cflags "-std=gnu++0x -g -I${XF_PROJ_ROOT}/L1/include"
+add_files -tb  test_axi_to_multi_stream.cpp -cflags "-std=gnu++0x -g -I${XF_PROJ_ROOT}/L1/include"
 add_files -tb l_orderkey_xilinx.bin
 #add_files -tb l_orderkey_veint.bin
 #add_files -tb l_orderkey_500k.bin
