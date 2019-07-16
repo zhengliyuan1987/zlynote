@@ -44,11 +44,11 @@ namespace utils_hw {
  * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
+void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                      hls::stream<bool> e_istrms[_NStrm],
                      hls::stream<ap_uint<_WOutStrm> >& ostrm,
                      hls::stream<bool>& e_ostrm,
-                     round_robin_t alg);
+                     RoundRobinT alg);
 
 /**
  * @brief stream distribute, in round-robin order from NStrm input streams.
@@ -63,11 +63,11 @@ void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
-void stream_n_to_one(hls::stream<_TIn> istrms[_NStrm],
+void streamNToOne(hls::stream<_TIn> istrms[_NStrm],
                      hls::stream<bool> e_istrms[_NStrm],
                      hls::stream<_TIn>& ostrm,
                      hls::stream<bool>& e_ostrm,
-                     round_robin_t alg);
+                     RoundRobinT alg);
 
 } // utils_hw
 } // common
@@ -162,9 +162,9 @@ void stream_n_to_one_collect(hls::stream<ap_uint<_WInStrm * _NStrm> >& buf_n_str
                              hls::stream<bool>& e_buf_n_strm,
                              hls::stream<ap_uint<32> >& left_n,
                              hls::stream<ap_uint<32> >& left_lcm,
-                             hls::stream<ap_uint<lcm<_WInStrm * _NStrm, _WOutStrm>::value> >& buf_lcm_strm,
+                             hls::stream<ap_uint<LCM<_WInStrm * _NStrm, _WOutStrm>::value> >& buf_lcm_strm,
                              hls::stream<bool>& e_buf_lcm_strm) {
-    const int buf_size = lcm<_WInStrm * _NStrm, _WOutStrm>::value;
+    const int buf_size = LCM<_WInStrm * _NStrm, _WOutStrm>::value;
     const int num_in = buf_size / _WInStrm;
     const int count_in = num_in / _NStrm;
     ap_uint<buf_size> buf_a;
@@ -215,12 +215,12 @@ void stream_n_to_one_collect(hls::stream<ap_uint<_WInStrm * _NStrm> >& buf_n_str
  * @param estrm end flag stream.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_n_to_one_distribute(hls::stream<ap_uint<lcm<_WInStrm * _NStrm, _WOutStrm>::value> >& buf_lcm_strm,
+void stream_n_to_one_distribute(hls::stream<ap_uint<LCM<_WInStrm * _NStrm, _WOutStrm>::value> >& buf_lcm_strm,
                                 hls::stream<bool>& e_buf_lcm_strm,
                                 hls::stream<ap_uint<32> >& left_lcm,
                                 hls::stream<ap_uint<_WOutStrm> >& ostrm,
                                 hls::stream<bool>& e_ostrm) {
-    const int buf_size = lcm<_WInStrm * _NStrm, _WOutStrm>::value;
+    const int buf_size = LCM<_WInStrm * _NStrm, _WOutStrm>::value;
     const int num_out = buf_size / _WOutStrm;
 
     ap_uint<buf_size> buf_b;
@@ -268,7 +268,7 @@ void stream_n_to_one_round_robin(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                                  hls::stream<bool> e_istrms[_NStrm],
                                  hls::stream<ap_uint<_WOutStrm> >& ostrm,
                                  hls::stream<bool>& e_ostrm) {
-    const int buf_size = lcm<_WInStrm * _NStrm, _WOutStrm>::value;
+    const int buf_size = LCM<_WInStrm * _NStrm, _WOutStrm>::value;
     hls::stream<ap_uint<_WInStrm * _NStrm> > buf_n_strm;
 #pragma HLS stream variable = buf_n_strm depth = 8
     hls::stream<bool> e_buf_n_strm;
@@ -306,11 +306,11 @@ void stream_n_to_one_round_robin(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
 } // details
 
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_n_to_one(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
+void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                      hls::stream<bool> e_istrms[_NStrm],
                      hls::stream<ap_uint<_WOutStrm> >& ostrm,
                      hls::stream<bool>& e_ostrm,
-                     round_robin_t alg) {
+                     RoundRobinT alg) {
     details::stream_n_to_one_round_robin<_WInStrm, _WOutStrm, _NStrm>(istrms, e_istrms, ostrm, e_ostrm);
 }
 
@@ -346,11 +346,11 @@ void stream_n_to_one_round_robin_type(hls::stream<_TIn> istrms[_NStrm],
 } // details
 
 template <typename _TIn, int _NStrm>
-void stream_n_to_one(hls::stream<_TIn> istrms[_NStrm],
+void streamNToOne(hls::stream<_TIn> istrms[_NStrm],
                      hls::stream<bool> e_istrms[_NStrm],
                      hls::stream<_TIn>& ostrm,
                      hls::stream<bool>& e_ostrm,
-                     round_robin_t alg) {
+                     RoundRobinT alg) {
     details::stream_n_to_one_round_robin_type<_TIn, _NStrm>(istrms, e_istrms, ostrm, e_ostrm);
 }
 

@@ -24,7 +24,7 @@
 #define NSTRM 4
 
 void test_core_discard_share_e(hls::stream<float> istrms[NSTRM], hls::stream<bool>& e_istrm) {
-    xf::common::utils_hw::stream_discard<float, NSTRM>(istrms, e_istrm);
+    xf::common::utils_hw::streamDiscard<float, NSTRM>(istrms, e_istrm);
 }
 
 int test_discard_share_e() {

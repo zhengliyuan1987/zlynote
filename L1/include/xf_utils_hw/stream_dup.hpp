@@ -44,7 +44,7 @@ namespace utils_hw {
  * @param e_ostrms end flag streams, one for each output data stream.
  */
 template <typename _TIn, int _NStrm>
-void stream_dup(hls::stream<_TIn>& istrm,
+void streamDup(hls::stream<_TIn>& istrm,
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]);
@@ -67,7 +67,7 @@ void stream_dup(hls::stream<_TIn>& istrm,
  * @param e_ostrms end flag streams.
  */
 template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
-void stream_dup(const unsigned int choose[_NDStrm],
+void streamDup(const unsigned int choose[_NDStrm],
                 hls::stream<_TIn> istrm[_NIStrm],
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NIStrm],
@@ -85,7 +85,7 @@ namespace common {
 namespace utils_hw {
 
 template <typename _TIn, int _NStrm>
-void stream_dup(hls::stream<_TIn>& istrm,
+void streamDup(hls::stream<_TIn>& istrm,
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NStrm],
                 hls::stream<bool> e_ostrms[_NStrm]) {
@@ -108,7 +108,7 @@ void stream_dup(hls::stream<_TIn>& istrm,
 }
 
 template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
-void stream_dup(const unsigned int choose[_NDStrm],
+void streamDup(const unsigned int choose[_NDStrm],
                 hls::stream<_TIn> istrm[_NIStrm],
                 hls::stream<bool>& e_istrm,
                 hls::stream<_TIn> ostrms[_NIStrm],

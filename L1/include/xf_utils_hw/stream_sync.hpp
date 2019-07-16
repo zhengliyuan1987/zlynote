@@ -48,7 +48,7 @@ namespace utils_hw {
  * @param e_ostrm end flag for all output.
  */
 template <typename _TIn, int _NStrm>
-void stream_sync(hls::stream<_TIn> istrms[_NStrm],
+void streamSync(hls::stream<_TIn> istrms[_NStrm],
                  hls::stream<bool> e_istrms[_NStrm],
                  hls::stream<_TIn> ostrms[_NStrm],
                  hls::stream<bool>& e_ostrm);
@@ -64,7 +64,7 @@ namespace common {
 namespace utils_hw {
 
 template <typename _TIn, int _NStrm>
-void stream_sync(hls::stream<_TIn> istrms[_NStrm],
+void streamSync(hls::stream<_TIn> istrms[_NStrm],
                  hls::stream<bool> e_istrms[_NStrm],
                  hls::stream<_TIn> ostrms[_NStrm],
                  hls::stream<bool>& e_ostrm) {

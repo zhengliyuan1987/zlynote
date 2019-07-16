@@ -29,7 +29,7 @@ extern "C" void dut(hls::stream<ap_uint<NSTRM> >& cfg,
                     hls::stream<bool>& ein,
                     hls::stream<ap_uint<WIN * NSTRM> >& out,
                     hls::stream<bool>& eout) {
-    xf::common::utils_hw::stream_combine(cfg, in, ein, out, eout, xf::common::utils_hw::lsb_side_t());
+    xf::common::utils_hw::streamCombine(cfg, in, ein, out, eout, xf::common::utils_hw::LSBSideT());
 }
 
 #ifndef __SYNTHESIS__

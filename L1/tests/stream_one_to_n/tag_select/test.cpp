@@ -29,9 +29,9 @@ void test_core_1_n_select(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
                           hls::stream<bool>& e_tag_istrm,
                           hls::stream<ap_uint<WIN_STRM> > data_ostrms[NSTRM],
                           hls::stream<bool> e_data_ostrms[NSTRM]) {
-    xf::common::utils_hw::stream_one_to_n<WIN_STRM, WTAG_STRM>(data_istrm, e_data_istrm, tag_istrm, e_tag_istrm,
+    xf::common::utils_hw::streamOneToN<WIN_STRM, WTAG_STRM>(data_istrm, e_data_istrm, tag_istrm, e_tag_istrm,
                                                                data_ostrms, e_data_ostrms,
-                                                               xf::common::utils_hw::tag_select_t());
+                                                               xf::common::utils_hw::TagSelectT());
 }
 
 int test_1_n_select() {
@@ -44,7 +44,7 @@ int test_1_n_select() {
 
     std::cout << "NS    = " << NS << std::endl;
     std::cout << "NSTRM = " << NSTRM << std::endl;
-    std::cout << "pow   = " << xf::common::utils_hw::power_of_2<WTAG_STRM>::value << std::endl;
+    std::cout << "pow   = " << xf::common::utils_hw::PowerOf2<WTAG_STRM>::value << std::endl;
     for (int j = 0; j < NS; ++j) {
         ap_uint<WTAG_STRM> id = j % NSTRM;
         data_istrm.write(j);

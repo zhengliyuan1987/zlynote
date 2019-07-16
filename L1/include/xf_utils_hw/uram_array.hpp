@@ -61,9 +61,9 @@ struct need_num<total, one, false> {
 /// @tparam _NData  the number of elements in the array.
 /// @tparam _NCache the number of cache.
 template <int _WData, int _NData, int _NCache>
-class uram_array {
+class UramArray {
    public:
-    uram_array() {
+    UramArray() {
 #pragma HLS RESOURCE variable = blocks core = XPM_MEMORY uram
 #pragma HLS ARRAY_PARTITION variable = blocks complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = _index complete dim = 1
@@ -81,7 +81,7 @@ class uram_array {
         }
     }
 
-    ~uram_array() {
+    ~UramArray() {
 #ifndef __SYNTHESIS__
         for (int i = 0; i < _num_uram_block; i++) {
             free(blocks[i]);
@@ -92,17 +92,17 @@ class uram_array {
     /// @brief  initialization for uram.
     /// @param  d value for initialization.
     /// @return number of block which had been initialize.
-    int memset(const ap_uint<_WData>& d);
+    int MemSet(const ap_uint<_WData>& d);
 
     /// @brief write to uram.
     /// @param index the index which you want to write.
     /// @param d     the value what you want to write.
-    void write(int index, const ap_uint<_WData>& d);
+    void Write(int index, const ap_uint<_WData>& d);
 
     /// @brief  read from uram.
     /// @param  index the index which you want to read.
     /// @return value you had read.
-    ap_uint<_WData> read(int index);
+    ap_uint<_WData> Read(int index);
 
    private:
     /// number elements per line, used with _WData<=72. For example, when _WData =
@@ -137,21 +137,21 @@ class uram_array {
 // Const member variables
 
 template <int _WData, int _NData, int _NCache>
-const int uram_array<_WData, _NData, _NCache>::_elem_per_line = (72 / _WData);
+const int UramArray<_WData, _NData, _NCache>::_elem_per_line = (72 / _WData);
 
 template <int _WData, int _NData, int _NCache>
-const int uram_array<_WData, _NData, _NCache>::_elem_per_block = (_elem_per_line * 4096);
+const int UramArray<_WData, _NData, _NCache>::_elem_per_block = (_elem_per_line * 4096);
 
 template <int _WData, int _NData, int _NCache>
-const int uram_array<_WData, _NData, _NCache>::_num_parallel_block = ((_WData + 71) / 72);
+const int UramArray<_WData, _NData, _NCache>::_num_parallel_block = ((_WData + 71) / 72);
 
 template <int _WData, int _NData, int _NCache>
-const int uram_array<_WData, _NData, _NCache>::_num_uram_block = (details::need_num<_WData, _NData>::value);
+const int UramArray<_WData, _NData, _NCache>::_num_uram_block = (details::need_num<_WData, _NData>::value);
 
 // Methods
 
 template <int _WData, int _NData, int _NCache>
-int uram_array<_WData, _NData, _NCache>::memset(const ap_uint<_WData>& d) {
+int UramArray<_WData, _NData, _NCache>::MemSet(const ap_uint<_WData>& d) {
     if (_num_uram_block == 0) return 0;
 
     ap_uint<72> t;
@@ -189,7 +189,7 @@ init_cache:
 }
 
 template <int _WData, int _NData, int _NCache>
-void uram_array<_WData, _NData, _NCache>::write(int index, const ap_uint<_WData>& d) {
+void UramArray<_WData, _NData, _NCache>::Write(int index, const ap_uint<_WData>& d) {
 #pragma HLS inline
     int div_block = 0, div_index = 0;
     int dec_block = 0, dec, begin;
@@ -227,7 +227,7 @@ Write_Cache:
 }
 
 template <int _WData, int _NData, int _NCache>
-ap_uint<_WData> uram_array<_WData, _NData, _NCache>::read(int index) {
+ap_uint<_WData> UramArray<_WData, _NData, _NCache>::Read(int index) {
 #pragma HLS inline
     ap_uint<_WData> value;
     int div_block = 0, div_index = 0;

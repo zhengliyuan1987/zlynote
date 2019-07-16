@@ -30,8 +30,8 @@ void test_core_split_msb(hls::stream<ap_uint<WIN_STRM> >& istrm,
                          hls::stream<bool>& e_istrm,
                          hls::stream<ap_uint<WOUT_STRM> > ostrms[NSTRM],
                          hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_split<WIN_STRM, WOUT_STRM, NSTRM>(istrm, e_istrm, ostrms, e_ostrm,
-                                                                   xf::common::utils_hw::msb_side_t());
+    xf::common::utils_hw::streamSplit<WIN_STRM, WOUT_STRM, NSTRM>(istrm, e_istrm, ostrms, e_ostrm,
+                                                                   xf::common::utils_hw::MSBSideT());
 }
 
 int test_split_msb() {

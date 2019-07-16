@@ -48,11 +48,11 @@ namespace utils_hw {
  * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t alg);
+void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  RoundRobinT alg);
 
 /**
  * @brief stream distribute, in round-robin order from first output.
@@ -67,11 +67,11 @@ void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
  * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
-void stream_one_to_n(hls::stream<_TIn>& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<_TIn> ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t alg);
+void streamOneToN(hls::stream<_TIn>& istrm,
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<_TIn> ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  RoundRobinT alg);
 } // utils_hw
 } // common
 } // xf
@@ -215,11 +215,11 @@ void stream_one_to_n_rr(hls::stream<ap_uint<_WInStrm> >& istrm,
 } // details
 
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t alg) {
+void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  RoundRobinT alg) {
     details::stream_one_to_n_rr<_WInStrm, _WOutStrm, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
 }
 
@@ -250,11 +250,11 @@ void stream_one_to_n_rr_type(hls::stream<_TIn>& istrm,
 } // details
 
 template <typename _TIn, int _NStrm>
-void stream_one_to_n(hls::stream<_TIn>& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<_TIn> ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     round_robin_t alg) {
+void streamOneToN(hls::stream<_TIn>& istrm,
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<_TIn> ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  RoundRobinT alg) {
     details::stream_one_to_n_rr_type<_TIn, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
 }
 

@@ -48,11 +48,11 @@ namespace utils_hw {
  * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
+void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     load_balance_t alg);
+                     LoadBalanceT alg);
 
 /**
  * @brief stream distribute, using load-balancing algorithm.
@@ -67,11 +67,11 @@ void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
  * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
-void stream_one_to_n(hls::stream<_TIn>& istrm,
+void streamOneToN(hls::stream<_TIn>& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<_TIn> ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     load_balance_t alg);
+                     LoadBalanceT alg);
 
 } // utils_hw
 } // common
@@ -101,10 +101,10 @@ namespace details {
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void stream_one_to_n_read(hls::stream<ap_uint<_WInStrm> >& istrm,
                           hls::stream<bool>& e_istrm,
-                          hls::stream<ap_uint<lcm<_WInStrm, _NStrm * _WOutStrm>::value> >& buf_lcm_strm,
+                          hls::stream<ap_uint<LCM<_WInStrm, _NStrm * _WOutStrm>::value> >& buf_lcm_strm,
                           hls::stream<int>& left_lcm,
                           hls::stream<bool>& e_buf_lcm_strm) {
-    const int buf_width = lcm<_WInStrm, _NStrm * _WOutStrm>::value;
+    const int buf_width = LCM<_WInStrm, _NStrm * _WOutStrm>::value;
     const int num_in = buf_width / _WInStrm;
     ap_uint<buf_width> buff = 0;
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
@@ -151,13 +151,13 @@ void stream_one_to_n_read(hls::stream<ap_uint<_WInStrm> >& istrm,
  * @param e_buf_n_strm  end flag stream.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_one_to_n_reduce(hls::stream<ap_uint<lcm<_WInStrm, _WOutStrm * _NStrm>::value> >& buf_lcm_strm,
+void stream_one_to_n_reduce(hls::stream<ap_uint<LCM<_WInStrm, _WOutStrm * _NStrm>::value> >& buf_lcm_strm,
                             hls::stream<bool>& e_buf_lcm_strm,
                             hls::stream<int>& left_lcm,
                             hls::stream<int>& left_n,
                             hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n_strm,
                             hls::stream<bool>& e_buf_n_strm) {
-    const int buf_width = lcm<_WInStrm, _NStrm * _WOutStrm>::value;
+    const int buf_width = LCM<_WInStrm, _NStrm * _WOutStrm>::value;
     const int num_out = buf_width / _WOutStrm;
     const int count_out = num_out / _NStrm;
     ap_uint<buf_width> inner_buf = 0;
@@ -218,7 +218,7 @@ void stream_one_to_n_distribute(hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n
     const int num_out = buf_width / _WOutStrm;
     const int count_out = num_out / _NStrm;
     // const int up_nstrm  = _NStrm;
-    const int up_nstrm = up_bound<_NStrm>::up;
+    const int up_nstrm = UpBound<_NStrm>::up;
     const int deq_depth = 8;
     const int deq_width = 4;
     ap_uint<buf_width> buff_r = 0;
@@ -361,7 +361,7 @@ LOOP_core:
             ap_uint<up_nstrm> bf = inv_bak_full.range(i - 1, 0);
             // the number of not full streams befor the i-th streams ( i.e, among the
             // first i-1 streams).
-            int nb = count_ones<up_nstrm>(bf);
+            int nb = countOnes<up_nstrm>(bf);
             // no-blockings
             int mv = nb + base;
             pos[i] = (mv >= mult_nstrm) ? (mv - mult_nstrm) : mv;
@@ -379,7 +379,7 @@ LOOP_core:
         last_full = bak_full;
         // the numbers of data which are written to deq from buf_arr in this
         // iteration
-        rn2 = count_ones<up_nstrm>(inv_bak_full);
+        rn2 = countOnes<up_nstrm>(inv_bak_full);
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
         std::cout << "last_full =  " << std::hex << last_full << std::endl;
         std::cout << "full =  " << std::hex << full << std::endl;
@@ -506,7 +506,7 @@ void stream_one_to_n_load_balance(hls::stream<ap_uint<_WInStrm> >& istrm,
 #pragma HLS dataflow
     // least common multiple of _WInStrm and _WOutStrm as the width of inner
     // buffer
-    hls::stream<ap_uint<lcm<_WInStrm, _NStrm * _WOutStrm>::value> > buf_lcm_strm;
+    hls::stream<ap_uint<LCM<_WInStrm, _NStrm * _WOutStrm>::value> > buf_lcm_strm;
 #pragma HLS stream variable = buf_lcm_strm depth = 32
     hls::stream<int> left_lcm;
     hls::stream<int> left_n;
@@ -553,11 +553,11 @@ void stream_one_to_n_load_balance(hls::stream<ap_uint<_WInStrm> >& istrm,
  * @param alg algorithm selector.
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
-void stream_one_to_n(hls::stream<ap_uint<_WInStrm> >& istrm,
+void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     load_balance_t alg) {
+                     LoadBalanceT alg) {
     details::stream_one_to_n_load_balance<_WInStrm, _WOutStrm, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
 }
 
@@ -612,11 +612,11 @@ void stream_one_to_n_load_balance_type(hls::stream<_TIn>& istrm,
  * @param alg algorithm selector.
  */
 template <typename _TIn, int _NStrm>
-void stream_one_to_n(hls::stream<_TIn>& istrm,
+void streamOneToN(hls::stream<_TIn>& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<_TIn> ostrms[_NStrm],
                      hls::stream<bool> e_ostrms[_NStrm],
-                     load_balance_t alg) {
+                     LoadBalanceT alg) {
     details::stream_one_to_n_load_balance_type<_TIn, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
 }
 

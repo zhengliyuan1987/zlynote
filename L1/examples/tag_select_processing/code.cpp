@@ -123,13 +123,13 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
     hls::stream<bool> e_new_data_strms[NTAG];
 #pragma HLS stream variable = e_new_data_strms depth = 8
 
-    xf::common::utils_hw::stream_one_to_n<W_STRM, W_TAG>(istrm, e_istrm, tg_strms[0], e_tg_strms[0], data_inner_strms,
-                                                         e_data_inner_strms, xf::common::utils_hw::tag_select_t());
+    xf::common::utils_hw::streamOneToN<W_STRM, W_TAG>(istrm, e_istrm, tg_strms[0], e_tg_strms[0], data_inner_strms,
+                                                         e_data_inner_strms, xf::common::utils_hw::TagSelectT());
 
     process_mpu(data_inner_strms, e_data_inner_strms, new_data_strms, e_new_data_strms);
 
-    xf::common::utils_hw::stream_n_to_one<W_STRM, W_TAG>(
+    xf::common::utils_hw::streamNToOne<W_STRM, W_TAG>(
         //     data_inner_strms, e_data_inner_strms,
         new_data_strms, e_new_data_strms, tg_strms[1], e_tg_strms[1], ostrm, e_ostrm,
-        xf::common::utils_hw::tag_select_t());
+        xf::common::utils_hw::TagSelectT());
 }

@@ -317,7 +317,7 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
  * @param offset offset for each type, in number of chars.
  */
 template <int _BurstLen, int _WAxi, typename _TStrm0, typename _TStrm1, typename _TStrm2>
-void axi_to_multi_stream(ap_uint<_WAxi>* rbuf,
+void axiToMultiStream(ap_uint<_WAxi>* rbuf,
                          hls::stream<_TStrm0>& ostrm0,
                          hls::stream<bool>& e_ostrm0,
                          hls::stream<_TStrm1>& ostrm1,

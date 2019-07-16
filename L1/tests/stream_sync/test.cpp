@@ -30,7 +30,7 @@ void test_core_sync(hls::stream<TYPE> istrms[NSTRM],
                     hls::stream<bool> e_istrms[NSTRM],
                     hls::stream<TYPE> ostrms[NSTRM],
                     hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_sync<TYPE, NSTRM>(istrms, e_istrms, ostrms, e_ostrm);
+    xf::common::utils_hw::streamSync<TYPE, NSTRM>(istrms, e_istrms, ostrms, e_ostrm);
 }
 
 int test_sync() {

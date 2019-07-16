@@ -39,7 +39,7 @@ void stream_to_axi_test(ap_uint<WAXI> wbuf[SNUM * WSTRM / WAXI + 1],
   max_read_burst_length = 32 max_write_burst_length = 32 \
   depth = 512
     // clang-format on
-    xf::common::utils_hw::stream_to_axi<32>(wbuf, istrm, e_strm);
+    xf::common::utils_hw::streamToAxi<32>(wbuf, istrm, e_strm);
 }
 
 int main() {

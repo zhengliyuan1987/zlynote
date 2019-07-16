@@ -24,7 +24,7 @@
 #define NSTRM 4
 
 void test_core_discard_array(hls::stream<double> istrms[NSTRM], hls::stream<bool> e_istrms[NSTRM]) {
-    xf::common::utils_hw::stream_discard<double, NSTRM>(istrms, e_istrms);
+    xf::common::utils_hw::streamDiscard<double, NSTRM>(istrms, e_istrms);
 }
 
 int test_discard_array() {
