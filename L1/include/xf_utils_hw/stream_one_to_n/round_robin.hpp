@@ -119,7 +119,7 @@ void stream_one_to_n_rr(hls::stream<ap_uint<_WInStrm> >& istrm,
      */
     // least common multiple of _WInStrm and _WOutStrm*_NStrm as the width of
     // ping-pong buffer
-    const int buf_size = lcm<_WInStrm, _NStrm * _WOutStrm>::value;
+    const int buf_size = LCM<_WInStrm, _NStrm * _WOutStrm>::value;
     // the number of input data to fill the buffer to full
     const int num_in = buf_size / _WInStrm;
     const int num_out = buf_size / _WOutStrm;
@@ -128,7 +128,7 @@ void stream_one_to_n_rr(hls::stream<ap_uint<_WInStrm> >& istrm,
     ap_uint<buf_size> buff_a = 0;
     ap_uint<buf_size> buff_b = 0;
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
-    std::cout << "lcm(" << _WInStrm << ", " << _WOutStrm << ")=" << buf_size << std::endl;
+    std::cout << "LCM(" << _WInStrm << ", " << _WOutStrm << ")=" << buf_size << std::endl;
     std::cout << "_WInStrm =" << _WInStrm << ","
               << "num_in =" << num_in << std::endl;
     std::cout << "_WOutStrm =" << _WOutStrm << ","

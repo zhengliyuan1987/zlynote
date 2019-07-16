@@ -84,7 +84,7 @@ void streamNToOne(hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm
  */
 template <typename _TIn, int _WTagStrm>
 void streamNToOne(hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<bool> e_data_istrms[Powerof_2<_WTagStrm>::value],
+                     hls::stream<bool> e_data_istrms[Powerof2<_WTagStrm>::value],
                      hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
                      hls::stream<bool>& e_tag_istrm,
                      hls::stream<_TIn>& data_ostrm,
