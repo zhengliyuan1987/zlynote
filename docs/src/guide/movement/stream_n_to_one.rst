@@ -16,16 +16,16 @@
 .. _guide-stream_n_to_one:
 
 *****************************************
-Internals of stream_n_to_one
+Internals of streamNToOne
 *****************************************
 
-The :ref:`stream_one_to_n <cid-xf::common::utils_hw::stream_one_to_n>` API
+The :ref:`streamNToOne <cid-xf::common::utils_hw::stream_one_to_n>` API
 is designed for collecing data from multiple processor units.
-Three different algorithms have been implemented, ``round_robin_t``,
-``load_balance_t`` and ``tag_select_t``.
+Three different algorithms have been implemented, ``RoundRobinT``,
+``LoadBalanceT`` and ``TagSelectT``.
 
 To ensure the throughput, it is very common to pass a vector of elements in
-FPGA data paths, so ``stream_one_to_n`` supports element vector output, if the
+FPGA data paths, so ``streamNToOne`` supports element vector output, if the
 data elements are passed in the form of ``ap_uint``.
 It also offers overload for generic template type for non-vector output.
 

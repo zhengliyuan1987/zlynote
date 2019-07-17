@@ -16,22 +16,22 @@
 .. _guide-stream_sync:
 
 *****************************************
-Internals of stream_sync
+Internals of streamSync
 *****************************************
 
 .. toctree::
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream_sync,
-implemented as :ref:`stream_sync <cid-xf::common::utils_hw::stream_sync>` function.
+This document describes the structure and execution of streamSync,
+implemented as :ref:`streamSync <cid-xf::common::utils_hw::stream_sync>` function.
 
 .. image:: /images/stream_sync.png
    :alt: stream sync Structure
    :width: 80%
    :align: center
 
-The stream_sync synchronizes all streams by sharing a same end-flag stream. Each input data stream has an end-flag stream. After sync, all ouput data streams share an end-flag stream and each output stream is a duplicate of an input stream. That is to say, before output an end-flag, each ouput stream should output a data from corresponding input stream.
+The streamSync synchronizes all streams by sharing a same end-flag stream. Each input data stream has an end-flag stream. After sync, all ouput data streams share an end-flag stream and each output stream is a duplicate of an input stream. That is to say, before output an end-flag, each ouput stream should output a data from corresponding input stream.
 
 There are applicable conditions:
 

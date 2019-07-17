@@ -16,22 +16,22 @@
 .. _guide-stream_reorder:
 
 *****************************************
-Internals of stream_reorder
+Internals of streamReorder
 *****************************************
 
 .. toctree::
    :hidden:
    :maxdepth: 3
 
-This document describes the structure and execution of stream_reorder,
-implemented as :ref:`stream_reorder <cid-xf::common::utils_hw::stream_reorder>` function.
+This document describes the structure and execution of streamReorder,
+implemented as :ref:`streamReorder <cid-xf::common::utils_hw::stream_reorder>` function.
 
 .. image:: /images/stream_reorder.png
    :alt: stream reoder Structure
    :width: 80%
    :align: center
 
-The stream_reorder adjusts the output order within a fix size group. Suppose the fix size is Wn, each Wn input data are reordered to output following the pattern from input configuration.
+The streamReorder adjusts the output order within a fix size group. Suppose the fix size is Wn, each Wn input data are reordered to output following the pattern from input configuration.
 
 For example, Wn = 4, reorder config is 2,1,0,3.
 

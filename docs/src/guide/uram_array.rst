@@ -16,14 +16,14 @@
 .. _guide-class-uram_array:
 
 ********************************
-Internals of uram_array
+Internals of UramArray
 ********************************
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-The :ref:`uram_array <cid-xf::common::utils_hw::uram_array>` class aims to
+The :ref:`UramArray <cid-xf::common::utils_hw::uram_array>` class aims to
 help users to achive faster update rate to data stored in URAM blocks.
 
 Work Flow

@@ -16,17 +16,17 @@
 .. _guide-stream_discard:
 
 *****************************************
-Internals of stream_discard
+Internals of streamDiscard
 *****************************************
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-The :ref:`stream_discard <cid-xf::common::utils_hw::stream_discard>` module
+The :ref:`streamDiscard <cid-xf::common::utils_hw::stream_discard>` module
 works as a sink of stream(s).
 It basically reads all inputs and discard them.
-Users can use :ref:`stream_one_to_n <guide-stream_one_to_n>`'s ``tag_select_t``
+Users can use :ref:`streamOneToN <guide-stream_one_to_n>`'s ``TagSelectT``
 algorithm to route data to this module to do dynamic data removal.
 
 Three variants have been implemented, handling normal stream or synchronized

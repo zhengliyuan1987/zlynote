@@ -16,14 +16,14 @@
 .. _guide-stream_split:
 
 *****************************************
-Internals of stream_split
+Internals of streamSplit
 *****************************************
 
 .. toctree::
    :hidden:
    :maxdepth: 3
 
-The :ref:`stream_split <cid-xf::common::utils_hw::stream_split>` is designed
+The :ref:`streamSplit <cid-xf::common::utils_hw::stream_split>` is designed
 for splitting a wide stream into multiple narrow ones, as it is common to
 combine several data elements of the same type as a vector and pass them
 together in FPGA data paths.
@@ -54,5 +54,5 @@ This means that in each cycle, a vector is split into a set of elements.
    This module expects the width of input stream to be no less than total of
    output streams. To perform distribution from a vectors of elements to
    multiple streams, use the
-   :ref:`stream_one_to_n <guide-stream_one_to_n>` module.
+   :ref:`streamOneToN <guide-stream_one_to_n>` module.
 
