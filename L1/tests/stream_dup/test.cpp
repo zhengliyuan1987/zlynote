@@ -33,7 +33,7 @@ extern "C" void dut0(hls::stream<TYPE>& istrm,
                      hls::stream<bool>& e_istrm,
                      hls::stream<TYPE> ostrms[NUM_COPY],
                      hls::stream<bool> e_ostrms[NUM_COPY]) {
-    xf::common::utils_hw::stream_dup<TYPE, NUM_COPY>(istrm, e_istrm, ostrms, e_ostrms);
+    xf::common::utils_hw::streamDup<TYPE, NUM_COPY>(istrm, e_istrm, ostrms, e_ostrms);
 }
 
 extern "C" void dut1(hls::stream<TYPE> istrm[NUM_ISTRM],
@@ -42,7 +42,7 @@ extern "C" void dut1(hls::stream<TYPE> istrm[NUM_ISTRM],
                      hls::stream<TYPE> dstrms[NUM_COPY][NUM_DSTRM],
                      hls::stream<bool>& e_ostrms) {
     const unsigned int choose[4] = {0, 1, 2, 3};
-    xf::common::utils_hw::stream_dup<TYPE, NUM_ISTRM, NUM_DSTRM, NUM_COPY>(choose, istrm, e_istrm, ostrms, dstrms,
+    xf::common::utils_hw::streamDup<TYPE, NUM_ISTRM, NUM_DSTRM, NUM_COPY>(choose, istrm, e_istrm, ostrms, dstrms,
                                                                            e_ostrms);
 }
 

@@ -16,14 +16,14 @@
 .. _guide-stream_combine:
 
 *****************************************
-Internals of stream_combine
+Internals of streamCombine
 *****************************************
 
 .. toctree::
    :hidden:
    :maxdepth: 3
 
-The :ref:`stream_combine <cid-xf::common::utils_hw::stream_combine>` function
+The :ref:`streamCombine <cid-xf::common::utils_hw::stream_combine>` function
 is designed for packing multiple elements of same width into a vector.
 
 This module offers two static configurations: using the data from LSB or MSB.
@@ -51,5 +51,5 @@ This means that in each cycle, a vector is yielded using a set of elements.
 .. ATTENTION::
    This module expects the width of output stream to be no less than total of
    input streams. To perform collection from multiple streams, consider the
-   :ref:`stream_n_to_one <guide-stream_n_to_one>` module.
+   :ref:`streamNToOne <guide-stream_n_to_one>` module.
 

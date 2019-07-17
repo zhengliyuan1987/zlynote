@@ -49,7 +49,7 @@ namespace utils_hw {
  * @param alg algorithm selector for this function.
  */
 template <int _WIn, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
+void streamCombine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
@@ -57,7 +57,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    lsb_side_t alg);
+                    LSBSideT alg);
 
 /**
  * @brief combine multiple streams into one, shift selected streams to MSB side.
@@ -77,7 +77,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
  */
 
 template <int _WIn, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
+void streamCombine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
@@ -85,7 +85,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    msb_side_t alg);
+                    MSBSideT alg);
 
 /**
  * @brief combine multiple streams into a wide one, align to LSB.
@@ -106,13 +106,13 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
  * @param alg algorithm selector for this function.
  */
 template <int _WIn, int _WOut, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
+void streamCombine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
 
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    lsb_side_t alg);
+                    LSBSideT alg);
 
 /**
  * @brief combine multiple streams into a wide one, align to MSB.
@@ -134,13 +134,13 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
  */
 
 template <int _WIn, int _WOut, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
+void streamCombine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
 
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    msb_side_t alg);
+                    MSBSideT alg);
 
 } // utils_hw
 } // common
@@ -154,7 +154,7 @@ namespace utils_hw {
 
 // comebin_left
 template <int _WIn, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
+void streamCombine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
@@ -162,7 +162,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    lsb_side_t alg) {
+                    LSBSideT alg) {
     bool e = e_istrm.read();
     ap_uint<_NStrm> bb = select_cfg.read();
     bool b[_NStrm][_NStrm];
@@ -220,7 +220,7 @@ loop:
 
 // combine right
 template <int _WIn, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
+void streamCombine(hls::stream<ap_uint<_NStrm> >& select_cfg,
 
                     hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
@@ -228,7 +228,7 @@ void stream_combine(hls::stream<ap_uint<_NStrm> >& select_cfg,
                     hls::stream<ap_uint<_WIn * _NStrm> >& ostrm,
                     hls::stream<bool>& e_ostrm,
 
-                    msb_side_t alg) {
+                    MSBSideT alg) {
     bool e = e_istrm.read();
     ap_uint<_NStrm> bb = select_cfg.read();
     bool b[_NStrm][_NStrm];
@@ -285,11 +285,11 @@ loop:
 }
 
 template <int _WIn, int _WOut, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
+void streamCombine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
-                    lsb_side_t alg) {
+                    LSBSideT alg) {
     /*
      * stream
      *   [0]      0    4    8
@@ -318,11 +318,11 @@ void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
 }
 
 template <int _WIn, int _WOut, int _NStrm>
-void stream_combine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
+void streamCombine(hls::stream<ap_uint<_WIn> > istrms[_NStrm],
                     hls::stream<bool>& e_istrm,
                     hls::stream<ap_uint<_WOut> >& ostrm,
                     hls::stream<bool>& e_ostrm,
-                    msb_side_t alg) {
+                    MSBSideT alg) {
     /*
      * stream
      *   [0]      0    4   8

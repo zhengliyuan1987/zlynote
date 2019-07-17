@@ -129,8 +129,8 @@ xf::util::level1::strm_one_to_n<WOUT_STRM, WIN_STRM,NSTRM>(
 #pragma HLS stream variable = e_c_strms depth = 4 // 4 at least
 
     produce_2(data_istrms, e_data_istrms, c_strms, e_c_strms);
-    xf::common::utils_hw::stream_n_to_one<WIN_STRM, WOUT_STRM, NSTRM>(c_strms, e_c_strms, data_ostrm, e_ostrm,
-                                                                      xf::common::utils_hw::load_balance_t());
+    xf::common::utils_hw::streamNToOne<WIN_STRM, WOUT_STRM, NSTRM>(c_strms, e_c_strms, data_ostrm, e_ostrm,
+                                                                      xf::common::utils_hw::LoadBalanceT());
 }
 
 int test_n_1() {
@@ -140,7 +140,7 @@ int test_n_1() {
     hls::stream<bool> e_ostrm;
     hls::stream<ap_uint<32> > left_n;
     int td[NS] = {0};
-    const int buf_width = xf::common::utils_hw::lcm<WOUT_STRM, WIN_STRM>::value;
+    const int buf_width = xf::common::utils_hw::LCM<WOUT_STRM, WIN_STRM>::value;
     const int num_in = buf_width / WOUT_STRM;
     const int num_out = buf_width / WIN_STRM;
 

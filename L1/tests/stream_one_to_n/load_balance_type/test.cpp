@@ -121,7 +121,7 @@ void test_core_1_n(hls::stream<float>& data_istrm,
                    hls::stream<float> data_ostrms[NSTRM],
                    hls::stream<bool> e_data_ostrms[NSTRM]) {
 /*
-xf::common::utils_hw::stream_one_to_n<WIN_STRM, WOUT_STRM,NSTRM>(
+xf::common::utils_hw::streamOneToN<WIN_STRM, WOUT_STRM,NSTRM>(
                        data_istrm,  e_istrm,
                        data_ostrms, e_data_ostrms,
                        xf::util::load_balance_t());
@@ -133,8 +133,8 @@ xf::common::utils_hw::stream_one_to_n<WIN_STRM, WOUT_STRM,NSTRM>(
     hls::stream<bool> e_c_strms[NSTRM];
 #pragma HLS stream variable = e_c_strms depth = 4 // 1024
 
-    xf::common::utils_hw::stream_one_to_n<float, NSTRM>(data_istrm, e_istrm, c_strms, e_c_strms,
-                                                        xf::common::utils_hw::load_balance_t());
+    xf::common::utils_hw::streamOneToN<float, NSTRM>(data_istrm, e_istrm, c_strms, e_c_strms,
+                                                        xf::common::utils_hw::LoadBalanceT());
 
     consume_1(c_strms, e_c_strms, data_ostrms, e_data_ostrms);
 }
@@ -145,7 +145,7 @@ int test_1_n() {
     hls::stream<float> data_ostrms[NSTRM];
     hls::stream<bool> e_data_ostrms[NSTRM];
     int td[NS] = {0};
-    const int buf_width = xf::common::utils_hw::lcm<WIN_STRM, WOUT_STRM>::value;
+    const int buf_width = xf::common::utils_hw::LCM<WIN_STRM, WOUT_STRM>::value;
     const int num_in = buf_width / WIN_STRM;
     const int num_out = buf_width / WOUT_STRM;
     const int sw_l = 8;

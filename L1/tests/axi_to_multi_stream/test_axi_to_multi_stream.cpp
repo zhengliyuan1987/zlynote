@@ -202,7 +202,7 @@ void top_axi_to_multi_stream(
     if(len[0]<=0 ||(len[1]<=0 )|| (len[2]<=0 ) )
         std::cout<<"ERROR: len<= 0, testcase can not work!"<<std::endl;
 #endif
-    xf::common::utils_hw::axi_to_multi_stream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
+    xf::common::utils_hw::axiToMultiStream<AXI_WIDTH, BURST_LENTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2 >
     (rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
 
 }
@@ -250,7 +250,7 @@ void top_for_co_sim(ap_uint<AXI_WIDTH>* rbuf,
 #pragma HLS RESOURCE variable = e_ostrm2 core = FIFO_LUTRAM
 #pragma HLS STREAM variable = e_ostrm2 depth = NONBLOCK_DEPTHS
 
-    xf::common::utils_hw::axi_to_multi_stream<BURST_LENTH, AXI_WIDTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2>(
+    xf::common::utils_hw::axiToMultiStream<BURST_LENTH, AXI_WIDTH, TYPE_Strm0, TYPE_Strm1, TYPE_Strm2>(
         rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
     // Stream Consumers
     readbatchToPrintII1(ostrm0, e_ostrm0, r_strm0, num0);

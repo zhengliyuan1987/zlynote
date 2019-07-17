@@ -243,16 +243,16 @@ void update_mpu(hls::stream<ap_uint<W_STRM> >& istrm,
     hls::stream<bool> e_new_data_strms[NPU];
 #pragma HLS stream variable = e_new_data_strms depth = 8
 
-    xf::common::utils_hw::stream_one_to_n<W_STRM, W_PU, NPU>(istrm, e_istrm, data_inner_strms, e_data_inner_strms,
+    xf::common::utils_hw::streamOneToN<W_STRM, W_PU, NPU>(istrm, e_istrm, data_inner_strms, e_data_inner_strms,
                                                              //   xf::common::utils_hw::round_robin_t());
-                                                             xf::common::utils_hw::load_balance_t());
+                                                             xf::common::utils_hw::LoadBalanceT());
 
     process_mpu(data_inner_strms, e_data_inner_strms, new_data_strms, e_new_data_strms);
 
-    xf::common::utils_hw::stream_n_to_one<W_PU, W_STRM, NPU>(
+    xf::common::utils_hw::streamNToOne<W_PU, W_STRM, NPU>(
         new_data_strms, e_new_data_strms, ostrm, e_ostrm,
         //                        xf::common::utils_hw::round_robin_t());
-        xf::common::utils_hw::load_balance_t());
+        xf::common::utils_hw::LoadBalanceT());
 }
 
 // ------------------------------------------------------------
@@ -310,7 +310,7 @@ void top_core(ap_uint<W_AXI>* in_buf, ap_uint<W_AXI>* out_buf, const int len) {
 
     // axi to stream
     // in_buf --> axi_istrm
-    xf::common::utils_hw::axi_to_stream<BURST_LENTH, W_AXI, t_strm>(in_buf, axi_istrm, e_axi_istrm, len, 0);
+    xf::common::utils_hw::axiToStream<BURST_LENTH, W_AXI, t_strm>(in_buf, axi_istrm, e_axi_istrm, len, 0);
 
     // compute by mutiple process uinits
     // axi_istrm --> axi_ostrm
@@ -318,6 +318,6 @@ void top_core(ap_uint<W_AXI>* in_buf, ap_uint<W_AXI>* out_buf, const int len) {
 
     // stream to axi
     // axi_ostrm --> out_buf
-    xf::common::utils_hw::stream_to_axi<BURST_LENTH, W_AXI, W_STRM>(out_buf, axi_ostrm, e_axi_ostrm);
+    xf::common::utils_hw::streamToAxi<BURST_LENTH, W_AXI, W_STRM>(out_buf, axi_ostrm, e_axi_ostrm);
 }
 

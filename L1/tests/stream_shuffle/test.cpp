@@ -43,7 +43,7 @@ void top(hls::stream<ap_uint<8 * NUM_OUTPUT> >& order_cfg,
 
          hls::stream<DATA_TYPE> ostrms[NUM_OUTPUT],
          hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_shuffle<NUM_INPUT, NUM_OUTPUT>(order_cfg, istrms, e_istrm, ostrms, e_ostrm);
+    xf::common::utils_hw::streamShuffle<NUM_INPUT, NUM_OUTPUT>(order_cfg, istrms, e_istrm, ostrms, e_ostrm);
 }
 
 int main() {

@@ -23,7 +23,7 @@
 #define NS 1024 * 8
 
 void test_core_discard_stream(hls::stream<float>& istrm, hls::stream<bool>& e_istrm) {
-    xf::common::utils_hw::stream_discard<float>(istrm, e_istrm);
+    xf::common::utils_hw::streamDiscard<float>(istrm, e_istrm);
 }
 
 int test_discard_stream() {

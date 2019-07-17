@@ -48,11 +48,11 @@ namespace utils_hw {
  * @param alg algorithm selector for this function.
  */
 template <int _WIn, int _WOut, int _NStrm>
-void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
+void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-                  lsb_side_t alg);
+                  LSBSideT alg);
 
 /**
  * @brief split one wide stream into multiple streams, start from the MSB.
@@ -71,11 +71,11 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
  */
 
 template <int _WIn, int _WOut, int _NStrm>
-void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
+void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-                  msb_side_t alg);
+                  MSBSideT alg);
 
 } // utils_hw
 } // common
@@ -88,11 +88,11 @@ namespace common {
 namespace utils_hw {
 
 template <int _WIn, int _WOut, int _NStrm>
-void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
+void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-                  lsb_side_t alg) {
+                  LSBSideT alg) {
     /*
      * for example, _WIn=20, _WOut=4, _NStrm=4
      * input a data  0x82356 (hex)
@@ -125,11 +125,11 @@ void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
 }
 
 template <int _WIn, int _WOut, int _NStrm>
-void stream_split(hls::stream<ap_uint<_WIn> >& istrm,
+void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
                   hls::stream<bool>& e_istrm,
                   hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
                   hls::stream<bool>& e_ostrm,
-                  msb_side_t alg) {
+                  MSBSideT alg) {
     /*
      * for example, _WIn=20, _WOut=4, _NStrm=4
      * input a data  0x82356 (hex)

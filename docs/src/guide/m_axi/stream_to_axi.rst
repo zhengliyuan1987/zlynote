@@ -16,15 +16,15 @@
 .. _guide-stream_to_axi:
 
 ********************************
-Internals of stream_to_axi
+Internals of streamToAxi
 ********************************
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-This document describes the structure and execution of stream_to_axi,
-implemented as :ref:`stream_to_axi <cid-xf::common::utils_hw::stream_to_axi>` function.
+This document describes the structure and execution of streamToAxi,
+implemented as :ref:`streamToAxi <cid-xf::common::utils_hw::stream_to_axi>` function.
 
 This function is designed for writing data into AXI master in burst mode.
 
@@ -39,7 +39,7 @@ This function is designed for writing data into AXI master in burst mode.
 Applicable conditions:
 
 1. AXI port width should be multiple of stream width.
-   This primitive performs stream_to_axi in two modules working simultaneously.
+   This primitive performs streamToAxi in two modules working simultaneously.
 
 2. countForBurst: convert stream width from _WStrm to _WAxi and count burst number.
 
@@ -61,5 +61,5 @@ The two modules imprementation details as show follows,
 where ``N = _WAxi/_WStrm`` , ``not enough one axi`` is the state of ``counter_for_axi < N`` and it would be instead of 0.
 ``not enough one burst`` is the state of ``counter_for_burst < NBurst`` and it would be as a burst to write.
 
-This ``stream_to_axi`` primitve has only one port for axi ptr and one port for stream output.
+This ``streamToAxi`` primitve has only one port for axi ptr and one port for stream output.
 

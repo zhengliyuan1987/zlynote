@@ -53,7 +53,7 @@ void top_align_axi_to_stream(ap_uint<AXI_WIDTH>* rbuf,
                      "align data on ddr"
                   << std::endl;
 #endif
-    xf::common::utils_hw::axi_to_stream<BURST_LENTH>(rbuf, ostrm, e_ostrm, num, offset_num);
+    xf::common::utils_hw::axiToStream<BURST_LENTH>(rbuf, ostrm, e_ostrm, num, offset_num);
 }
 
 // top functions for general data
@@ -71,7 +71,7 @@ void top_general_axi_to_stream(ap_uint<AXI_WIDTH>* rbuf,
 #ifndef __SYNTHESIS__
     if (len <= 0) std::cout << "ERROR: len<= 0, testcase can not work!" << std::endl;
 #endif
-    xf::common::utils_hw::axi_to_char_stream<BURST_LENTH>(rbuf, ostrm, e_ostrm, len, offset);
+    xf::common::utils_hw::axiToCharStream<BURST_LENTH>(rbuf, ostrm, e_ostrm, len, offset);
 }
 
 #ifndef __SYNTHESIS__

@@ -44,7 +44,7 @@ namespace utils_hw {
  * @param e_istrm end flag for input stream
  */
 template <int _BurstLen = 32, int _WAxi, int _WStrm>
-void stream_to_axi(ap_uint<_WAxi>* wbuf, hls::stream<ap_uint<_WStrm> >& istrm, hls::stream<bool>& e_istrm);
+void streamToAxi(ap_uint<_WAxi>* wbuf, hls::stream<ap_uint<_WStrm> >& istrm, hls::stream<bool>& e_istrm);
 } // utils_hw
 } // common
 } // xf
@@ -147,7 +147,7 @@ doing_burst:
 } // details
 
 template <int _BurstLen, int _WAxi, int _WStrm>
-void stream_to_axi(ap_uint<_WAxi>* wbuf, hls::stream<ap_uint<_WStrm> >& istrm, hls::stream<bool>& e_istrm) {
+void streamToAxi(ap_uint<_WAxi>* wbuf, hls::stream<ap_uint<_WStrm> >& istrm, hls::stream<bool>& e_istrm) {
     XF_UTILS_HW_STATIC_ASSERT(_WAxi % _WStrm == 0, "AXI port width is not multiple of stream width");
     const int fifo_buf = 2 * _BurstLen;
 

@@ -70,7 +70,7 @@ namespace utils_hw {
  * @param offset_num offset from the beginning of the buffer, by num of element.
  */
 template <int _BurstLen = 32, int _WAxi, typename _TStrm>
-void axi_to_stream(ap_uint<_WAxi>* rbuf,
+void axiToStream(ap_uint<_WAxi>* rbuf,
                    hls::stream<_TStrm>& ostrm,
                    hls::stream<bool>& e_ostrm,
                    const int num,
@@ -111,7 +111,7 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
  * @param offset offset from the beginning of the buffer, in number of char.
  */
 template <int _BurstLen = 32, int _WAxi, typename _TStrm>
-void axi_to_char_stream(
+void axiToCharStream(
     ap_uint<_WAxi>* rbuf, hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm, const int len, const int offset = 0);
 
 // ------------------- Implementation --------------------------
@@ -275,7 +275,7 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm,
 } // details
 
 template <int _BurstLen, int _WAxi, typename _TStrm>
-void axi_to_stream(ap_uint<_WAxi>* rbuf,
+void axiToStream(ap_uint<_WAxi>* rbuf,
                    hls::stream<_TStrm>& ostrm,
                    hls::stream<bool>& e_ostrm,
                    const int num,
@@ -298,7 +298,7 @@ void axi_to_stream(ap_uint<_WAxi>* rbuf,
 }
 
 template <int _BurstLen, int _WAxi, typename _TStrm>
-void axi_to_char_stream(ap_uint<_WAxi>* rbuf,
+void axiToCharStream(ap_uint<_WAxi>* rbuf,
                         hls::stream<_TStrm>& ostrm,
                         hls::stream<bool>& e_ostrm,
                         const int len,

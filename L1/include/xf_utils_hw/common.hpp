@@ -31,27 +31,27 @@ namespace utils_hw {
 
 // Calculate Power of 2
 template <int _N>
-struct power_of_2 {
+struct PowerOf2 {
     static const unsigned value = (1u << _N);
 };
 
 // Greatest Common Divisor
 template <int a, int b>
-struct gcd {
-    static const int value = gcd<b, a % b>::value;
+struct GCD {
+    static const int value = GCD<b, a % b>::value;
 };
 template <int a>
-struct gcd<a, 0> {
+struct GCD<a, 0> {
     static const int value = a;
 };
 // Least Common Multiple
 template <int a, int b>
-struct lcm {
-    static const int value = a * b / gcd<b, a % b>::value;
+struct LCM {
+    static const int value = a * b / GCD<b, a % b>::value;
 };
 
 template <int NStrm>
-struct up_bound {
+struct UpBound {
     // clang-format off
   static const int up= (NStrm >=128) ? 128 :
                         NStrm > 64   ? 128 :
@@ -65,7 +65,7 @@ struct up_bound {
 };
 
 template <int N>
-ap_uint<N> count_ones(ap_uint<N> y) {
+ap_uint<N> countOnes(ap_uint<N> y) {
 #pragma HLS inline
 
     ap_uint<N> x0 = y;
@@ -77,7 +77,7 @@ ap_uint<N> count_ones(ap_uint<N> y) {
     return x5;
 }
 
-int count_bits(long long x) {
+int countBits(long long x) {
     x = (x & 0x5555555555555555) + ((x & 0xaaaaaaaaaaaaaaaa) >> 1);
     x = (x & 0x3333333333333333) + ((x & 0xcccccccccccccccc) >> 2);
     x = (x & 0x0f0f0f0f0f0f0f0f) + ((x & 0xf0f0f0f0f0f0f0f0) >> 4);
@@ -88,13 +88,13 @@ int count_bits(long long x) {
 }
 
 template <>
-ap_uint<1> count_ones<1>(ap_uint<1> y) {
+ap_uint<1> countOnes<1>(ap_uint<1> y) {
 #pragma HLS inline
 
     return y & 0x1;
 }
 template <>
-ap_uint<2> count_ones<2>(ap_uint<2> y) {
+ap_uint<2> countOnes<2>(ap_uint<2> y) {
 #pragma HLS inline
 
     ap_uint<2> x0 = y;
@@ -103,7 +103,7 @@ ap_uint<2> count_ones<2>(ap_uint<2> y) {
 }
 
 template <>
-ap_uint<4> count_ones<4>(ap_uint<4> y) {
+ap_uint<4> countOnes<4>(ap_uint<4> y) {
 #pragma HLS inline
 
     ap_uint<4> x0 = y;
@@ -113,7 +113,7 @@ ap_uint<4> count_ones<4>(ap_uint<4> y) {
 }
 
 template <>
-ap_uint<8> count_ones<8>(ap_uint<8> y) {
+ap_uint<8> countOnes<8>(ap_uint<8> y) {
 #pragma HLS inline
 
     ap_uint<8> x0 = y;
@@ -124,7 +124,7 @@ ap_uint<8> count_ones<8>(ap_uint<8> y) {
 }
 
 template <>
-ap_uint<16> count_ones<>(ap_uint<16> y) {
+ap_uint<16> countOnes<>(ap_uint<16> y) {
 #pragma HLS inline
 
     ap_uint<16> x0 = y;
@@ -136,7 +136,7 @@ ap_uint<16> count_ones<>(ap_uint<16> y) {
 }
 
 template <>
-ap_uint<32> count_ones<32>(ap_uint<32> y) {
+ap_uint<32> countOnes<32>(ap_uint<32> y) {
 #pragma HLS inline
 
     ap_uint<32> x0 = y;
@@ -148,7 +148,7 @@ ap_uint<32> count_ones<32>(ap_uint<32> y) {
     return x5;
 }
 template <>
-ap_uint<128> count_ones<128>(ap_uint<128> y) {
+ap_uint<128> countOnes<128>(ap_uint<128> y) {
 #pragma HLS inline
     ap_uint<128> x0 = y;
     ap_uint<128> x1 = (x0 & 0x5555555555555555) + ((x0 & 0xaaaaaaaaaaaaaaaa) >> 1);

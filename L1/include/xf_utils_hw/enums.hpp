@@ -31,17 +31,17 @@ namespace utils_hw {
 // to avoid trouble with template inference.
 
 // distribute and collect
-struct tag_select_t {};
-struct load_balance_t {};
-struct round_robin_t {};
+struct TagSelectT {};
+struct LoadBalanceT {};
+struct RoundRobinT {};
 
 // combine
-struct lsb_side_t {};
-struct msb_side_t {};
+struct LSBSideT {};
+struct MSBSideT {};
 
 // shuffle
-struct shuffle_left_t {};
-struct shuffle_right_t {};
+struct ShuffleLeftT {};
+struct ShuffleRightT {};
 
 } // utils_hw
 } // common

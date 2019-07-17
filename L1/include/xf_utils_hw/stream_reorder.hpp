@@ -55,7 +55,7 @@ namespace utils_hw {
  * @param e_ostrm end flag for output.
  */
 template <typename _TIn, int _WindowSize>
-void stream_reorder(hls::stream<int>& order_cfg,
+void streamReorder(hls::stream<int>& order_cfg,
                     hls::stream<_TIn>& istrm,
                     hls::stream<bool>& e_istrm,
                     hls::stream<_TIn>& ostrm,
@@ -72,7 +72,7 @@ namespace common {
 namespace utils_hw {
 
 template <typename _TIn, int _WindowSize>
-void stream_reorder(hls::stream<int>& order_cfg,
+void streamReorder(hls::stream<int>& order_cfg,
                     hls::stream<_TIn>& istrm,
                     hls::stream<bool>& e_istrm,
                     hls::stream<_TIn>& ostrm,

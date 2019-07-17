@@ -29,8 +29,8 @@ void test_core_comb_lsb(hls::stream<ap_uint<WIN_STRM> > istrms[NSTRM],
                         hls::stream<bool>& e_istrm,
                         hls::stream<ap_uint<WOUT_STRM> >& ostrm,
                         hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_combine<WIN_STRM, WOUT_STRM, NSTRM>(istrms, e_istrm, ostrm, e_ostrm,
-                                                                     xf::common::utils_hw::lsb_side_t());
+    xf::common::utils_hw::streamCombine<WIN_STRM, WOUT_STRM, NSTRM>(istrms, e_istrm, ostrm, e_ostrm,
+                                                                     xf::common::utils_hw::LSBSideT());
 }
 
 int test_comb_lsb() {

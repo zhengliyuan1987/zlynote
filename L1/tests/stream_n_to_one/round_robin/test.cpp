@@ -29,8 +29,8 @@ void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > istrms[NSTRM],
                    hls::stream<bool> e_istrms[NSTRM],
                    hls::stream<ap_uint<WOUT_STRM> >& ostrm,
                    hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_n_to_one<WIN_STRM, WOUT_STRM, NSTRM>(istrms, e_istrms, ostrm, e_ostrm,
-                                                                      xf::common::utils_hw::round_robin_t());
+    xf::common::utils_hw::streamNToOne<WIN_STRM, WOUT_STRM, NSTRM>(istrms, e_istrms, ostrm, e_ostrm,
+                                                                      xf::common::utils_hw::RoundRobinT());
 }
 
 int test_n_1() {
@@ -39,7 +39,7 @@ int test_n_1() {
     hls::stream<ap_uint<WOUT_STRM> > data_ostrm;
     hls::stream<bool> e_data_ostrm;
 
-    const int buf_width = xf::common::utils_hw::lcm<WIN_STRM * NSTRM, WOUT_STRM>::value;
+    const int buf_width = xf::common::utils_hw::LCM<WIN_STRM * NSTRM, WOUT_STRM>::value;
     const int num_in = buf_width / WIN_STRM;
     const int num_out = buf_width / WOUT_STRM;
 

@@ -9,11 +9,11 @@ The design of this example inludes three modules:
   1. Dispatch data to PUs by one stream to n distribution on tag select.
      Compared to distribution on round robin and load balance, here the width of output is same as the one of input.
 ```
-          xf::common::utils_hw::stream_one_to_n<W_STRM,W_TAG>(
+          xf::common::utils_hw::streamOneToN<W_STRM,W_TAG>(
                          istrm,  e_istrm,
                          tg_strms[0], e_tg_strms[0],
                          data_inner_strms, e_data_inner_strms,
-                         xf::common::utils_hw::tag_select_t());
+                         xf::common::utils_hw::TagSelectT());
 ```
 
   2. All PUs process data in parallel.
@@ -25,11 +25,11 @@ The design of this example inludes three modules:
 
   3. The new data in n streams from PUs are merged to a wide width stream.
 ```
-          xf::common::utils_hw::stream_n_to_one<W_STRM, W_TAG>(
+          xf::common::utils_hw::streamNToOne<W_STRM, W_TAG>(
                         new_data_strms, e_new_data_strms,
                         tg_strms[1], e_tg_strms[1],
                         ostrm, e_ostrm,
-                        xf::common::utils_hw::tag_select_t());
+                        xf::common::utils_hw::TagSelectT());
 ```
 
 ```

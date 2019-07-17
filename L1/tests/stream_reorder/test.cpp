@@ -29,7 +29,7 @@ void test_core_reorder(hls::stream<int>& order_cfg,
                        hls::stream<bool>& e_istrm,
                        hls::stream<ap_uint<W_STRM> >& ostrm,
                        hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_reorder<ap_uint<W_STRM>, WS>(order_cfg, istrm, e_istrm, ostrm, e_ostrm);
+    xf::common::utils_hw::streamReorder<ap_uint<W_STRM>, WS>(order_cfg, istrm, e_istrm, ostrm, e_ostrm);
 }
 
 int test_reorder() {

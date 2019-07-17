@@ -29,8 +29,8 @@ void test_core_n_1(hls::stream<float> istrms[NSTRM],
                    hls::stream<bool> e_istrms[NSTRM],
                    hls::stream<float>& ostrm,
                    hls::stream<bool>& e_ostrm) {
-    xf::common::utils_hw::stream_n_to_one<float, NSTRM>(istrms, e_istrms, ostrm, e_ostrm,
-                                                        xf::common::utils_hw::round_robin_t());
+    xf::common::utils_hw::streamNToOne<float, NSTRM>(istrms, e_istrms, ostrm, e_ostrm,
+                                                        xf::common::utils_hw::RoundRobinT());
 }
 
 int test_n_1() {

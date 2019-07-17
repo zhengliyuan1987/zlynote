@@ -16,22 +16,22 @@
 .. _guide-axi_to_multi_stream:
 
 ********************************
-Internals of axi_to_multi_stream
+Internals of axiToMultiStream
 ********************************
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
-This document describes the structure and execution of axi_to_multi_stream,
-implemented as :ref:`axi_to_multi_stream <cid-xf::common::utils_hw::axi_to_multi_stream>` function.
+This document describes the structure and execution of axiToMultiStream,
+implemented as :ref:`axiToMultiStream <cid-xf::common::utils_hw::axi_to_multi_stream>` function.
 
 .. image:: /images/axi_to_multi_stream.png
    :alt: axi_to_multi_stream Structure
    :width: 80%
    :align: center
 
-The axi_to_multi_stream primitive non-blocking and Round Robin load multiple categories of data from one AXI master to streams.
+The axiToMultiStream primitive non-blocking and Round Robin load multiple categories of data from one AXI master to streams.
 For example, in the implementation of one AXI port loading three types of data, the data of each type coulde be tightly packed.
 Each type of data's length should be in number of char. The three types of data width cloud be unaligned or aligned,
 e.g. three types of data compressed in one binary files. AXI port is assumed to have width as multiple of 8-bit char.
