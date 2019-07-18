@@ -65,7 +65,7 @@ struct UpBound {
 };
 
 template <int N>
-ap_uint<N> countOnes(ap_uint<N> y) {
+inline ap_uint<N> countOnes(ap_uint<N> y) {
 #pragma HLS inline
 
     ap_uint<N> x0 = y;
@@ -77,7 +77,7 @@ ap_uint<N> countOnes(ap_uint<N> y) {
     return x5;
 }
 
-int countBits(long long x) {
+inline int countBits(long long x) {
     x = (x & 0x5555555555555555) + ((x & 0xaaaaaaaaaaaaaaaa) >> 1);
     x = (x & 0x3333333333333333) + ((x & 0xcccccccccccccccc) >> 2);
     x = (x & 0x0f0f0f0f0f0f0f0f) + ((x & 0xf0f0f0f0f0f0f0f0) >> 4);
@@ -88,13 +88,14 @@ int countBits(long long x) {
 }
 
 template <>
-ap_uint<1> countOnes<1>(ap_uint<1> y) {
+inline ap_uint<1> countOnes<1>(ap_uint<1> y) {
 #pragma HLS inline
 
     return y & 0x1;
 }
+
 template <>
-ap_uint<2> countOnes<2>(ap_uint<2> y) {
+inline ap_uint<2> countOnes<2>(ap_uint<2> y) {
 #pragma HLS inline
 
     ap_uint<2> x0 = y;
@@ -103,7 +104,7 @@ ap_uint<2> countOnes<2>(ap_uint<2> y) {
 }
 
 template <>
-ap_uint<4> countOnes<4>(ap_uint<4> y) {
+inline ap_uint<4> countOnes<4>(ap_uint<4> y) {
 #pragma HLS inline
 
     ap_uint<4> x0 = y;
@@ -113,7 +114,7 @@ ap_uint<4> countOnes<4>(ap_uint<4> y) {
 }
 
 template <>
-ap_uint<8> countOnes<8>(ap_uint<8> y) {
+inline ap_uint<8> countOnes<8>(ap_uint<8> y) {
 #pragma HLS inline
 
     ap_uint<8> x0 = y;
@@ -124,7 +125,7 @@ ap_uint<8> countOnes<8>(ap_uint<8> y) {
 }
 
 template <>
-ap_uint<16> countOnes<>(ap_uint<16> y) {
+inline ap_uint<16> countOnes<>(ap_uint<16> y) {
 #pragma HLS inline
 
     ap_uint<16> x0 = y;
@@ -136,7 +137,7 @@ ap_uint<16> countOnes<>(ap_uint<16> y) {
 }
 
 template <>
-ap_uint<32> countOnes<32>(ap_uint<32> y) {
+inline ap_uint<32> countOnes<32>(ap_uint<32> y) {
 #pragma HLS inline
 
     ap_uint<32> x0 = y;
@@ -148,7 +149,7 @@ ap_uint<32> countOnes<32>(ap_uint<32> y) {
     return x5;
 }
 template <>
-ap_uint<128> countOnes<128>(ap_uint<128> y) {
+inline ap_uint<128> countOnes<128>(ap_uint<128> y) {
 #pragma HLS inline
     ap_uint<128> x0 = y;
     ap_uint<128> x1 = (x0 & 0x5555555555555555) + ((x0 & 0xaaaaaaaaaaaaaaaa) >> 1);
