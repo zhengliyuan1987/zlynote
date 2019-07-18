@@ -24,7 +24,7 @@ Internals of axiToMultiStream
    :maxdepth: 2
 
 This document describes the structure and execution of axiToMultiStream,
-implemented as :ref:`axiToMultiStream <cid-xf::common::utils_hw::axi_to_multi_stream>` function.
+implemented as :ref:`axiToMultiStream <cid-xf::common::utils_hw::axiToMultiStream>` function.
 
 .. image:: /images/axi_to_multi_stream.png
    :alt: axi_to_multi_stream Structure

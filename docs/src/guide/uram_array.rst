@@ -23,7 +23,7 @@ Internals of UramArray
    :hidden:
    :maxdepth: 2
 
-The :ref:`UramArray <cid-xf::common::utils_hw::uram_array>` class aims to
+The :ref:`UramArray <cid-xf::common::utils_hw::UramArray>` class aims to
 help users to achive faster update rate to data stored in URAM blocks.
 
 Work Flow

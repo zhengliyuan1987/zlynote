@@ -24,7 +24,7 @@ Internals of streamToAxi
    :maxdepth: 2
 
 This document describes the structure and execution of streamToAxi,
-implemented as :ref:`streamToAxi <cid-xf::common::utils_hw::stream_to_axi>` function.
+implemented as :ref:`streamToAxi <cid-xf::common::utils_hw::streamToAxi>` function.
 
 This function is designed for writing data into AXI master in burst mode.
 

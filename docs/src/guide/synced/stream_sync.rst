@@ -24,7 +24,7 @@ Internals of streamSync
    :maxdepth: 3
 
 This document describes the structure and execution of streamSync,
-implemented as :ref:`streamSync <cid-xf::common::utils_hw::stream_sync>` function.
+implemented as :ref:`streamSync <cid-xf::common::utils_hw::streamSync>` function.
 
 .. image:: /images/stream_sync.png
    :alt: stream sync Structure

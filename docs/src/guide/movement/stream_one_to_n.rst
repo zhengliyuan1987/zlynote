@@ -19,7 +19,7 @@
 Internals of streamOneToN
 *****************************************
 
-The :ref:`streamOneToN <cid-xf::common::utils_hw::stream_one_to_n>` API
+The :ref:`streamOneToN <cid-xf::common::utils_hw::streamOneToN>` API
 is designed for distributing data from one source to multiple processor units.
 Three different algorithms have been implemented, ``RoundRobinT``,
 ``LoadBalanceT`` and ``TagSelectT``.

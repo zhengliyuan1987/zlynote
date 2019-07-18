@@ -23,7 +23,7 @@ Internals of streamCombine
    :hidden:
    :maxdepth: 3
 
-The :ref:`streamCombine <cid-xf::common::utils_hw::stream_combine>` function
+The :ref:`streamCombine <cid-xf::common::utils_hw::streamCombine>` function
 is designed for packing multiple elements of same width into a vector.
 
 This module offers two static configurations: using the data from LSB or MSB.

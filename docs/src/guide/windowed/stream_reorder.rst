@@ -24,7 +24,7 @@ Internals of streamReorder
    :maxdepth: 3
 
 This document describes the structure and execution of streamReorder,
-implemented as :ref:`streamReorder <cid-xf::common::utils_hw::stream_reorder>` function.
+implemented as :ref:`streamReorder <cid-xf::common::utils_hw::streamReorder>` function.
 
 .. image:: /images/stream_reorder.png
    :alt: stream reoder Structure

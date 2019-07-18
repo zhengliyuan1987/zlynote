@@ -23,7 +23,7 @@ Internals of streamSplit
    :hidden:
    :maxdepth: 3
 
-The :ref:`streamSplit <cid-xf::common::utils_hw::stream_split>` is designed
+The :ref:`streamSplit <cid-xf::common::utils_hw::streamSplit>` is designed
 for splitting a wide stream into multiple narrow ones, as it is common to
 combine several data elements of the same type as a vector and pass them
 together in FPGA data paths.

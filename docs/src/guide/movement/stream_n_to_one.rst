@@ -19,7 +19,7 @@
 Internals of streamNToOne
 *****************************************
 
-The :ref:`streamNToOne <cid-xf::common::utils_hw::stream_one_to_n>` API
+The :ref:`streamNToOne <cid-xf::common::utils_hw::streamNToOne>` API
 is designed for collecing data from multiple processor units.
 Three different algorithms have been implemented, ``RoundRobinT``,
 ``LoadBalanceT`` and ``TagSelectT``.

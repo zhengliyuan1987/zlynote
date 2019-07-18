@@ -23,7 +23,7 @@ Internals of streamDiscard
    :hidden:
    :maxdepth: 2
 
-The :ref:`streamDiscard <cid-xf::common::utils_hw::stream_discard>` module
+The :ref:`streamDiscard <cid-xf::common::utils_hw::streamDiscard>` module
 works as a sink of stream(s).
 It basically reads all inputs and discard them.
 Users can use :ref:`streamOneToN <guide-stream_one_to_n>`'s ``TagSelectT``

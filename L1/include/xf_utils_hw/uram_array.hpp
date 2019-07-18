@@ -52,7 +52,7 @@ struct need_num<total, one, false> {
 };
 } // details
 
-/// @class uram_array uram_array.h "xf_utils_hw/uram_array.h"
+/// @class UramArray uram_array.h "xf_utils_hw/uram_array.h"
 ///
 /// @brief Helper class to create URAM array that can be updated every cycle
 /// with forwarding regs.
