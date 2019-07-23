@@ -39,10 +39,6 @@ struct RoundRobinT {};
 struct LSBSideT {};
 struct MSBSideT {};
 
-// shuffle
-struct ShuffleLeftT {};
-struct ShuffleRightT {};
-
 } // utils_hw
 } // common
 } // xf
