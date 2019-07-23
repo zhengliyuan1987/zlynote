@@ -101,7 +101,7 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                              hls::stream<bool>& e_buf_lcm_strm) {
     const int buf_width = _WInStrm * _NStrm;
     const int num_in = _NStrm;
-    const int up_nstrm = UpBound<_NStrm>::up;
+    const int up_nstrm = UpBound<_NStrm>::value;
     ap_uint<2 * buf_width> buff_a = 0;
     ap_uint<buf_width> buff_b = 0;
     ap_uint<_NStrm> last = 0;
@@ -182,9 +182,9 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
         for (int i = 1; i < _NStrm; ++i) {
 #pragma HLS unroll
             ap_uint<up_nstrm> v = val.range(i - 1, 0);
-            int ones = countOnes<up_nstrm>(v); // it's similar to round robin  if ones always is i.
-            int p = ones;                       // index of tmpb[i].range(), where  istrm[i] is stored if it
-                                                // is not empty
+            int ones = countOnes(v); // it's similar to round robin  if ones always is i.
+            int p = ones;            // index of tmpb[i].range(), where  istrm[i] is stored if it
+                                     // is not empty
             ap_uint<_NStrm* _WInStrm> d = ttm[i];
             tmpb[i] = d << (p * _WInStrm);
 #if !defined(__SYNTHESIS__) && XF_UTIL_STRM_1NRR_DEBUG == 1
@@ -198,7 +198,7 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
             // merge data,
             buff_b |= tmpb[i];
         }
-        int un = countOnes<up_nstrm>(val); // how many new data are collected to buffer at this time
+        int un = countOnes(val); // how many new data are collected to buffer at this time
 
         // accumulate data
         if (un > 0) {

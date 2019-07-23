@@ -218,7 +218,7 @@ void stream_one_to_n_distribute(hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n
     const int num_out = buf_width / _WOutStrm;
     const int count_out = num_out / _NStrm;
     // const int up_nstrm  = _NStrm;
-    const int up_nstrm = UpBound<_NStrm>::up;
+    const int up_nstrm = UpBound<_NStrm>::value;
     const int deq_depth = 8;
     const int deq_width = 4;
     ap_uint<buf_width> buff_r = 0;
@@ -361,7 +361,7 @@ LOOP_core:
             ap_uint<up_nstrm> bf = inv_bak_full.range(i - 1, 0);
             // the number of not full streams befor the i-th streams ( i.e, among the
             // first i-1 streams).
-            int nb = countOnes<up_nstrm>(bf);
+            int nb = countOnes(bf);
             // no-blockings
             int mv = nb + base;
             pos[i] = (mv >= mult_nstrm) ? (mv - mult_nstrm) : mv;
@@ -379,7 +379,7 @@ LOOP_core:
         last_full = bak_full;
         // the numbers of data which are written to deq from buf_arr in this
         // iteration
-        rn2 = countOnes<up_nstrm>(inv_bak_full);
+        rn2 = countOnes(inv_bak_full);
 #if !defined(__SYNTHESIS__) && XF_UTILS_HW_STRM_1NRR_DEBUG == 1
         std::cout << "last_full =  " << std::hex << last_full << std::endl;
         std::cout << "full =  " << std::hex << full << std::endl;
