@@ -30,23 +30,25 @@ namespace common {
 namespace utils_hw {
 
 /**
- * @class PowerOf2 common.hpp "xf_utils_hw/common.hpp"
+ * @struct PowerOf2 common.hpp "xf_utils_hw/common.hpp"
  * @brief Template to calculate power of 2.
  * @tparam _N the power to be calculated.
  */
 template <int _N>
 struct PowerOf2 {
+    /// value of 2^(_N)
     static const unsigned value = (1u << _N);
 };
 
 /**
- * @class GCD common.hpp "xf_utils_hw/common.hpp"
+ * @struct GCD common.hpp "xf_utils_hw/common.hpp"
  * @brief Template to calculate Greatest Common Divisor (GCD) of two integers.
  * @tparam _A integer
  * @tparam _B the other integer
  */
 template <int _A, int _B>
 struct GCD {
+    /// value of GCD of _A and _B
     static const int value = GCD<_B, _A % _B>::value;
 };
 template <int _A>
@@ -55,13 +57,14 @@ struct GCD<_A, 0> {
 };
 
 /**
- * @class LCM common.hpp "xf_utils_hw/common.hpp"
+ * @struct LCM common.hpp "xf_utils_hw/common.hpp"
  * @brief Template to calculate Least Common Multiple(LCM) of two integers.
  * @tparam _A integer
  * @tparam _B the other integer
  */
 template <int _A, int _B>
 struct LCM {
+    /// value of LCM of _A and _B
     static const int value = _A * _B / GCD<_B, _A % _B>::value;
 };
 

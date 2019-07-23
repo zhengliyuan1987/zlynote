@@ -13,20 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _module_guide:
+.. _helper:
 
-======================
-L1 Module User Guide
-======================
+********************************************
+Template Helpers in ``xf::common::utils_hw``
+********************************************
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
-   stream_based.rst
-   api.rst
-   api_class.rst
-   helper.rst
-   tag.rst
-   internals.rst
-   examples.rst
+.. include:: ../rst/struct_xf_common_utils_hw_PowerOf2.rst
+
+.. include:: ../rst/struct_xf_common_utils_hw_GCD.rst
+
+.. include:: ../rst/struct_xf_common_utils_hw_LCM.rst
 

@@ -13,20 +13,18 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-.. _module_guide:
+.. _tag_structs:
 
-======================
-L1 Module User Guide
-======================
+********************************************
+Tag Types in ``xf::common::utils_hw``
+********************************************
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
-   stream_based.rst
-   api.rst
-   api_class.rst
-   helper.rst
-   tag.rst
-   internals.rst
-   examples.rst
+.. include:: ../rst/struct_xf_common_utils_hw_LoadBalanceT.rst
+.. include:: ../rst/struct_xf_common_utils_hw_RoundRobinT.rst
+.. include:: ../rst/struct_xf_common_utils_hw_TagSelectT.rst
+.. include:: ../rst/struct_xf_common_utils_hw_LSBSideT.rst
+.. include:: ../rst/struct_xf_common_utils_hw_MSBSideT.rst
 

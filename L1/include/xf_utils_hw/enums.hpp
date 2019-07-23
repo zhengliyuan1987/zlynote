@@ -31,12 +31,27 @@ namespace utils_hw {
 // to avoid trouble with template inference.
 
 // distribute and collect
+
+/// @struct TagSelectT enums.hpp "xf_utils_hw/enums.hpp"
+/// @brief Distribute or collect by external tags.
 struct TagSelectT {};
+
+/// @struct LoadBalanceT enums.hpp "xf_utils_hw/enums.hpp"
+/// @brief Distribute or collect according to back-pressure.
 struct LoadBalanceT {};
+
+/// @struct RoundRobinT enums.hpp "xf_utils_hw/enums.hpp"
+/// @brief Distribute or collect in round-robin order.
 struct RoundRobinT {};
 
 // combine
+
+/// @struct LSBSideT enums.hpp "xf_utils_hw/enums.hpp"
+/// @brief Use the LSB side first.
 struct LSBSideT {};
+
+/// @struct MSBSideT enums.hpp "xf_utils_hw/enums.hpp"
+/// @brief Use the MSB side first.
 struct MSBSideT {};
 
 } // utils_hw
