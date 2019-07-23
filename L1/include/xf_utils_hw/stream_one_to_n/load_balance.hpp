@@ -218,7 +218,7 @@ void stream_one_to_n_distribute(hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n
     const int num_out = buf_width / _WOutStrm;
     const int count_out = num_out / _NStrm;
     // const int up_nstrm  = _NStrm;
-    const int up_nstrm = UpBound<_NStrm>::up;
+    const int up_nstrm = UpBound<_NStrm>::value;
     const int deq_depth = 8;
     const int deq_width = 4;
     ap_uint<buf_width> buff_r = 0;

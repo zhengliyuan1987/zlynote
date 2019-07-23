@@ -71,12 +71,31 @@ struct LCM {
 namespace details {
 
 /**
+ * @struct UpBound common.hpp "xf_utils_hw/common.hpp"
+ * @brief Template to calculate next power of 2, up to 128. 
+ * @tparam _N the value to be calculated.
+ */
+template <int _N>
+struct UpBound {
+    // clang-format off
+    static const int value = (_N >=128) ? 128 :
+                              _N > 64   ? 128 :
+                              _N > 32   ? 64  :
+                              _N > 16   ? 32  :
+                              _N > 8    ? 16  :
+                              _N > 4    ? 8   :
+                              _N > 2    ? 4   :
+                              _N > 1    ? 2   : 1 ;
+    // clang-format on
+};
+
+/**
  * @brief Count ones in an integer.
  * @tparam _N width of the integer in number of bits.
  * @param y input
  * @return the number of asserted bits.
  */
-inline ap_uint<1> countOnes<1>(ap_uint<1> y) {
+inline ap_uint<1> countOnes(ap_uint<1> y) {
 #pragma HLS inline
 
     return y & 0x1;

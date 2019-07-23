@@ -80,20 +80,6 @@ namespace utils_hw {
 
 namespace details {
 
-template <int NStrm>
-struct UpBound {
-    // clang-format off
-    static const int up= (NStrm >=128) ? 128 :
-                          NStrm > 64   ? 128 :
-                          NStrm > 32   ? 64  :
-                          NStrm > 16   ? 32  :
-                          NStrm > 8    ? 16  :
-                          NStrm > 4    ? 8   :
-                          NStrm > 2    ? 4   :
-                          NStrm > 1    ? 2   : 1 ;
-    // clang-format on
-};
-
 /**
  * @brief read the data from _NStrm streams, skip the empty streams
  * collect  _NStrm data(_WInStrm bits) from input streams and output
@@ -115,7 +101,7 @@ void stream_n_to_one_read_lb(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
                              hls::stream<bool>& e_buf_lcm_strm) {
     const int buf_width = _WInStrm * _NStrm;
     const int num_in = _NStrm;
-    const int up_nstrm = UpBound<_NStrm>::up;
+    const int up_nstrm = UpBound<_NStrm>::value;
     ap_uint<2 * buf_width> buff_a = 0;
     ap_uint<buf_width> buff_b = 0;
     ap_uint<_NStrm> last = 0;
