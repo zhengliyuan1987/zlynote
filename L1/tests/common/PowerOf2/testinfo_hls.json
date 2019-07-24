@@ -1,0 +1,25 @@
+{
+    "case_name": "jks.L1_PowerOf2",
+    "disable": 0,
+    "jobs": [
+        {
+            "dependency": [],
+            "env": null,
+            "files": [],
+            "index": 0,
+            "max_memory_MB": 4096,
+            "max_time_min": 60,
+            "server": "lsf"
+        }
+    ],
+    "machine": {
+        "dsa": "u200",
+        "os": "rhel74",
+        "sdx": "2018.3"
+    },
+    "test_type": [
+        "hls_csim",
+        "hls_csynth",
+        "hls_cosim",
+    ]
+}
