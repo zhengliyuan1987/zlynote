@@ -69,21 +69,21 @@ export PATH := $(XILINX_VIVADO)/bin:$(PATH)
 # MK_INC_END vivado.mk
 
 DEVICE ?= u200
-# MK_INC_BEGIN set_part.mk
+# MK_INC_BEGIN vitis_set_part.mk
 
 ifeq (,$(XPART))
-# MK_INC_BEGIN sdx.mk
+# MK_INC_BEGIN vitis.mk
 
-TOOL_VERSION ?= 2019.1
+TOOL_VERSION ?= 2019.2
 
-ifeq (,$(XILINX_SDX))
-XILINX_SDX = /opt/xilinx/SDx/$(TOOL_VERSION)
+ifeq (,$(XILINX_VITIS))
+XILINX_VITIS = /opt/xilinx/Vitis/$(TOOL_VERSION)
 endif
-export XILINX_SDX
-.PHONY: check_xocc
-check_xocc:
-ifeq (,$(wildcard $(XILINX_SDX)/bin/xocc))
-	@echo "Cannot locate SDx installation. Please set XILINX_SDX variable." && false
+export XILINX_VITIS
+.PHONY: check_vpp
+check_vpp:
+ifeq (,$(wildcard $(XILINX_VITIS)/bin/v++))
+	@echo "Cannot locate Vitis installation. Please set XILINX_VITIS variable." && false
 endif
 
 ifeq (,$(XILINX_XRT))
@@ -96,15 +96,15 @@ ifeq (,$(wildcard $(XILINX_XRT)/lib/libxilinxopencl.so))
 	@echo "Cannot locate XRT installation. Please set XILINX_XRT variable." && false
 endif
 
-export PATH := $(XILINX_SDX)/bin:$(XILINX_XRT)/bin:$(PATH)
+export PATH := $(XILINX_VITIS)/bin:$(XILINX_XRT)/bin:$(PATH)
 
 ifeq (,$(LD_LIBRARY_PATH))
 LD_LIBRARY_PATH := $(XILINX_XRT)/lib
 else
 LD_LIBRARY_PATH := $(XILINX_XRT)/lib:$(LD_LIBRARY_PATH)
 endif
-ifneq (,$(wildcard $(XILINX_SDX)/bin/ldlibpath.sh))
-export LD_LIBRARY_PATH := $(shell $(XILINX_SDX)/bin/ldlibpath.sh $(XILINX_SDX)/lib/lnx64.o):$(LD_LIBRARY_PATH)
+ifneq (,$(wildcard $(XILINX_VITIS)/bin/ldlibpath.sh))
+export LD_LIBRARY_PATH := $(shell $(XILINX_VITIS)/bin/ldlibpath.sh $(XILINX_VITIS)/lib/lnx64.o):$(LD_LIBRARY_PATH)
 endif
 
 # Target check
@@ -113,8 +113,8 @@ ifeq ($(filter $(TARGET),sw_emu hw_emu hw),)
 $(error TARGET is not sw_emu, hw_emu or hw)
 endif
 
-# MK_INC_END sdx.mk
-# MK_INC_BEGIN set_platform.mk
+# MK_INC_END vitis.mk
+# MK_INC_BEGIN vitis_set_platform.mk
 
 ifneq (,$(wildcard $(DEVICE)))
 # Use DEVICE as a file path
@@ -129,7 +129,7 @@ endif
 endif
 # Match the name
 DEVICE_L := $(shell echo $(DEVICE) | tr A-Z a-z)
-XPLATFORM_PATHS := $(subst :, ,$(PLATFORM_REPO_PATHS)) $(XILINX_SDX)/platforms
+XPLATFORM_PATHS := $(subst :, ,$(PLATFORM_REPO_PATHS)) $(XILINX_VITIS)/platforms
 XPLATFORMS := $(foreach p, $(XPLATFORM_PATHS), $(wildcard $(p)/*/*.xpfm))
 XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
 endif
@@ -158,11 +158,11 @@ endif
 
 XDEVICE := $(basename $(notdir $(XPLATFORM)))
 
-# MK_INC_END set_platform.mk
+# MK_INC_END vitis_set_platform.mk
 # Query the part name of device
 ifeq (1, $(words $(XPLATFORM)))
-ifneq (,$(wildcard $(XILINX_SDX)/bin/platforminfo))
-override XPART := $(shell $(XILINX_SDX)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(XPLATFORM))
+ifneq (,$(wildcard $(XILINX_VITIS)/bin/platforminfo))
+override XPART := $(shell $(XILINX_VITIS)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(XPLATFORM))
 endif
 endif # XPLATFORM
 endif # XPART
@@ -172,7 +172,7 @@ check_part:
 ifeq (,$(XPART))
 	@echo "XPART is not set and cannot be inferred. Please run \`make help\` for usage info." && false
 endif
-# MK_INC_END set_part.mk
+# MK_INC_END vitis_set_part.mk
 
 # MK_INC_BEGIN hls_test_rules.mk
 
