@@ -26,18 +26,21 @@ help::
 	@echo ""
 	@echo "Makefile Usage:"
 	@echo ""
-	@echo "  make run DEVICE=<FPGA platform> CSIM=1 CSYNTH=1 COSIM=1"
+	@echo "  make run CSIM=1 CSYNTH=1 COSIM=1 DEVICE=<FPGA platform> PLATFORM_REPO_PATHS=<path to platform directories>"
 	@echo "      Command to run the selected tasks for specified device."
 	@echo ""
 	@echo "      Valid tasks are CSIM, CSYNTH, COSIM, VIVADO_SYN, VIVADO_IMPL"
 	@echo ""
 	@echo "      DEVICE is case-insensitive and support awk regex."
-	@echo "      For example, \`make run DEVICE='u200.*qdma' CSIM=1\`"
+	@echo "      For example, \`make run DEVICE='u200.*xdma' COSIM=1\`"
 	@echo "      It can also be an absolute path to platform file."
 	@echo ""
-	@echo "  make run XPART=<FPGA part name> CSIM=1"
+	@echo "      PLATFORM_REPO_PATHS variable is used to specify the paths in which the platform files will be"
+	@echo "      searched for."
+	@echo ""
+	@echo "  make run CSIM=1 CSYNTH=1 COSIM=1 XPART=<FPGA part name>"
 	@echo "      Alternatively, the FPGA part can be speficied via XPART."
-	@echo "      For example, \`make run XPART='xcu200-fsgd2104-2-e' CSIM=1\`"
+	@echo "      For example, \`make run XPART='xcu200-fsgd2104-2-e' COSIM=1\`"
 	@echo "      When XPART is set, DEVICE will be ignored."
 	@echo ""
 	@echo "  make clean "
@@ -48,15 +51,18 @@ help::
 
 # MK_INC_BEGIN vivado.mk
 
-TOOL_VERSION ?= 2018.3
+TOOL_VERSION ?= 2019.1
 
 ifeq (,$(XILINX_VIVADO))
-XILINX_SDX = /opt/xilinx/Vivado/$(TOOL_VERSION)
-ifeq (,$(wildcard $(XILINX_SDX)/bin/vivado))
-$(error "Cannot locate Vivado installation. Please set XILINX_VIVADO variable.")
-endif
+XILINX_VIVADO = /opt/xilinx/Vivado/$(TOOL_VERSION)
 endif
 export XILINX_VIVADO
+
+.PHONY: check_vivado
+check_vivado:
+ifeq (,$(wildcard $(XILINX_VIVADO)/bin/vivado))
+	@echo "Cannot locate Vivado installation. Please set XILINX_VIVADO variable." && false
+endif
 
 export PATH := $(XILINX_VIVADO)/bin:$(PATH)
 
@@ -68,30 +74,37 @@ DEVICE ?= u200
 ifeq (,$(XPART))
 # MK_INC_BEGIN sdx.mk
 
-TOOL_VERSION ?= 2018.3
+TOOL_VERSION ?= 2019.1
 
 ifeq (,$(XILINX_SDX))
 XILINX_SDX = /opt/xilinx/SDx/$(TOOL_VERSION)
-ifeq (,$(wildcard $(XILINX_SDX)/bin/xocc))
-$(error "Cannot locate SDx installation. Please set XILINX_SDX variable.")
-endif
 endif
 export XILINX_SDX
+.PHONY: check_xocc
+check_xocc:
+ifeq (,$(wildcard $(XILINX_SDX)/bin/xocc))
+	@echo "Cannot locate SDx installation. Please set XILINX_SDX variable." && false
+endif
 
 ifeq (,$(XILINX_XRT))
 XILINX_XRT = /opt/xilinx/xrt
-ifeq (,$(wildcard $(XILINX_SDX)/lib/libxilinxopencl.so))
-$(error "Cannot locate XRT installation. Please set XILINX_XRT variable.")
-endif
 endif
 export XILINX_XRT
+.PHONY: check_xrt
+check_xrt:
+ifeq (,$(wildcard $(XILINX_XRT)/lib/libxilinxopencl.so))
+	@echo "Cannot locate XRT installation. Please set XILINX_XRT variable." && false
+endif
 
 export PATH := $(XILINX_SDX)/bin:$(XILINX_XRT)/bin:$(PATH)
 
 ifeq (,$(LD_LIBRARY_PATH))
-export LD_LIBRARY_PATH := $(shell $(XILINX_SDX)/bin/ldlibpath.sh $(XILINX_SDX)/lib/lnx64.o):$(XILINX_XRT)/lib
+LD_LIBRARY_PATH := $(XILINX_XRT)/lib
 else
-export LD_LIBRARY_PATH := $(shell $(XILINX_SDX)/bin/ldlibpath.sh $(XILINX_SDX)/lib/lnx64.o):$(XILINX_XRT)/lib:$(LD_LIBRARY_PATH)
+LD_LIBRARY_PATH := $(XILINX_XRT)/lib:$(LD_LIBRARY_PATH)
+endif
+ifneq (,$(wildcard $(XILINX_SDX)/bin/ldlibpath.sh))
+export LD_LIBRARY_PATH := $(shell $(XILINX_SDX)/bin/ldlibpath.sh $(XILINX_SDX)/lib/lnx64.o):$(LD_LIBRARY_PATH)
 endif
 
 # Target check
@@ -119,33 +132,50 @@ DEVICE_L := $(shell echo $(DEVICE) | tr A-Z a-z)
 XPLATFORM_PATHS := $(subst :, ,$(PLATFORM_REPO_PATHS)) $(XILINX_SDX)/platforms
 XPLATFORMS := $(foreach p, $(XPLATFORM_PATHS), $(wildcard $(p)/*/*.xpfm))
 XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-ifeq (,$(XPLATFORM))
+endif
+
 define MSG_PLATFORM
 No platform matched pattern '$(DEVICE)'.
 Avaialble platforms are: $(XPLATFORMS)
-To add more platforms, set the PLATFORM_REPO_PATHS variable.
+To add more platform directories, set the PLATFORM_REPO_PATHS variable.
 endef
-$(error $(MSG_PLATFORM))
-endif
-ifneq (,$(word 2,$(XPLATFORM)))
+export MSG_PLATFORM
+
 define MSG_DEVICE
 More than one platform matched: $(XPLATFORM)
-Please set DEVICE variable to specify a device. For example: DEVICE='u200.*xdma'
+Please set DEVICE variable more accurately to select only one platform file. For example: DEVICE='u200.*xdma'
 endef
-$(error $(MSG_DEVICE))
+export MSG_DEVICE
+
+.PHONY: check_platform
+check_platform:
+ifeq (,$(XPLATFORM))
+	@echo "$${MSG_PLATFORM}" && false
 endif
+ifneq (,$(word 2,$(XPLATFORM)))
+	@echo "$${MSG_DEVICE}" && false
 endif
 
 XDEVICE := $(basename $(notdir $(XPLATFORM)))
 
 # MK_INC_END set_platform.mk
 # Query the part name of device
-override XPART = $(shell PATH=$(PATH) platforminfo --json="hardwarePlatform.board.part" --platform $(XPLATFORM))
+ifeq (1, $(words $(XPLATFORM)))
+ifneq (,$(wildcard $(XILINX_SDX)/bin/platforminfo))
+override XPART := $(shell $(XILINX_SDX)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(XPLATFORM))
 endif
+endif # XPLATFORM
+endif # XPART
 
+.PHONY: check_part
+check_part:
+ifeq (,$(XPART))
+	@echo "XPART is not set and cannot be inferred. Please run \`make help\` for usage info." && false
+endif
 # MK_INC_END set_part.mk
 
 # MK_INC_BEGIN hls_test_rules.mk
+
 
 .PHONY: run setup runhls clean
 
@@ -160,19 +190,26 @@ QOR_CHECK ?= 0
 # at least RTL synthesis before check QoR
 ifeq (1,$(QOR_CHECK))
 ifeq (0,$(VIVADO_IMPL))
-VIVADO_SYN = 1
+override VIVADO_SYN := 1
 endif
-CSYNTH = 1
 endif
 
-# at least synthesis before cosim
+# need synthesis before cosim or vivado
+ifeq (1,$(VIVADO_IMPL))
+override CSYNTH := 1
+endif
+
+ifeq (1,$(VIVADO_SYN))
+override CSYNTH := 1
+endif
+
 ifeq (1,$(COSIM))
-CSYNTH = 1
+override CSYNTH := 1
 endif
 
 run: setup runhls
 
-setup:
+setup: | check_part
 	@rm -f ./settings.tcl
 	@if [ -n "$$CLKP" ]; then echo 'set CLKP $(CLKP)' >> ./settings.tcl ; fi
 	@echo 'set XPART $(XPART)' >> ./settings.tcl
@@ -182,17 +219,18 @@ setup:
 	@echo 'set VIVADO_SYN $(VIVADO_SYN)' >> ./settings.tcl
 	@echo 'set VIVADO_IMPL $(VIVADO_IMPL)' >> ./settings.tcl
 	@echo 'set QOR_CHECK $(QOR_CHECK)' >> ./settings.tcl
-	@echo 'set CASE_ROOT "$(CASE_ROOT)"' >> ./settings.tcl
+	@echo 'set XF_PROJ_ROOT "$(XF_PROJ_ROOT)"' >> ./settings.tcl
 	@echo "Configured: settings.tcl"
 	@echo "----"
 	@cat ./settings.tcl
 	@echo "----"
 
-runhls: setup
-	vivado_hls -f run_hls.tcl;
+HLS ?= vivado_hls
+runhls: setup | check_vivado
+	$(HLS) -f run_hls.tcl;
 
 clean:
-	rm -rf *.prj vivado_hls.log settings.tcl
+	rm -rf *.prj *_hls.log settings.tcl
 
 .PHONY: check
 check: run

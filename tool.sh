@@ -16,20 +16,22 @@
 
 case `lsb_release -i` in
   *Ubuntu)
-    export XILINX_XRT=/proj/rdi/xbuilds/2018.3_daily_latest/xbb/xrt/packages/xrt-2.1.0-ubuntu1604/opt/xilinx/xrt/
+    source /proj/rdi/xbuilds/2019.1_released/xbb/xrt/packages/xrt-2.1.0-ubuntu1604/opt/xilinx/xrt/setup.sh 2>&1 1>/dev/null
     ;;
   *CentOS|*RedHat*)
-    export XILINX_XRT=/proj/rdi/xbuilds/2018.3_daily_latest/xbb/xrt/packages/xrt-2.1.0-centos/opt/xilinx/xrt
+    source /proj/rdi/xbuilds/2019.1_released/xbb/xrt/packages/xrt-2.1.0-centos/opt/xilinx/xrt/setup.sh 2>&1 1>/dev/null
     ;;
   *)
     echo OS not detected, XILINX_XRT not set!
     ;;
 esac
-export XILINX_SDX=/proj/xbuilds/2018.3_daily_latest/installs/lin64/SDx/HEAD
-export XILINX_VIVADO=/proj/xbuilds/2018.3_daily_latest/installs/lin64/Vivado/HEAD
 
-export PLATFORM_REPO_PATHS=/proj/xbuilds/2018.3_daily_latest/xbb/dsadev/opt/xilinx/platforms
+source /proj/xbuilds/2019.1_released/installs/lin64/SDx/HEAD/settings64.sh
+
+export PLATFORM_REPO_PATHS=/proj/xbuilds/2019.1_daily_latest/xbb/dsadev/opt/xilinx/platforms
+
+echo "XILINX_XRT: $XILINX_XRT"
+echo "XILINX_SDX: $XILINX_SDX"
+echo "XILINX_VIVADO: $XILINX_VIVADO"
+echo "XILINX_VIVADO_HLS: $XILINX_VIVADO_HLS"
 echo "PLATFORM_REPO_PATHS: $PLATFORM_REPO_PATHS"
-
-export DEVICE=u200_xdma_201830_1
-echo "DEVICE: $DEVICE"

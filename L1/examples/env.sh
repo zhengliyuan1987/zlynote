@@ -14,9 +14,5 @@
 # limitations under the License.
 #
 
-export XILINX_XRT=/opt/xilinx/xrt
-export XILINX_SDX=/opt/xilinx/SDx
-export XILINX_VIVADO=/opt/xilinx/Vivado
-
 export XPART=xcu200-fsgd2104-2-e
 echo "XPART: $XPART"
