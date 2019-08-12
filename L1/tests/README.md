@@ -8,11 +8,10 @@ To perform c-simulation and co-sim on all tests, run the following command in th
 make CSIM=1 COSIM=1 run
 ```
 
-To test device other than default `xcu200-fsgd2104-2-e`, just specify the DSA name via DEVICE var:
+To test device other than default `xcu200-fsgd2104-2-e`, just specify the platform name via DEVICE var, for example:
 
 ```
-make CSIM=1 COSIM=1 check DEVICE=u250
+make CSIM=1 COSIM=1 check DEVICE=u250_xdma_201803_2 PLATFORM_REPO_PATHS=/my/path/to/xilinx/platforms
 ```
 
-Other than SDx tool variables, `PLATFORM_REPO_PATHS` must be set so that the makefile can detect
-the target platform and deduce the device to check against.
+Here the `PLATFORM_REPO_PATHS` is used to privde locations for platform files.
