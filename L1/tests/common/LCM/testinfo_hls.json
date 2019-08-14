@@ -1,25 +1,25 @@
 {
-    "case_name": "jks.L1_LCM",
-    "disable": 0,
+    "case_name": "jks.L1_LCM", 
+    "disable": 0, 
     "jobs": [
         {
-            "dependency": [],
-            "env": null,
-            "files": [],
-            "index": 0,
-            "max_memory_MB": 4096,
-            "max_time_min": 60,
+            "dependency": [], 
+            "env": null, 
+            "files": [], 
+            "index": 0, 
+            "max_memory_MB": 4096, 
+            "max_time_min": 180, 
             "server": "lsf"
         }
-    ],
+    ], 
     "machine": {
-        "dsa": "u200",
-        "os": "rhel74",
-        "sdx": "2018.3"
-    },
+        "shell": "u200"
+    }, 
     "test_type": [
-        "hls_csim",
-        "hls_csynth",
-        "hls_cosim",
+        "hls_csim", 
+        "hls_csynth", 
+        "hls_cosim", 
+        "hls_vivado_syn", 
+        "hls_vivado_impl"
     ]
 }
