@@ -310,7 +310,7 @@ void top_core(ap_uint<W_AXI>* in_buf, ap_uint<W_AXI>* out_buf, const int len) {
 
     // axi to stream
     // in_buf --> axi_istrm
-    xf::common::utils_hw::axiToStream<BURST_LENTH, W_AXI, t_strm>(in_buf, axi_istrm, e_axi_istrm, len, 0);
+    xf::common::utils_hw::axiToStream<BURST_LENTH, W_AXI, t_strm>(in_buf, len, axi_istrm, e_axi_istrm);
 
     // compute by mutiple process uinits
     // axi_istrm --> axi_ostrm

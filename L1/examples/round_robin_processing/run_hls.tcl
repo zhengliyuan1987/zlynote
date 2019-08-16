@@ -25,8 +25,8 @@ if {![info exists CLKP]} {
 
 open_project -reset $PROJ
 
-add_files code.cpp -cflags "-I${CASE_ROOT}/../../include"
-add_files -tb tb.cpp -cflags "-I${CASE_ROOT}/../../include"
+add_files code.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
+add_files -tb tb.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
 set_top round_robin_mpu
 
 open_solution -reset $SOLN
@@ -43,7 +43,7 @@ if {$CSYNTH == 1} {
 }
 
 if {$COSIM == 1} {
-  cosim_design -bc
+  cosim_design
 }
 
 if {$VIVADO_SYN == 1} {

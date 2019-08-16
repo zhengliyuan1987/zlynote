@@ -39,9 +39,9 @@ int test() {
     int comp_count = tempb / W_STRM;
 
     std::cout << std::dec << "W_STRM  = " << W_STRM << std::endl;
-    std::cout << std::dec << "W_PU = " << W_PU << std::endl;
+    std::cout << std::dec << "W_PU    = " << W_PU << std::endl;
     std::cout << std::dec << "NPU     = " << NPU << std::endl;
-    std::cout << std::dec << "NS        = " << NS << std::endl;
+    std::cout << std::dec << "NS      = " << NS << std::endl;
     for (int d = 0; d < NS; ++d) {
         istrm.write(d);
         e_istrm.write(false);
