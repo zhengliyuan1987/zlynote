@@ -45,6 +45,17 @@ namespace utils_hw {
  * The alignment width is assumed to be multiple of 8-bit char.
  * The AXI master port width is power of two, and no less than 8.
  *
+ * @tparam _BurstLen burst length of AXI buffer, default is 32.
+ * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
+ * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width
+ * stream.
+ *
+ * @param rbuf input AXI port.
+ * @param num number of data elements to load from AXI port.
+ * @param ostrm output stream.
+ * @param e_ostrm end flag for output stream.
+ */
+/* TODO
  * \rst
  * ::
  *
@@ -58,23 +69,11 @@ namespace utils_hw {
  *
  * \endrst
  *
- * @tparam _BurstLen burst length of AXI buffer, default is 32.
- * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _TStrm stream's type, e.g. ap_uint<aligned_width> for a aligned_width
- * stream.
- *
- * @param rbuf input AXI port.
- * @param num number of data elements to load from AXI port.
- * @param ostrm output stream.
- * @param e_ostrm end flag for output stream.
- * @param offset_num offset from the beginning of the buffer, by num of element.
+ * Add param offset_num offset from the beginning of the buffer, by num of element.
  */
+
 template <int _BurstLen = 32, int _WAxi, typename _TStrm>
-void axiToStream(ap_uint<_WAxi>* rbuf,
-                   hls::stream<_TStrm>& ostrm,
-                   hls::stream<bool>& e_ostrm,
-                   const int num,
-                   const int offset_num = 0);
+void axiToStream(ap_uint<_WAxi>* rbuf, const int num, hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm);
 
 /**
  * @brief Loading char data from AXI master to stream.
@@ -276,10 +275,9 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm,
 
 template <int _BurstLen, int _WAxi, typename _TStrm>
 void axiToStream(ap_uint<_WAxi>* rbuf,
-                   hls::stream<_TStrm>& ostrm,
-                   hls::stream<bool>& e_ostrm,
                    const int num,
-                   const int offset_num /* = 0 in decl */) {
+                   hls::stream<_TStrm>& ostrm,
+                   hls::stream<bool>& e_ostrm) {
     XF_UTILS_HW_STATIC_ASSERT(_WAxi % sizeof(_TStrm) == 0, "AXI port width is not multiple of stream element width.");
 
 #pragma HLS DATAFLOW
@@ -294,7 +292,7 @@ void axiToStream(ap_uint<_WAxi>* rbuf,
 
     details::read_to_vec<_WAxi, _BurstLen>(rbuf, num, scal_vec, vec_strm);
 
-    details::split_vec<_WAxi, _TStrm, scal_vec>(vec_strm, num, offset_num, ostrm, e_ostrm);
+    details::split_vec<_WAxi, _TStrm, scal_vec>(vec_strm, num, 0, ostrm, e_ostrm);
 }
 
 template <int _BurstLen, int _WAxi, typename _TStrm>

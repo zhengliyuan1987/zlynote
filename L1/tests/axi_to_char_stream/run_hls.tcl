@@ -22,38 +22,10 @@ set CLKP 2.5
 
 open_project -reset $PROJ
 
-add_files test_axi_to_stream.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
-add_files -tb test_axi_to_stream.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
-add_files -tb l_discount_fix.bin
-add_files -tb l_orderkey_nfdint.bin
-add_files -tb l_orderkey_unaligned.bin
-add_files -tb l_discount_fix.txt
-add_files -tb l_orderkey_nfdint.txt
-add_files -tb l_orderkey_unaligned.txt
-add_files -tb l_discount_few0.bin
-add_files -tb l_discount_few0.txt
-add_files -tb l_discount_few.txt
-add_files -tb l_discount_few.bin
-# test the top_align_axi_to_stream
-#set_top top_align_axi_to_stream
-#
-##corner test, modify define in testbanch##
-#set host_args "-dataFile l_discount_few0.bin    -isALBIN 1 -isALREF 1 -isZERO 0"
+add_files axi_to_char_stream_tb.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
+add_files -tb axi_to_char_stream_tb.cpp -cflags "-I${XF_PROJ_ROOT}/L1/include"
 
-##functional test##
-#set host_args "-dataFile l_discount_fix.bin    -isALBIN 1 -isALREF 1"
-#set host_args "-dataFile l_orderkey_nfdint.bin -isALBIN 1 -isALREF 0"
-
-# test the top_general_axi_to_stream
-set_top top_general_axi_to_stream
-##corner test, modify define set testbanch##
-#set host_args "-dataFile l_discount_few.bin       -isALBIN 0 -isALREF 1 -isZERO 0"
-#
-##functional test##
-#set host_args "-dataFile l_discount_fix.bin       -isALBIN 0 -isALREF 1 -isZERO 1"
-#set host_args "-dataFile l_orderkey_nfdint.bin    -isALBIN 0 -isALREF 0 -isZERO 1"
-set host_args "-dataFile l_orderkey_unaligned.bin -isALBIN 0 -isALREF 1 -isZERO 0"
-
+set_top top_axi_to_char_stream
 
 open_solution -reset $SOLN
 
@@ -61,8 +33,7 @@ set_part $XPART
 create_clock -period $CLKP
 
 if {$CSIM == 1} {
-  csim_design -compiler gcc -argv "$host_args"
- # csim_design -compiler gcc
+  csim_design
 }
 
 if {$CSYNTH == 1} {
@@ -70,8 +41,7 @@ if {$CSYNTH == 1} {
 }
 
 if {$COSIM == 1} {
- # cosim_design
-  cosim_design -compiler gcc -argv "$host_args"
+  cosim_design
 }
 
 if {$VIVADO_SYN == 1} {

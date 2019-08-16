@@ -28,14 +28,66 @@
 #include "xf_utils_hw/types.hpp"
 #include "xf_utils_hw/enums.hpp"
 
-// Forward decl
-
 namespace xf {
 namespace common {
 namespace utils_hw {
+
+// ---------------------- APIs ---------------------------------
+
+/**
+ * @brief Loading multiple categories of data from one AXI master to streams.
+ *
+ * This primitive assumes the width of AXI port is multiple of alignment width.
+ * When alignment width is less than AXI port width, the AXI port bandwidth
+ * will not be fully used.
+ *
+ * AXI port width and width of each type are assumed to be multiple of 8.
+ * It is assumed that the data width in bits is ``8 * sizeof(T)``, and data
+ * type can be casted from raw bits of matching width.
+ *
+ * This module assumes the data is tightly packed, so that the begining of
+ * Type 2 data may be placed in one AXI port row with the end of Type 1 data.
+ *
+ * \rst
+ * ::
+ *
+ *     AXI word [ elements of Type 1 ........................................ ]
+ *     AXI word [ elements of Type 1 ..... end | begin elements of Type 2 ... ]
+ *     AXI word [ elements of Type 2 ........................................ ]
+ *
+ * \endrst
+ *
+ * @tparam _BurstLen burst length.
+ * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
+ * @tparam _TStrm0 first stream's type.
+ * @tparam _TStrm1 second stream's type.
+ * @tparam _TStrm2 third stream's type.
+ *
+ * @param rbuf input AXI master port.
+ * @param ostrm0 output stream of type 0.
+ * @param e_ostrm0 end flag for output stream of type 0.
+ * @param ostrm1 output stream of type 1.
+ * @param e_ostrm1 end flag for output stream of type 1.
+ * @param ostrm2 output stream of type 2.
+ * @param e_ostrm2 end flag for output stream of type 2.
+ * @param len length of data in byte requested for each type.
+ * @param offset offset for each type, in number of bytes.
+ */
+template <int _BurstLen, int _WAxi, typename _TStrm0, typename _TStrm1, typename _TStrm2>
+void axiToMultiStream(ap_uint<_WAxi>* rbuf,
+                      hls::stream<_TStrm0>& ostrm0,
+                      hls::stream<bool>& e_ostrm0,
+                      hls::stream<_TStrm1>& ostrm1,
+                      hls::stream<bool>& e_ostrm1,
+                      hls::stream<_TStrm2>& ostrm2,
+                      hls::stream<bool>& e_ostrm2,
+                      const int num[3],
+                      const int offset[3]);
+
+// ------------------- Implementation --------------------------
+
 namespace details {
 
-// ---------------------- details ---------------------------------
 template <int _WAxi, int _BurstLen>
 void axi_onetype_batch_to_ram(const ap_uint<_WAxi>* rbuf,
                               const int off_axi,
@@ -121,8 +173,7 @@ bool axi_batchdata_to_stream(const ap_uint<_WAxi>* rbuf,
     /////////////// load data to local ram  ///////////////
     details::axi_onetype_batch_to_ram<_WAxi, _BurstLen>(rbuf, off_axi, len, pos, dat_ram, len_ram, pos_ram);
 
-    /////////////// nonblocking write one type data form ram to strm
-    //////////////////
+    /////////////// nonblocking write one type data form ram to strm //////////////////
     bool is_fnl = details::non_blocking_onetype_ram_to_stream<_WAxi, _BurstLen>(is_onetype_fnl, len, pos, dat_ram,
                                                                                 len_ram, pos_ram, vec_strm);
     return is_fnl;
@@ -203,9 +254,6 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
                                     const int offset,
                                     hls::stream<_TStrm>& r_strm,
                                     hls::stream<bool>& e_strm) {
-    //    if(len== 0)//explanatory note for len == 0 case
-    //        return ;
-
     const int nread = (len + offset + scal_char - 1) / scal_char;
     // n read times except the first read, n_read+1 = total read times
     int cnt_r = nread - 1;
@@ -275,57 +323,16 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
 
 } // details
 
-// ---------------------- APIs ---------------------------------
-
-/**
- * @brief Loading multiple categories of data from one AXI master to streams.
- *
- * This primitive assumes the width of AXI port is multiple of alignment width.
- * When alignment width is less than AXI port width, the AXI port bandwidth
- * will not be fully used.
- *
- * AXI port width and width of each type are assumed to be multiple of 8.
- * It is assumed that the data width in bits is ``8 * sizeof(T)``, and data
- * type can be casted from raw bits of matching width.
- *
- * This module assumes the data is tightly packed, so that the begining of
- * Type 2 data may be placed in one AXI port row with the end of Type 1 data.
- *
- * \rst
- * ::
- *
- *     AXI word [ elements of Type 1 ........................................ ]
- *     AXI word [ elements of Type 1 ..... end | begin elements of Type 2 ... ]
- *     AXI word [ elements of Type 2 ........................................ ]
- *
- * \endrst
- *
- * @tparam _BurstLen burst length.
- * @tparam _WAxi width of AXI port, must be power of 2 and between 8 to 512.
- * @tparam _TStrm0 first stream's type.
- * @tparam _TStrm1 second stream's type.
- * @tparam _TStrm2 third stream's type.
- *
- * @param rbuf input AXI port.
- * @param ostrm0 output stream of type 0.
- * @param e_ostrm0 end flag for output stream of type 0.
- * @param ostrm1 output stream of type 1.
- * @param e_ostrm1 end flag for output stream of type 1.
- * @param ostrm2 output stream of type 2.
- * @param e_ostrm2 end flag for output stream of type 2.
- * @param num number of elements to load from AXI port for each type.
- * @param offset offset for each type, in number of chars.
- */
 template <int _BurstLen, int _WAxi, typename _TStrm0, typename _TStrm1, typename _TStrm2>
 void axiToMultiStream(ap_uint<_WAxi>* rbuf,
-                         hls::stream<_TStrm0>& ostrm0,
-                         hls::stream<bool>& e_ostrm0,
-                         hls::stream<_TStrm1>& ostrm1,
-                         hls::stream<bool>& e_ostrm1,
-                         hls::stream<_TStrm2>& ostrm2,
-                         hls::stream<bool>& e_ostrm2,
-                         const int num[3],
-                         const int offset[3]) {
+                      hls::stream<_TStrm0>& ostrm0,
+                      hls::stream<bool>& e_ostrm0,
+                      hls::stream<_TStrm1>& ostrm1,
+                      hls::stream<bool>& e_ostrm1,
+                      hls::stream<_TStrm2>& ostrm2,
+                      hls::stream<bool>& e_ostrm2,
+                      const int num[3],
+                      const int offset[3]) {
 #pragma HLS DATAFLOW
 
     // The depth of FIFO in the circuit which is only related to the ability to

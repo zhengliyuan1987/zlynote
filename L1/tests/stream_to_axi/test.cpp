@@ -32,7 +32,8 @@ int rand_int(int a, int b) {
 void stream_to_axi_test(ap_uint<WAXI> wbuf[SNUM * WSTRM / WAXI + 1],
                         hls::stream<ap_uint<WSTRM> >& istrm,
                         hls::stream<bool>& e_strm) {
-// clang-format off
+    // clang-format off
+    ;
 #pragma HLS INTERFACE s_axilite port = wbuf bundle = control
 #pragma HLS INTERFACE m_axi port = wbuf offset = slave bundle = gmem0 \
   num_read_outstanding = 32 num_write_outstanding = 32 \
