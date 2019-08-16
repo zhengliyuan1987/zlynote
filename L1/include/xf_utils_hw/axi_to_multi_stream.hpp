@@ -81,7 +81,7 @@ void axiToMultiStream(ap_uint<_WAxi>* rbuf,
                       hls::stream<bool>& e_ostrm1,
                       hls::stream<_TStrm2>& ostrm2,
                       hls::stream<bool>& e_ostrm2,
-                      const int num[3],
+                      const int len[3],
                       const int offset[3]);
 
 // ------------------- Implementation --------------------------
@@ -331,7 +331,7 @@ void axiToMultiStream(ap_uint<_WAxi>* rbuf,
                       hls::stream<bool>& e_ostrm1,
                       hls::stream<_TStrm2>& ostrm2,
                       hls::stream<bool>& e_ostrm2,
-                      const int num[3],
+                      const int len[3],
                       const int offset[3]) {
 #pragma HLS DATAFLOW
 
@@ -344,7 +344,7 @@ void axiToMultiStream(ap_uint<_WAxi>* rbuf,
 #pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
 #pragma HLS STREAM variable = vec_strm depth = NONBLOCK_DEPTH
 #pragma HLS ARRAY_PARTITION variable = vec_strm complete
-#pragma HLS ARRAY_PARTITION variable = num complete
+#pragma HLS ARRAY_PARTITION variable = len complete
 #pragma HLS ARRAY_PARTITION variable = offset complete
 
     const int scal_char = _WAxi / 8;
@@ -361,12 +361,12 @@ void axiToMultiStream(ap_uint<_WAxi>* rbuf,
         off_ali[t] = (offset[t]) & (scal_char - 1); // scal_char is always 2^N
     }
 
-    details::read_to_vec_stream<_WAxi, _BurstLen, 3>(rbuf, vec_strm, num, offset);
-    details::split_vec_to_aligned_duplicate<_WAxi, _TStrm0, scal_vec0>(vec_strm[0], num[0], scal_char, off_ali[0],
+    details::read_to_vec_stream<_WAxi, _BurstLen, 3>(rbuf, vec_strm, len, offset);
+    details::split_vec_to_aligned_duplicate<_WAxi, _TStrm0, scal_vec0>(vec_strm[0], len[0], scal_char, off_ali[0],
                                                                        ostrm0, e_ostrm0);
-    details::split_vec_to_aligned_duplicate<_WAxi, _TStrm1, scal_vec1>(vec_strm[1], num[1], scal_char, off_ali[1],
+    details::split_vec_to_aligned_duplicate<_WAxi, _TStrm1, scal_vec1>(vec_strm[1], len[1], scal_char, off_ali[1],
                                                                        ostrm1, e_ostrm1);
-    details::split_vec_to_aligned_duplicate<_WAxi, _TStrm2, scal_vec2>(vec_strm[2], num[2], scal_char, off_ali[2],
+    details::split_vec_to_aligned_duplicate<_WAxi, _TStrm2, scal_vec2>(vec_strm[2], len[2], scal_char, off_ali[2],
                                                                        ostrm2, e_ostrm2);
 }
 
