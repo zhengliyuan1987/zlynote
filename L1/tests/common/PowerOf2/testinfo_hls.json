@@ -21,5 +21,6 @@
         "hls_cosim", 
         "hls_vivado_syn", 
         "hls_vivado_impl"
-    ]
+    ], 
+    "category": "canary"
 }
