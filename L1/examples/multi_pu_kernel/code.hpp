@@ -45,4 +45,4 @@ ap_uint<W_PU> calculate(ap_uint<W_PU> data);
 
 void top_core(ap_uint<W_AXI>* in_buf, ap_uint<W_AXI>* out_buf, const int len);
 
-#endif  // _XF_HW_UTILS_TEST_CODE_HPP
+#endif // _XF_HW_UTILS_TEST_CODE_HPP

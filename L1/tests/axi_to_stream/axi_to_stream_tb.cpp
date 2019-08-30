@@ -49,7 +49,7 @@ int main() {
     // popolate the buffer
     ap_uint<AXI_WIDTH>* buf = (ap_uint<AXI_WIDTH>*)malloc(sizeof(ap_uint<AXI_WIDTH>) * BUF_DEPTH);
 
-    DType* eptr = (DType*) buf;
+    DType* eptr = (DType*)buf;
     for (int i = 0; i < ELEM_NUM; i++) {
         eptr[i] = i;
     }
@@ -68,7 +68,7 @@ int main() {
 
     // verify the result
     int j = 0;
-    while(!e_strm.read()) {
+    while (!e_strm.read()) {
         DType t = d_strm.read();
         DType r = eptr[j++];
         if (t != r) {

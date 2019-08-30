@@ -66,11 +66,11 @@ namespace utils_hw {
 template <int _INStrm, int _ONstrm, typename _TIn>
 void streamShuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
-                    hls::stream<_TIn> istrms[_INStrm],
-                    hls::stream<bool>& e_istrm,
+                   hls::stream<_TIn> istrms[_INStrm],
+                   hls::stream<bool>& e_istrm,
 
-                    hls::stream<_TIn> ostrms[_ONstrm],
-                    hls::stream<bool>& e_ostrm);
+                   hls::stream<_TIn> ostrms[_ONstrm],
+                   hls::stream<bool>& e_ostrm);
 
 } // utils_hw
 } // common
@@ -84,11 +84,11 @@ namespace utils_hw {
 template <int _INStrm, int _ONstrm, typename _TIn>
 void streamShuffle(hls::stream<ap_uint<8 * _ONstrm> >& order_cfg,
 
-                    hls::stream<_TIn> istrms[_INStrm],
-                    hls::stream<bool>& e_istrm,
+                   hls::stream<_TIn> istrms[_INStrm],
+                   hls::stream<bool>& e_istrm,
 
-                    hls::stream<_TIn> ostrms[_ONstrm],
-                    hls::stream<bool>& e_ostrm) {
+                   hls::stream<_TIn> ostrms[_ONstrm],
+                   hls::stream<bool>& e_ostrm) {
     XF_UTILS_HW_STATIC_ASSERT(_INStrm <= 128, "stream_shuffle cannot handle more than 128 streams.");
 
     ap_int<8> route[_ONstrm];

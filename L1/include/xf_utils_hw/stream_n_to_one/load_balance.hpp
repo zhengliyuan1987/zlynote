@@ -46,10 +46,10 @@ namespace utils_hw {
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<ap_uint<_WOutStrm> >& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     LoadBalanceT alg);
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<ap_uint<_WOutStrm> >& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  LoadBalanceT alg);
 
 /**
  * @brief stream distribute, skip to read the empty input streams.
@@ -65,10 +65,10 @@ void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  */
 template <typename _TIn, int _NStrm>
 void streamNToOne(hls::stream<_TIn> istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<_TIn>& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     LoadBalanceT alg);
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<_TIn>& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  LoadBalanceT alg);
 
 } // utils_hw
 } // common
@@ -407,10 +407,10 @@ void stream_n_to_one_load_balance(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm]
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<ap_uint<_WOutStrm> >& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     LoadBalanceT alg) {
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<ap_uint<_WOutStrm> >& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  LoadBalanceT alg) {
     details::stream_n_to_one_load_balance<_WInStrm, _WOutStrm, _NStrm>(istrms, e_istrms, ostrm, e_ostrm);
 }
 
@@ -477,10 +477,10 @@ void stream_n_to_one_load_balance_type(hls::stream<_TIn> istrms[_NStrm],
  */
 template <typename _TIn, int _NStrm>
 void streamNToOne(hls::stream<_TIn> istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<_TIn>& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     LoadBalanceT alg) {
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<_TIn>& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  LoadBalanceT alg) {
     details::stream_n_to_one_load_balance_type<_TIn, _NStrm>(istrms, e_istrms, ostrm, e_ostrm);
 }
 } // utils_hw

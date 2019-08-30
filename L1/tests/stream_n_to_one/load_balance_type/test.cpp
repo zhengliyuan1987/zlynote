@@ -132,7 +132,7 @@ xf::util::level1::strm_one_to_n<WOUT_STRM, WIN_STRM,NSTRM>(
 
     produce_2(data_istrms, e_data_istrms, c_strms, e_c_strms);
     xf::common::utils_hw::streamNToOne<float, NSTRM>(c_strms, e_c_strms, data_ostrm, e_ostrm,
-                                                        xf::common::utils_hw::LoadBalanceT());
+                                                     xf::common::utils_hw::LoadBalanceT());
 }
 
 int test_n_1() {

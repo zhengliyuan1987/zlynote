@@ -49,10 +49,10 @@ namespace utils_hw {
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     LoadBalanceT alg);
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  LoadBalanceT alg);
 
 /**
  * @brief stream distribute, using load-balancing algorithm.
@@ -68,10 +68,10 @@ void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
  */
 template <typename _TIn, int _NStrm>
 void streamOneToN(hls::stream<_TIn>& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<_TIn> ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     LoadBalanceT alg);
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<_TIn> ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  LoadBalanceT alg);
 
 } // utils_hw
 } // common
@@ -554,10 +554,10 @@ void stream_one_to_n_load_balance(hls::stream<ap_uint<_WInStrm> >& istrm,
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void streamOneToN(hls::stream<ap_uint<_WInStrm> >& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     LoadBalanceT alg) {
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<ap_uint<_WOutStrm> > ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  LoadBalanceT alg) {
     details::stream_one_to_n_load_balance<_WInStrm, _WOutStrm, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
 }
 
@@ -613,10 +613,10 @@ void stream_one_to_n_load_balance_type(hls::stream<_TIn>& istrm,
  */
 template <typename _TIn, int _NStrm>
 void streamOneToN(hls::stream<_TIn>& istrm,
-                     hls::stream<bool>& e_istrm,
-                     hls::stream<_TIn> ostrms[_NStrm],
-                     hls::stream<bool> e_ostrms[_NStrm],
-                     LoadBalanceT alg) {
+                  hls::stream<bool>& e_istrm,
+                  hls::stream<_TIn> ostrms[_NStrm],
+                  hls::stream<bool> e_ostrms[_NStrm],
+                  LoadBalanceT alg) {
     details::stream_one_to_n_load_balance_type<_TIn, _NStrm>(istrm, e_istrm, ostrms, e_ostrms);
 }
 

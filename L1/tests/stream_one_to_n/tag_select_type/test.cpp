@@ -29,9 +29,8 @@ void test_core_1_n_select(hls::stream<float>& data_istrm,
                           hls::stream<bool>& e_tag_istrm,
                           hls::stream<float> data_ostrms[NSTRM],
                           hls::stream<bool> e_data_ostrms[NSTRM]) {
-    xf::common::utils_hw::streamOneToN<float, WTAG_STRM>(data_istrm, e_data_istrm, tag_istrm, e_tag_istrm,
-                                                            data_ostrms, e_data_ostrms,
-                                                            xf::common::utils_hw::TagSelectT());
+    xf::common::utils_hw::streamOneToN<float, WTAG_STRM>(data_istrm, e_data_istrm, tag_istrm, e_tag_istrm, data_ostrms,
+                                                         e_data_ostrms, xf::common::utils_hw::TagSelectT());
 }
 
 int test_1_n_select() {

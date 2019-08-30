@@ -45,9 +45,9 @@ namespace utils_hw {
  */
 template <typename _TIn, int _NStrm>
 void streamDup(hls::stream<_TIn>& istrm,
-                hls::stream<bool>& e_istrm,
-                hls::stream<_TIn> ostrms[_NStrm],
-                hls::stream<bool> e_ostrms[_NStrm]);
+               hls::stream<bool>& e_istrm,
+               hls::stream<_TIn> ostrms[_NStrm],
+               hls::stream<bool> e_ostrms[_NStrm]);
 
 /**
  * @brief Duplicate stream.
@@ -68,11 +68,11 @@ void streamDup(hls::stream<_TIn>& istrm,
  */
 template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
 void streamDup(const unsigned int choose[_NDStrm],
-                hls::stream<_TIn> istrm[_NIStrm],
-                hls::stream<bool>& e_istrm,
-                hls::stream<_TIn> ostrms[_NIStrm],
-                hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
-                hls::stream<bool>& e_ostrms);
+               hls::stream<_TIn> istrm[_NIStrm],
+               hls::stream<bool>& e_istrm,
+               hls::stream<_TIn> ostrms[_NIStrm],
+               hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
+               hls::stream<bool>& e_ostrms);
 
 } // utils_hw
 } // common
@@ -86,9 +86,9 @@ namespace utils_hw {
 
 template <typename _TIn, int _NStrm>
 void streamDup(hls::stream<_TIn>& istrm,
-                hls::stream<bool>& e_istrm,
-                hls::stream<_TIn> ostrms[_NStrm],
-                hls::stream<bool> e_ostrms[_NStrm]) {
+               hls::stream<bool>& e_istrm,
+               hls::stream<_TIn> ostrms[_NStrm],
+               hls::stream<bool> e_ostrms[_NStrm]) {
     bool e = e_istrm.read();
     while (!e) {
 #pragma HLS pipeline II = 1
@@ -109,11 +109,11 @@ void streamDup(hls::stream<_TIn>& istrm,
 
 template <typename _TIn, int _NIStrm, int _NDStrm, int _NDCopy>
 void streamDup(const unsigned int choose[_NDStrm],
-                hls::stream<_TIn> istrm[_NIStrm],
-                hls::stream<bool>& e_istrm,
-                hls::stream<_TIn> ostrms[_NIStrm],
-                hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
-                hls::stream<bool>& e_ostrms) {
+               hls::stream<_TIn> istrm[_NIStrm],
+               hls::stream<bool>& e_istrm,
+               hls::stream<_TIn> ostrms[_NIStrm],
+               hls::stream<_TIn> dstrms[_NDCopy][_NDStrm],
+               hls::stream<bool>& e_ostrms) {
     XF_UTILS_HW_STATIC_ASSERT(_NDStrm <= _NIStrm, "stream_dup cannot have more duplicated output than input.");
 
     bool e = e_istrm.read();

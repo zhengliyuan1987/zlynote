@@ -70,7 +70,7 @@ void top_func(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
     hls::stream<DT2> ostrm2;
     hls::stream<bool> e_ostrm2;
 
-    //const int NONBLOCK_DEPTH = 256;
+    // const int NONBLOCK_DEPTH = 256;
     const int NONBLOCK_DEPTH = 8;
 
 #pragma HLS RESOURCE variable = ostrm0 core = FIFO_LUTRAM
@@ -110,17 +110,17 @@ int main() {
     char* buf = (char*)malloc(AXI_SZ * BUF_DEPTH);
     memset(buf, 0, AXI_SZ * BUF_DEPTH);
 
-    DT0* const d0ptr = (DT0*) (buf + offset[0]);
+    DT0* const d0ptr = (DT0*)(buf + offset[0]);
     for (int i = 0; i < ELEM_NUM; ++i) {
-      d0ptr[i] = i;
+        d0ptr[i] = i;
     }
-    DT1* const d1ptr = (DT1*) (buf + offset[1]);
+    DT1* const d1ptr = (DT1*)(buf + offset[1]);
     for (int i = 0; i < ELEM_NUM; ++i) {
-      d1ptr[i] = i * 2;
+        d1ptr[i] = i * 2;
     }
-    DT2* const d2ptr = (DT2*) (buf + offset[2]);
+    DT2* const d2ptr = (DT2*)(buf + offset[2]);
     for (int i = 0; i < ELEM_NUM; ++i) {
-      d2ptr[i] = i * 3;
+        d2ptr[i] = i * 3;
     }
 
     // conduct the test
@@ -128,7 +128,7 @@ int main() {
     hls::stream<DT1> ds1;
     hls::stream<DT2> ds2;
 
-    top_func((ap_uint<AXI_WIDTH> *)buf, len, offset, ds0, ds1, ds2);
+    top_func((ap_uint<AXI_WIDTH>*)buf, len, offset, ds0, ds1, ds2);
 
     // verify the result
     int j = 0;

@@ -134,7 +134,7 @@ xf::common::utils_hw::streamOneToN<WIN_STRM, WOUT_STRM,NSTRM>(
 #pragma HLS stream variable = e_c_strms depth = 4 // 1024
 
     xf::common::utils_hw::streamOneToN<float, NSTRM>(data_istrm, e_istrm, c_strms, e_c_strms,
-                                                        xf::common::utils_hw::LoadBalanceT());
+                                                     xf::common::utils_hw::LoadBalanceT());
 
     consume_1(c_strms, e_c_strms, data_ostrms, e_data_ostrms);
 }

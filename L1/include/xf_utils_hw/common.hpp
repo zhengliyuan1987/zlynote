@@ -72,7 +72,7 @@ namespace details {
 
 /**
  * @struct UpBound common.hpp "xf_utils_hw/common.hpp"
- * @brief Template to calculate next power of 2, up to 128. 
+ * @brief Template to calculate next power of 2, up to 128.
  * @tparam _N the value to be calculated.
  */
 template <int _N>

@@ -26,11 +26,8 @@ typedef ap_int<BUS_WIDTH> DType;
 
 // ------------------------------------------------------------
 // top functions for aligned data
-void top_axi_to_char_stream(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
-                       hls::stream<DType>& ostrm,
-                       hls::stream<bool>& e_ostrm,
-                       int len,
-                       int offset) {
+void top_axi_to_char_stream(
+    ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH], hls::stream<DType>& ostrm, hls::stream<bool>& e_ostrm, int len, int offset) {
     // clang-format off
     ;
 #pragma HLS INTERFACE m_axi port = rbuf offset = slave bundle = gmem_in1 \
@@ -50,7 +47,7 @@ int main() {
     // popolate the buffer
     ap_uint<AXI_WIDTH>* buf = (ap_uint<AXI_WIDTH>*)malloc(sizeof(ap_uint<AXI_WIDTH>) * BUF_DEPTH);
 
-    char* cptr = (char*) buf;
+    char* cptr = (char*)buf;
     for (int i = 0; i < DATA_LEN; i++) {
         cptr[i] = (i % 15) + 1;
     }
@@ -71,8 +68,8 @@ int main() {
 
     // verify the result
     int j = 0;
-    DType dptr = (DType*) (cptr + k_offset);
-    while(!e_strm.read()) {
+    DType dptr = (DType*)(cptr + k_offset);
+    while (!e_strm.read()) {
         DType t = d_strm.read();
         DType r;
         for (int c = 0; c < sizeof(DType); ++c) {

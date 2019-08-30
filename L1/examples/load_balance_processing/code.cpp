@@ -228,10 +228,10 @@ void test_core(hls::stream<ap_uint<W_STRM> >& istrm,
 #pragma HLS stream variable = e_new_data_strms depth = 8
 
     xf::common::utils_hw::streamOneToN<W_STRM, W_PU, NPU>(istrm, e_istrm, data_inner_strms, e_data_inner_strms,
-                                                             xf::common::utils_hw::LoadBalanceT());
+                                                          xf::common::utils_hw::LoadBalanceT());
 
     process_mpu(data_inner_strms, e_data_inner_strms, new_data_strms, e_new_data_strms);
 
     xf::common::utils_hw::streamNToOne<W_PU, W_STRM, NPU>(new_data_strms, e_new_data_strms, ostrm, e_ostrm,
-                                                             xf::common::utils_hw::LoadBalanceT());
+                                                          xf::common::utils_hw::LoadBalanceT());
 }

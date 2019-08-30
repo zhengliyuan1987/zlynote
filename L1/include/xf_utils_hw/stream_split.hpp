@@ -49,10 +49,10 @@ namespace utils_hw {
  */
 template <int _WIn, int _WOut, int _NStrm>
 void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
-                  hls::stream<bool>& e_istrm,
-                  hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
-                  hls::stream<bool>& e_ostrm,
-                  LSBSideT alg);
+                 hls::stream<bool>& e_istrm,
+                 hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
+                 hls::stream<bool>& e_ostrm,
+                 LSBSideT alg);
 
 /**
  * @brief split one wide stream into multiple streams, start from the MSB.
@@ -72,10 +72,10 @@ void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
 
 template <int _WIn, int _WOut, int _NStrm>
 void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
-                  hls::stream<bool>& e_istrm,
-                  hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
-                  hls::stream<bool>& e_ostrm,
-                  MSBSideT alg);
+                 hls::stream<bool>& e_istrm,
+                 hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
+                 hls::stream<bool>& e_ostrm,
+                 MSBSideT alg);
 
 } // utils_hw
 } // common
@@ -89,10 +89,10 @@ namespace utils_hw {
 
 template <int _WIn, int _WOut, int _NStrm>
 void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
-                  hls::stream<bool>& e_istrm,
-                  hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
-                  hls::stream<bool>& e_ostrm,
-                  LSBSideT alg) {
+                 hls::stream<bool>& e_istrm,
+                 hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
+                 hls::stream<bool>& e_ostrm,
+                 LSBSideT alg) {
     /*
      * for example, _WIn=20, _WOut=4, _NStrm=4
      * input a data  0x82356 (hex)
@@ -126,10 +126,10 @@ void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
 
 template <int _WIn, int _WOut, int _NStrm>
 void streamSplit(hls::stream<ap_uint<_WIn> >& istrm,
-                  hls::stream<bool>& e_istrm,
-                  hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
-                  hls::stream<bool>& e_ostrm,
-                  MSBSideT alg) {
+                 hls::stream<bool>& e_istrm,
+                 hls::stream<ap_uint<_WOut> > ostrms[_NStrm],
+                 hls::stream<bool>& e_ostrm,
+                 MSBSideT alg) {
     /*
      * for example, _WIn=20, _WOut=4, _NStrm=4
      * input a data  0x82356 (hex)

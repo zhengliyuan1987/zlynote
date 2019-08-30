@@ -54,12 +54,12 @@ namespace utils_hw {
  */
 template <int _WInStrm, int _WTagStrm>
 void streamNToOne(hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
-                     hls::stream<bool>& e_tag_istrm,
-                     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
-                     hls::stream<bool>& e_data_ostrm,
-                     TagSelectT alg);
+                  hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+                  hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
+                  hls::stream<bool>& e_tag_istrm,
+                  hls::stream<ap_uint<_WInStrm> >& data_ostrm,
+                  hls::stream<bool>& e_data_ostrm,
+                  TagSelectT alg);
 
 /**
  * @brief This function selects from input streams based on tags.
@@ -84,12 +84,12 @@ void streamNToOne(hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm
  */
 template <typename _TIn, int _WTagStrm>
 void streamNToOne(hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
-                     hls::stream<bool>& e_tag_istrm,
-                     hls::stream<_TIn>& data_ostrm,
-                     hls::stream<bool>& e_data_ostrm,
-                     TagSelectT alg);
+                  hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+                  hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
+                  hls::stream<bool>& e_tag_istrm,
+                  hls::stream<_TIn>& data_ostrm,
+                  hls::stream<bool>& e_data_ostrm,
+                  TagSelectT alg);
 
 } // utils_hw
 } // common
@@ -144,12 +144,12 @@ void stream_n_to_one_select(hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2
 // tag based collect, combine tag
 template <int _WInStrm, int _WTagStrm>
 void streamNToOne(hls::stream<ap_uint<_WInStrm> > data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
-                     hls::stream<bool>& e_tag_istrm,
-                     hls::stream<ap_uint<_WInStrm> >& data_ostrm,
-                     hls::stream<bool>& e_data_ostrm,
-                     TagSelectT alg) {
+                  hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+                  hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
+                  hls::stream<bool>& e_tag_istrm,
+                  hls::stream<ap_uint<_WInStrm> >& data_ostrm,
+                  hls::stream<bool>& e_data_ostrm,
+                  TagSelectT alg) {
     details::stream_n_to_one_select<_WInStrm, _WTagStrm>(data_istrms, e_data_istrms, tag_istrm, e_tag_istrm, data_ostrm,
                                                          e_data_ostrm);
 }
@@ -197,12 +197,12 @@ void stream_n_to_one_select_type(hls::stream<_TIn> data_istrms[PowerOf2<_WTagStr
 // tag based collect, discard tag
 template <typename _TIn, int _WTagStrm>
 void streamNToOne(hls::stream<_TIn> data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
-                     hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
-                     hls::stream<bool>& e_tag_istrm,
-                     hls::stream<_TIn>& data_ostrm,
-                     hls::stream<bool>& e_data_ostrm,
-                     TagSelectT alg) {
+                  hls::stream<bool> e_data_istrms[PowerOf2<_WTagStrm>::value],
+                  hls::stream<ap_uint<_WTagStrm> >& tag_istrm,
+                  hls::stream<bool>& e_tag_istrm,
+                  hls::stream<_TIn>& data_ostrm,
+                  hls::stream<bool>& e_data_ostrm,
+                  TagSelectT alg) {
     details::stream_n_to_one_select_type<_TIn, _WTagStrm>(data_istrms, e_data_istrms, tag_istrm, e_tag_istrm,
                                                           data_ostrm, e_data_ostrm);
 }

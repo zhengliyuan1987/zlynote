@@ -31,7 +31,7 @@ void test_core_split_lsb(hls::stream<ap_uint<WIN_STRM> >& istrm,
                          hls::stream<ap_uint<WOUT_STRM> > ostrms[NSTRM],
                          hls::stream<bool>& e_ostrm) {
     xf::common::utils_hw::streamSplit<WIN_STRM, WOUT_STRM, NSTRM>(istrm, e_istrm, ostrms, e_ostrm,
-                                                                   xf::common::utils_hw::LSBSideT());
+                                                                  xf::common::utils_hw::LSBSideT());
 }
 
 int test_split_lsb() {

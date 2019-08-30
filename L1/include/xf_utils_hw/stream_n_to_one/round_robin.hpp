@@ -45,10 +45,10 @@ namespace utils_hw {
  */
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<ap_uint<_WOutStrm> >& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     RoundRobinT alg);
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<ap_uint<_WOutStrm> >& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  RoundRobinT alg);
 
 /**
  * @brief stream distribute, in round-robin order from NStrm input streams.
@@ -64,10 +64,10 @@ void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
  */
 template <typename _TIn, int _NStrm>
 void streamNToOne(hls::stream<_TIn> istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<_TIn>& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     RoundRobinT alg);
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<_TIn>& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  RoundRobinT alg);
 
 } // utils_hw
 } // common
@@ -307,10 +307,10 @@ void stream_n_to_one_round_robin(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
 
 template <int _WInStrm, int _WOutStrm, int _NStrm>
 void streamNToOne(hls::stream<ap_uint<_WInStrm> > istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<ap_uint<_WOutStrm> >& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     RoundRobinT alg) {
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<ap_uint<_WOutStrm> >& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  RoundRobinT alg) {
     details::stream_n_to_one_round_robin<_WInStrm, _WOutStrm, _NStrm>(istrms, e_istrms, ostrm, e_ostrm);
 }
 
@@ -347,10 +347,10 @@ void stream_n_to_one_round_robin_type(hls::stream<_TIn> istrms[_NStrm],
 
 template <typename _TIn, int _NStrm>
 void streamNToOne(hls::stream<_TIn> istrms[_NStrm],
-                     hls::stream<bool> e_istrms[_NStrm],
-                     hls::stream<_TIn>& ostrm,
-                     hls::stream<bool>& e_ostrm,
-                     RoundRobinT alg) {
+                  hls::stream<bool> e_istrms[_NStrm],
+                  hls::stream<_TIn>& ostrm,
+                  hls::stream<bool>& e_ostrm,
+                  RoundRobinT alg) {
     details::stream_n_to_one_round_robin_type<_TIn, _NStrm>(istrms, e_istrms, ostrm, e_ostrm);
 }
 

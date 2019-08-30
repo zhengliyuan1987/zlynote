@@ -43,7 +43,7 @@ extern "C" void dut1(hls::stream<TYPE> istrm[NUM_ISTRM],
                      hls::stream<bool>& e_ostrms) {
     const unsigned int choose[4] = {0, 1, 2, 3};
     xf::common::utils_hw::streamDup<TYPE, NUM_ISTRM, NUM_DSTRM, NUM_COPY>(choose, istrm, e_istrm, ostrms, dstrms,
-                                                                           e_ostrms);
+                                                                          e_ostrms);
 }
 
 #ifndef __SYNTHESIS__

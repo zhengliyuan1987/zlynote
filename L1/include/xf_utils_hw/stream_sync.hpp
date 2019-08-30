@@ -49,9 +49,9 @@ namespace utils_hw {
  */
 template <typename _TIn, int _NStrm>
 void streamSync(hls::stream<_TIn> istrms[_NStrm],
-                 hls::stream<bool> e_istrms[_NStrm],
-                 hls::stream<_TIn> ostrms[_NStrm],
-                 hls::stream<bool>& e_ostrm);
+                hls::stream<bool> e_istrms[_NStrm],
+                hls::stream<_TIn> ostrms[_NStrm],
+                hls::stream<bool>& e_ostrm);
 
 } // utils_hw
 } // common
@@ -65,9 +65,9 @@ namespace utils_hw {
 
 template <typename _TIn, int _NStrm>
 void streamSync(hls::stream<_TIn> istrms[_NStrm],
-                 hls::stream<bool> e_istrms[_NStrm],
-                 hls::stream<_TIn> ostrms[_NStrm],
-                 hls::stream<bool>& e_ostrm) {
+                hls::stream<bool> e_istrms[_NStrm],
+                hls::stream<_TIn> ostrms[_NStrm],
+                hls::stream<bool>& e_ostrm) {
     ap_uint<_NStrm> last = 0;
     ap_uint<_NStrm> end = ~last;
     for (int i = 0; i < _NStrm; ++i) {

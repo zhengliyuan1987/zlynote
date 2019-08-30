@@ -65,7 +65,7 @@ void streamDiscard(hls::stream<_TIn> istrms[_NStrm], hls::stream<bool>& e_istrm)
  */
 template <typename _TIn>
 void streamDiscard(hls::stream<_TIn>& istrm, //
-                    hls::stream<bool>& e_istrm);
+                   hls::stream<bool>& e_istrm);
 
 } // utils_hw
 } // common

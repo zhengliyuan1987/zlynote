@@ -30,8 +30,8 @@ void test_core_1_n_select(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
                           hls::stream<ap_uint<WIN_STRM> > data_ostrms[NSTRM],
                           hls::stream<bool> e_data_ostrms[NSTRM]) {
     xf::common::utils_hw::streamOneToN<WIN_STRM, WTAG_STRM>(data_istrm, e_data_istrm, tag_istrm, e_tag_istrm,
-                                                               data_ostrms, e_data_ostrms,
-                                                               xf::common::utils_hw::TagSelectT());
+                                                            data_ostrms, e_data_ostrms,
+                                                            xf::common::utils_hw::TagSelectT());
 }
 
 int test_1_n_select() {

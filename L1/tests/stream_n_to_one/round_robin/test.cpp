@@ -30,7 +30,7 @@ void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > istrms[NSTRM],
                    hls::stream<ap_uint<WOUT_STRM> >& ostrm,
                    hls::stream<bool>& e_ostrm) {
     xf::common::utils_hw::streamNToOne<WIN_STRM, WOUT_STRM, NSTRM>(istrms, e_istrms, ostrm, e_ostrm,
-                                                                      xf::common::utils_hw::RoundRobinT());
+                                                                   xf::common::utils_hw::RoundRobinT());
 }
 
 int test_n_1() {

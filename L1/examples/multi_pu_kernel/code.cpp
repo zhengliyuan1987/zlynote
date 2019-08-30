@@ -244,8 +244,8 @@ void update_mpu(hls::stream<ap_uint<W_STRM> >& istrm,
 #pragma HLS stream variable = e_new_data_strms depth = 8
 
     xf::common::utils_hw::streamOneToN<W_STRM, W_PU, NPU>(istrm, e_istrm, data_inner_strms, e_data_inner_strms,
-                                                             //   xf::common::utils_hw::round_robin_t());
-                                                             xf::common::utils_hw::LoadBalanceT());
+                                                          //   xf::common::utils_hw::round_robin_t());
+                                                          xf::common::utils_hw::LoadBalanceT());
 
     process_mpu(data_inner_strms, e_data_inner_strms, new_data_strms, e_new_data_strms);
 
@@ -320,4 +320,3 @@ void top_core(ap_uint<W_AXI>* in_buf, ap_uint<W_AXI>* out_buf, const int len) {
     // axi_ostrm --> out_buf
     xf::common::utils_hw::streamToAxi<BURST_LENTH, W_AXI, W_STRM>(out_buf, axi_ostrm, e_axi_ostrm);
 }
-

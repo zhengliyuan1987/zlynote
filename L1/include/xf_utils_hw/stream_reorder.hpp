@@ -56,10 +56,10 @@ namespace utils_hw {
  */
 template <typename _TIn, int _WindowSize>
 void streamReorder(hls::stream<int>& order_cfg,
-                    hls::stream<_TIn>& istrm,
-                    hls::stream<bool>& e_istrm,
-                    hls::stream<_TIn>& ostrm,
-                    hls::stream<bool>& e_ostrm);
+                   hls::stream<_TIn>& istrm,
+                   hls::stream<bool>& e_istrm,
+                   hls::stream<_TIn>& ostrm,
+                   hls::stream<bool>& e_ostrm);
 
 } // utils_hw
 } // common
@@ -73,10 +73,10 @@ namespace utils_hw {
 
 template <typename _TIn, int _WindowSize>
 void streamReorder(hls::stream<int>& order_cfg,
-                    hls::stream<_TIn>& istrm,
-                    hls::stream<bool>& e_istrm,
-                    hls::stream<_TIn>& ostrm,
-                    hls::stream<bool>& e_ostrm) {
+                   hls::stream<_TIn>& istrm,
+                   hls::stream<bool>& e_istrm,
+                   hls::stream<_TIn>& ostrm,
+                   hls::stream<bool>& e_ostrm) {
     /*
      * for example,
      * _WindowSize = 4
