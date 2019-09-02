@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include <stdint.h>
 
 #include "xf_utils_hw/stream_dup.hpp"
 

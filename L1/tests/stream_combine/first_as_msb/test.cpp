@@ -35,7 +35,7 @@ extern "C" void dut(hls::stream<ap_uint<NSTRM> >& cfg,
 #ifndef __SYNTHESIS__
 
 // generate a random integer sequence between specified limits a and b (a<b);
-uint rand_uint(uint a, uint b) {
+unsigned rand_uint(unsigned a, unsigned b) {
     return rand() % (b - a + 1) + a;
 }
 
@@ -50,7 +50,7 @@ void generate_test_data(ap_uint<_NStrm>& testcfg, uint64_t len, std::vector<std:
     for (int i = 0; i < len; i++) {
         std::vector<ap_uint<_WIn> > a;
         for (int j = 0; j < _NStrm; j++) {
-            uint randnum = rand_uint(1, 9);
+            unsigned randnum = rand_uint(1, 9);
             a.push_back((ap_uint<_WIn>)randnum);
             std::cout << randnum << " ";
         }

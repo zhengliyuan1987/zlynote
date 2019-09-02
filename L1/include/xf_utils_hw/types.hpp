@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef XF_UTILS_HW_TYPES_H
-#define XF_UTILS_HW_TYPES_H
 
 /**
  * @file types.hpp
@@ -23,35 +21,56 @@
  * This file is part of XF Hardware Utilities Library.
  */
 
+#ifndef XF_UTILS_HW_TYPES_H
+#define XF_UTILS_HW_TYPES_H
+
 // Fixed width integers
-#if defined(__cplusplus) && __cplusplus >= 201103L
+#if __cplusplus >= 201103L
 #include <cstdint>
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#include <stdint.h>
-#else
-// Signed.
-// avoid conflict with <sys/types.h>
-#ifndef __int8_t_defined
-#define __int8_t_defined
+#endif
+
+namespace xf {
+namespace common {
+namespace utils_hw {
+#if __cplusplus >= 201103L
+
+using ::int8_t;
+using ::int16_t;
+using ::int32_t;
+using ::int64_t;
+
+using ::uint8_t;
+using ::uint16_t;
+using ::uint32_t;
+using ::uint64_t;
+
+#else // __cplusplus
+
 typedef signed char int8_t;
 typedef short int int16_t;
 typedef int int32_t;
-#if defined(__LP64__) && __LP64__
+// MSVC does not have this macro, but Windows is LLP64.
+#if __LP64__ == 1
 typedef long int int64_t;
 #else
 typedef long long int int64_t;
 #endif // __LP64__
-#endif // __int8_t_defined
-// Unsigned.
+
 typedef unsigned char uint8_t;
 typedef unsigned short int uint16_t;
 typedef unsigned int uint32_t;
-#if defined(__LP64__) && __LP64__
+// MSVC does not have this macro, but Windows is LLP64.
+#if __LP64__ == 1
 typedef unsigned long int uint64_t;
 #else
 typedef unsigned long long int uint64_t;
 #endif // __LP64__
-#endif
+
+#endif // __cplusplus
+
+} // namespace utils_hw
+} // namespace common
+} // namespace xf
 
 #if defined(AP_INT_MAX_W) and AP_INT_MAX_W < 4096
 #warning "AP_INT_MAX_W has been defined to be less than 4096"
@@ -63,6 +82,3 @@ typedef unsigned long long int uint64_t;
 #include "hls_stream.h"
 
 #endif // ifndef XF_UTILS_HW_TYPES_H
-
-// -*- cpp -*-
-// vim: ts=8:sw=2:sts=2:ft=cpp
