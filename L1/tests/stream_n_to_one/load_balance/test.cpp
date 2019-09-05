@@ -71,7 +71,7 @@ void produce_0(hls::stream<ap_uint<WIN_STRM> > c_istrms[NSTRM],
                hls::stream<bool> e_c_istrms[NSTRM],
                hls::stream<ap_uint<WIN_STRM> > c_ostrms[NSTRM],
                hls::stream<bool> e_c_ostrms[NSTRM]) {
-#pragma dataflow
+#pragma HLS dataflow
     for (int i = 0; i < NSTRM; ++i) {
 #pragma HLS unroll
         produce_one_s0(c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
@@ -83,7 +83,7 @@ void produce_1(hls::stream<ap_uint<WIN_STRM> > c_istrms[NSTRM],
                hls::stream<bool> e_c_istrms[NSTRM],
                hls::stream<ap_uint<WIN_STRM> > c_ostrms[NSTRM],
                hls::stream<bool> e_c_ostrms[NSTRM]) {
-#pragma dataflow
+#pragma HLS dataflow
     for (int i = 0; i < NSTRM; ++i) {
 #pragma HLS unroll
         if (i < 2)
@@ -99,7 +99,7 @@ void produce_2(hls::stream<ap_uint<WIN_STRM> > c_istrms[NSTRM],
                hls::stream<bool> e_c_istrms[NSTRM],
                hls::stream<ap_uint<WIN_STRM> > c_ostrms[NSTRM],
                hls::stream<bool> e_c_ostrms[NSTRM]) {
-#pragma dataflow
+#pragma HLS dataflow
     for (int i = 0; i < 2; ++i) {
 #pragma HLS unroll
         produce_one_s0(c_istrms[i], e_c_istrms[i], c_ostrms[i], e_c_ostrms[i]);
@@ -112,7 +112,6 @@ void produce_2(hls::stream<ap_uint<WIN_STRM> > c_istrms[NSTRM],
 
 void test_core_n_1(hls::stream<ap_uint<WIN_STRM> > data_istrms[NSTRM],
                    hls::stream<bool> e_data_istrms[NSTRM],
-                   hls::stream<ap_uint<32> >& left_n,
                    hls::stream<ap_uint<WOUT_STRM> >& data_ostrm,
                    hls::stream<bool>& e_ostrm) {
 /*
@@ -138,7 +137,6 @@ int test_n_1() {
     hls::stream<bool> e_istrms[NSTRM];
     hls::stream<ap_uint<WOUT_STRM> > data_ostrm;
     hls::stream<bool> e_ostrm;
-    hls::stream<ap_uint<32> > left_n;
     int td[NS] = {0};
     const int buf_width = xf::common::utils_hw::LCM<WOUT_STRM, WIN_STRM>::value;
     const int num_in = buf_width / WOUT_STRM;
@@ -159,7 +157,7 @@ int test_n_1() {
     }
     for (int i = 0; i < NSTRM; ++i) e_istrms[i].write(true);
 
-    test_core_n_1(data_istrms, e_istrms, left_n, data_ostrm, e_ostrm);
+    test_core_n_1(data_istrms, e_istrms, data_ostrm, e_ostrm);
 
     int nerror = 0;
     int count = 0;
