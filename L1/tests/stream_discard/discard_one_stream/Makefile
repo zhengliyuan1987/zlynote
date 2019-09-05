@@ -51,7 +51,7 @@ help::
 
 # MK_INC_BEGIN vivado.mk
 
-TOOL_VERSION ?= 2019.1
+TOOL_VERSION ?= 2019.2
 
 ifeq (,$(XILINX_VIVADO))
 XILINX_VIVADO = /opt/xilinx/Vivado/$(TOOL_VERSION)
@@ -70,6 +70,8 @@ export PATH := $(XILINX_VIVADO)/bin:$(PATH)
 
 DEVICE ?= u200
 # MK_INC_BEGIN vitis_set_part.mk
+
+.PHONY: check_part
 
 ifeq (,$(XPART))
 # MK_INC_BEGIN vitis.mk
@@ -121,17 +123,20 @@ ifneq (,$(wildcard $(DEVICE)))
 XPLATFORM := $(DEVICE)
 else
 # Use DEVICE as a file name pattern
-# Default location of platforms.
-ifndef PLATFORM_REPO_PATHS
-ifneq (,$(wildcard /opt/xilinx/platforms/*))
-PLATFORM_REPO_PATHS := /opt/xilinx/platforms
-endif
-endif
-# Match the name
 DEVICE_L := $(shell echo $(DEVICE) | tr A-Z a-z)
-XPLATFORM_PATHS := $(subst :, ,$(PLATFORM_REPO_PATHS)) $(XILINX_VITIS)/platforms
-XPLATFORMS := $(foreach p, $(XPLATFORM_PATHS), $(wildcard $(p)/*/*.xpfm))
+# Match the name
+ifneq (,$(PLATFORM_REPO_PATHS))
+XPLATFORMS := $(foreach p, $(subst :, ,$(PLATFORM_REPO_PATHS)), $(wildcard $(p)/*/*.xpfm))
 XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
+endif
+ifeq (,$(XPLATFORM))
+XPLATFORMS := $(wildcard $(XILINX_VITIS)/platforms/*/*.xpfm)
+XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
+endif
+ifeq (,$(XPLATFORM))
+XPLATFORMS := $(wildcard /opt/xilinx/platforms/*/*.xpfm)
+XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
+endif
 endif
 
 define MSG_PLATFORM
@@ -156,22 +161,24 @@ ifneq (,$(word 2,$(XPLATFORM)))
 	@echo "$${MSG_DEVICE}" && false
 endif
 
-XDEVICE := $(basename $(notdir $(XPLATFORM)))
+XDEVICE := $(basename $(notdir $(firstword $(XPLATFORM))))
 
 # MK_INC_END vitis_set_platform.mk
-# Query the part name of device
 ifeq (1, $(words $(XPLATFORM)))
+# Query the part name of device
 ifneq (,$(wildcard $(XILINX_VITIS)/bin/platforminfo))
-override XPART := $(shell $(XILINX_VITIS)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(XPLATFORM))
+override XPART := $(shell $(XILINX_VITIS)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(firstword $(XPLATFORM)))
 endif
-endif # XPLATFORM
-endif # XPART
-
-.PHONY: check_part
-check_part:
+endif
+check_part: | check_platform
 ifeq (,$(XPART))
 	@echo "XPART is not set and cannot be inferred. Please run \`make help\` for usage info." && false
 endif
+else # XPART
+check_part:
+	@echo "XPART is directly set to $(XPART)"
+endif # XPART
+
 # MK_INC_END vitis_set_part.mk
 
 # MK_INC_BEGIN hls_test_rules.mk
