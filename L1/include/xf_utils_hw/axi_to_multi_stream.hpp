@@ -25,6 +25,7 @@
 #ifndef XF_UTILS_HW_AXI_TO_MULTI_STRM_H
 #define XF_UTILS_HW_AXI_TO_MULTI_STRM_H
 
+#include "xf_utils_hw/common.hpp"
 #include "xf_utils_hw/types.hpp"
 #include "xf_utils_hw/enums.hpp"
 
@@ -333,6 +334,12 @@ void axiToMultiStream(ap_uint<_WAxi>* rbuf,
                       hls::stream<bool>& e_ostrm2,
                       const int len[3],
                       const int offset[3]) {
+    XF_UTILS_HW_STATIC_ASSERT(_WAxi % sizeof(_TStrm0) == 0, "AXI port width is not multiple of stream element width.");
+    XF_UTILS_HW_STATIC_ASSERT(_WAxi % sizeof(_TStrm1) == 0, "AXI port width is not multiple of stream element width.");
+    XF_UTILS_HW_STATIC_ASSERT(_WAxi % sizeof(_TStrm2) == 0, "AXI port width is not multiple of stream element width.");
+    XF_UTILS_HW_STATIC_ASSERT((_WAxi == 8) || (_WAxi == 16) || (_WAxi == 32) || (_WAxi == 64) || (_WAxi == 128) ||
+                                  (_WAxi == 256) || (_WAxi == 512) || (_WAxi == 1024),
+                              "AXI port width must be power of 2 and between 8 to 1024.");
 #pragma HLS DATAFLOW
 
     // The depth of FIFO in the circuit which is only related to the ability to
