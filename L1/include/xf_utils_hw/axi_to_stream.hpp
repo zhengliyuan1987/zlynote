@@ -276,6 +276,9 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm,
 template <int _BurstLen, int _WAxi, typename _TStrm>
 void axiToStream(ap_uint<_WAxi>* rbuf, const int num, hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm) {
     XF_UTILS_HW_STATIC_ASSERT(_WAxi % sizeof(_TStrm) == 0, "AXI port width is not multiple of stream element width.");
+    XF_UTILS_HW_STATIC_ASSERT((_WAxi == 8) || (_WAxi == 16) || (_WAxi == 32) || (_WAxi == 64) || (_WAxi == 128) ||
+                                  (_WAxi == 256) || (_WAxi == 512) || (_WAxi == 1024),
+                              "AXI port width must be power of 2 and between 8 to 1024.");
 
 #pragma HLS DATAFLOW
     static const int fifo_depth = _BurstLen * 2;
@@ -298,6 +301,10 @@ void axiToCharStream(ap_uint<_WAxi>* rbuf,
                      hls::stream<bool>& e_ostrm,
                      const int len,
                      const int offset /* = 0 in decl */) {
+    XF_UTILS_HW_STATIC_ASSERT(_WAxi % sizeof(_TStrm) == 0, "AXI port width is not multiple of stream element width.");
+    XF_UTILS_HW_STATIC_ASSERT((_WAxi == 8) || (_WAxi == 16) || (_WAxi == 32) || (_WAxi == 64) || (_WAxi == 128) ||
+                                  (_WAxi == 256) || (_WAxi == 512) || (_WAxi == 1024),
+                              "AXI port width must be power of 2 and between 8 to 1024.");
 #pragma HLS DATAFLOW
     static const int fifo_depth = _BurstLen * 2;
     static const int size0 = sizeof(_TStrm);
