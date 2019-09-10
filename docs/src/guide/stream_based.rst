@@ -33,6 +33,18 @@ along with the main data stream throughout the dataflow.
         hls::stream<ap_uint<W> >& data_strm,
         hls::stream<bool>&        e_data_strm,
 
+The packet data protocol in stream-based design is illustrated in the following figure.
+For each valid data present in ``data_strm``, a ``false`` value would present the corresponding
+``e_data_strm``. Meanwhile, an appended ``true`` value has to be given to close this packet.
+So, stream consumer can be notified when data transfer is over. And for a given packet,
+the number of elements in ``e_data_strm`` would be always one more that in corresponding
+``data_strm`` during each transaction..
+
+.. image:: /images/stream_based_protocol.png
+   :alt: The protocl of stream packet data
+   :scale: 80%
+   :align: center
+
 The benefits of this interface are
 
 * Within a HLS dataflow region, all primitives connected via HLS streams can work in
