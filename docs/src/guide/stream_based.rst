@@ -37,7 +37,7 @@ The packet data protocol in stream-based design is illustrated in the following 
 For each valid data present in ``data_strm``, a ``false`` value would present the corresponding
 ``e_data_strm``. Meanwhile, an appended ``true`` value has to be given to close this packet.
 So, stream consumer can be notified when data transfer is over. And for a given packet,
-the number of elements in ``e_data_strm`` would be always one more that in corresponding
+the number of elements in ``e_data_strm`` would be always one more than in corresponding
 ``data_strm`` during each transaction..
 
 .. image:: /images/stream_based_protocol.png
