@@ -32,8 +32,8 @@ implemented as :ref:`axiToMultiStream <cid-xf::common::utils_hw::axiToMultiStrea
    :align: center
 
 The axiToMultiStream primitive non-blocking and Round Robin load multiple categories of data from one AXI master to streams.
-For example, in the implementation of one AXI port loading three types of data, the data of each type coulde be tightly packed.
-Each type of data's length should be in number of char. The three types of data width cloud be unaligned or aligned,
+For example, in the implementation of one AXI port loading three types of data, the data of each type could be tightly packed.
+Each type of data's length should be in number of char. The three types of data width could be unaligned or aligned,
 e.g. three types of data compressed in one binary files. AXI port is assumed to have width as multiple of 8-bit char.
 
 .. CAUTION::

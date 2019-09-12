@@ -22,7 +22,7 @@ Internals of streamNToOne
 The :ref:`streamNToOne <cid-xf::common::utils_hw::streamNToOne>` API
 is designed for collecing data from multiple processor units.
 Three different algorithms have been implemented, ``RoundRobinT``,
-``LoadBalanceT`` and ``TagSelectT``.
+``LoadBalanceT``, and ``TagSelectT``.
 
 To ensure the throughput, it is very common to pass a vector of elements in
 FPGA data paths, so ``streamNToOne`` supports element vector output, if the
@@ -42,7 +42,7 @@ Generic Type
 ~~~~~~~~~~~~
 
 With generic type input, the function dispatches one element per cycle.
-This mode works best for sharing the multile-cycle processing work across
+This mode works best for sharing the multi-cycle processing work across
 an array of units.
 
 .. image:: /images/stream_n_to_one_round_robin_type.png

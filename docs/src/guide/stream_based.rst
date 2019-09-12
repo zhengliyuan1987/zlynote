@@ -25,8 +25,8 @@ Stream-Based API Design
 Stream-based Interface
 ======================
 
-The interface of primitives in this library are mostly HLS streams, with a single bit stream
-along with the main data stream throughout the dataflow.
+The interfaces of the primitives in this library are mostly HLS streams, with a 1-bit flag stream
+along with the main data stream throughout the dataflow region.
 
 .. code:: cpp
 
@@ -50,9 +50,8 @@ The benefits of this interface are
 * Within a HLS dataflow region, all primitives connected via HLS streams can work in
   parallel, and this is the key to FPGA acceleration.
 
-* Using the single bit stream to mark *end of operation* can trigger stream consumer
+* Using the 1-bit flag stream to mark *end of operation* can trigger stream consumer
   as soon as the first row data becomes available, without known how many rows will be
   generated later. Moreover, it can represent empty table.
 
 
-.. ERROR:: TODO More details needed here.

@@ -34,7 +34,7 @@ namespace utils_hw {
 /**
  * @brief stream distribute, using load-balancing algorithm.
  *
- * The input stream is assumed to be conpact data to be splitted into
+ * The input stream is assumed to be compact data to be splitted into
  * _WOutStrm wide data into output streams.
  *
  * @tparam _WInStrm input stream width.
@@ -486,7 +486,7 @@ LOOP_core:
 
 /* @brief stream distribute, using load-balancing algorithm.
  *
- * The input stream is assumed to be conpact data to be splitted into
+ * The input stream is assumed to be compact data to be splitted into
  * _WOutStrm wide data into output streams.
  *
  * @tparam _WInStrm input stream width.
@@ -539,7 +539,7 @@ void stream_one_to_n_load_balance(hls::stream<ap_uint<_WInStrm> >& istrm,
 
 /* @brief stream distribute, using load-balancing algorithm.
  *
- * The input stream is assumed to be conpact data to be splitted into
+ * The input stream is assumed to be compact data to be splitted into
  * _WOutStrm wide data into output streams.
  *
  * @tparam _WInStrm input stream width.

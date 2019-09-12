@@ -70,11 +70,14 @@ struct need_num<total, one, false> {
  * pack multiple elements to one row. If it is beyond 72-bits, multiple URAMs
  * will be used to ensure elements can be fetched in one cycle.
  *
- * TO make the cache really functional, HLS needs to be instructed to ignore
+ * To make the cache really functional, HLS needs to be instructed to ignore
  * inter-iteration dependencies on ``blocks`` of ``UramArray`` objects.
  * Please refer to the test of this module for an example.
  *
- * **This module only works with HLS 2019.1 and later, due to an HLS bug.**
+ * \rst
+ * .. ATTENTION::
+ * This module requires HLS 2019.1 or above.
+ * \endrst
  *
  * @tparam _WData  the width of every element.
  * @tparam _NData  the number of elements in the array.

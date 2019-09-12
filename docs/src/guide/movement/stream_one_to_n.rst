@@ -42,7 +42,7 @@ Generic Type
 ~~~~~~~~~~~~
 
 With generic type input, the function dispatches one element per cycle.
-This mode works best for sharing the multile-cycle processing work across
+This mode works best for sharing the multi-cycle processing work across
 an array of units.
 
 .. image:: /images/stream_one_to_n_round_robin_type.png
@@ -106,7 +106,7 @@ The design of the primitive includes 3 modules:
 
 2. reduce: split the large width to a array of ``N`` elements of ``Wout`` bits.
 
-3. distribute: Read the array of elements, annd distibute to out streams which
+3. distribute: Read the array of elements, and distibute them to output streams which
    are not full yet.
 
 .. image:: /images/stream_one_to_n_load_balance_detail.png

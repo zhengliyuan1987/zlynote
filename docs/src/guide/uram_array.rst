@@ -56,7 +56,6 @@ When the data element has more than 72bits, the helper class will use line of
 multiple URAM blocks to store each element. This ensures that each cycle
 we can initiate an element access.
 So to store 10k 128-bit elements, 6 URAM blocks are required.
-There are Applicable conditions:
 
 
 Resources

@@ -43,12 +43,9 @@ Output is 2,1,0,3,6,5,4,7.
 
 The design of this primitive applies ping-pong arrays to obtain high performance. One is storing the input data while output data from another one.
 
-There are applicable conditions:
-
- 1. The length of input stream is multiple (>=1) of the length of reorder config stream set by the  ``_WindowSize`` template parameter.
- 2. The configuration is loaded once in one invocation, and reused until the end.
- 3. The types of input stream and output stream are same.
-
 .. CAUTION::
-   The applicable conditions.
+    Applicable conditions.
+    1. The length of input stream is a multiple (>=1) of the length of reorder config stream set by the  ``_WindowSize`` template parameter.
+    2. The configuration is loaded once in one invocation, and reused until the end.
+    3. The types of input stream and output stream are same.
 

@@ -36,19 +36,18 @@ This function is designed for writing data into AXI master in burst mode.
 
     stream to axi workflow
 
-Applicable conditions:
-
-1. AXI port width should be multiple of stream width.
-   This primitive performs streamToAxi in two modules working simultaneously.
-
-2. countForBurst: convert stream width from _WStrm to _WAxi and count burst number.
-
-3. burstWrite: It reads the number of burst from stream, then burst write to axi port in dataflow.
-
 .. CAUTION::
-   These Applicable conditions.
+    Applicable conditions:
 
-The two modules imprementation details as show follows,
+    1. AXI port width should be multiple of stream width.
+
+    2. countForBurst: convert stream width from _WStrm to _WAxi and count burst number.
+
+    3. burstWrite: It reads the number of burst from stream, then burst write to axi port in dataflow.
+
+This primitive performs streamToAxi in two modules working simultaneously.
+
+The implementation of the two modules is shown as follows,
 
 .. _my-figure-param:
 .. figure:: /images/burst_to_write.png
