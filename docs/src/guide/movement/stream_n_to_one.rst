@@ -22,7 +22,7 @@ Internals of streamNToOne
 The :ref:`streamNToOne <cid-xf::common::utils_hw::streamNToOne>` API
 is designed for collecing data from multiple processor units.
 Three different algorithms have been implemented, ``RoundRobinT``,
-``LoadBalanceT``, and ``TagSelectT``.
+``LoadBalanceT`` and ``TagSelectT``.
 
 To ensure the throughput, it is very common to pass a vector of elements in
 FPGA data paths, so ``streamNToOne`` supports element vector output, if the

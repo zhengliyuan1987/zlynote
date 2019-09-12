@@ -76,7 +76,7 @@ struct need_num<total, one, false> {
  *
  * \rst
  * .. ATTENTION::
- * This module requires HLS 2019.1 or above.
+ *     This module requires HLS 2019.1 or above.
  * \endrst
  *
  * @tparam _WData  the width of every element.
