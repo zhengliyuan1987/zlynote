@@ -58,9 +58,6 @@ void top_func(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
     ;
 // clang-format on
 
-#pragma HLS ARRAY_PARTITION variable = len
-#pragma HLS ARRAY_PARTITION variable = offset
-
 #pragma HLS DATAFLOW
 
     hls::stream<bool> e_ostrm0;
