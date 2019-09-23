@@ -87,10 +87,9 @@ A top level C/C++ testbench (typically `algorithm_name.cpp`) prepares the input 
 A Makefile is used to drive this flow with available steps including `CSIM` (high level simulation), `CSYNTH` (high level synthesis to RTL) and `COSIM` (cosimulation between software testbench and generated RTL), `VIVADO_SYN` (synthesis by Vivado), `VIVADO_IMPL` (implementation by Vivado). The flow is launched from the shell by calling `make` with variables set as in the example below:
 
 ```console
-	$ . /opt/xilinx/xrt/setup.sh
-	$ export PLATFORM_REPO_PATHS=/opt/xilinx/platforms
 	$ cd L1/tests/specific_algorithm/
-	$ make run CSIM=1 CSYNTH=0 COSIM=0 VIVADO_SYN=0 VIVADO_IMPL=0 XPART=xcu200-fsgd2104-2-e
+	$ make run CSIM=1 CSYNTH=0 COSIM=0 VIVADO_SYN=0 VIVADO_IMPL=0 \
+	   DEVICE=xilinx_u200_xdma_201830_2 PLATFORM_REPO_PATHS=/opt/xilinx/platforms
 ```
 
 To enable more than C++ simulation, just switch other steps to `1` in `make` command line.
