@@ -90,8 +90,10 @@ A Makefile is used to drive this flow with available steps including `CSIM` (hig
 	$ . /opt/xilinx/xrt/setup.sh
 	$ export PLATFORM_REPO_PATHS=/opt/xilinx/platforms
 	$ cd L1/tests/specific_algorithm/
-	$ make run CSIM=1 CSYNTH=0 COSIM=0 VIVADO_SYN=0 VIVADO_IMPL=0 # Only run C++ simulation
+	$ make run CSIM=1 CSYNTH=0 COSIM=0 VIVADO_SYN=0 VIVADO_IMPL=0 XPART=xcu200-fsgd2104-2-e
 ```
+
+To enable more than C++ simulation, just switch other steps to `1` in `make` command line.
 
 As well as verifying functional correctness, the reports generated from this flow give an indication of logic utilization, timing performance, latency and throughput. The output files of interest can be located at the location of the test project where the path name is "test.prj".
 
