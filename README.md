@@ -64,11 +64,11 @@ Modules in this library are designed to work with all Alveo cards.
 
 ### Shell Environment
 
-Setup the build environment using the Vitis and XRT scripts:
+Setup the build environment using the Vitis script, and set the installation folder of platform files via `PLATFORM_REPO_PATHS` variable.
 
-```console
-    $ source <install path>/Vitis/2019.2/settings64.sh
-    $ source /opt/xilinx/xrt/setup.sh
+```
+source /opt/xilinx/Vitis/2019.2/settings64.sh
+export PLATFORM_REPO_PATHS=/opt/xilinx/platforms
 ```
 
 ## Design Flows
