@@ -53,5 +53,5 @@ This primitive performs axiToStream in two modules working simultaneously.
 2. ``split_vec_to_aligned``: It consumes the ``_WAxi`` width stream, splits and aligns the wide data to
    stream width, and writes the data into stream.
 
-This ``axiToStream`` primitve has only one port for axi ptr and one port for stream output.
+This ``axiToStream`` primitive has only one port for axi ptr and one port for stream output.
 
