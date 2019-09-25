@@ -38,7 +38,7 @@ sys.path.insert(1, os.path.abspath(os.path.dirname(shutil.which('doxyrest')) \
 
 # -- Project information -----------------------------------------------------
 
-project = 'XF Hardware Utility Library'
+project = 'Vitis Utility Library'
 copyright = '2019, Xilinx Inc.'
 author = 'Xilinx Inc.'
 
@@ -167,7 +167,7 @@ latex_elements = {
 latex_documents = [
     (master_doc,
      'XfHardwareUtilityLibrary.tex',
-     'XF Hardware Utility Library Documentation',
+     'Vitis Utility Library Documentation',
      'Xilinx Inc.',
      'manual'),
 ]
@@ -180,7 +180,7 @@ latex_documents = [
 man_pages = [
     (master_doc,
      'XfHardwareUtilityLibrary',
-     'XF Hardware Utility Library Documentation',
+     'Vitis Utility Library Documentation',
      [author],
      1)
 ]
@@ -194,10 +194,10 @@ man_pages = [
 texinfo_documents = [
     (master_doc,
      'XfHardwareUtilityLibrary',
-     'XF Hardware Utility Library Documentation',
+     'Vitis Utility Library Documentation',
      author,
      'xf_common_utils_hw',
-     'XF Hardware Utility Library provides common patterns of streaming and storage access.',
+     'Vitis Utility Library provides common patterns of streaming and storage access.',
      'Miscellaneous'),
 ]
 

@@ -13,11 +13,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=============================
-XF Hardware Utilities Library
-=============================
+=====================
+Vitis Utility Library
+=====================
 
-XF Hardware Utilities Library is an HLS library, aiming to
+Vitis Utility Library is an HLS library, aiming to
 assist developers to efficiently access memory in DDR, HBM or URAM,
 and perform data distribution/collection/re-ordering/insertion/discarding
 along stream-based transfer.

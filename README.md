@@ -1,6 +1,6 @@
-# XF Hardware Utility Library
+# Vitis Utility Library
 
-XF Hardware Utility Library is an open-sourced Vitis library of common patterns of streaming and storage access,
+Vitis Utility Library is an open-sourced Vitis library of common patterns of streaming and storage access,
 Aiming to assist developers to efficiently access memory in DDR, HBM or URAM, and perform data distribution, collection, 
 reordering, insertion, and discarding along stream-based transfer.
 
@@ -71,6 +71,9 @@ source /opt/xilinx/Vitis/2019.2/settings64.sh
 export PLATFORM_REPO_PATHS=/opt/xilinx/platforms
 ```
 
+Setting the `PLATFORM_REPO_PATHS` to installation folder of platform files can enable makefiles in this library to use the `DEVICE` variable as a pattern.
+Otherwise, full path to .xpfm file needs to be provided through the `DEVICE` variable.
+
 ## Design Flows
 
 The common tool and library pre-requisites that apply across all design flows are documented in the requirements section above.
@@ -89,7 +92,7 @@ A Makefile is used to drive this flow with available steps including `CSIM` (hig
 ```console
 cd L1/tests/specific_algorithm/
 make run CSIM=1 CSYNTH=0 COSIM=0 VIVADO_SYN=0 VIVADO_IMPL=0 \
-         DEVICE=xilinx_u200_xdma_201830_2 PLATFORM_REPO_PATHS=/opt/xilinx/platforms
+         DEVICE=/path/to/xilinx_u200_xdma_201830_2.xpfm
 ```
 
 To enable more than C++ simulation, just switch other steps to `1` in `make` command line.
