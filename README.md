@@ -1,49 +1,10 @@
 # Vitis Utility Library
 
-Vitis Utility Library is an open-sourced Vitis library of common patterns of streaming and storage access,
-Aiming to assist developers to efficiently access memory in DDR, HBM or URAM, and perform data distribution, collection, 
+Vitis Utility Library is an open-sourced Vitis library of common patterns of streaming and storage access.
+It aims to assist developers to efficiently access memory in DDR, HBM or URAM, and perform data distribution, collection,
 reordering, insertion, and discarding along stream-based transfer.
 
 Check the [comprehensive HTML document](#) for more details.
-
-## Library Contents
-
-| Library Function | Description | Layer |
-|------------------|-------------|-------|
-| axiToMultiStream | Loading multiple categories of data from one AXI master to streams | L1 |
-| axiToStream | Loading data elements from AXI master to stream | L1 |
-| axiToCharStream | Loading char data from AXI master to stream | L1 |
-| streamCombine overload (1) | combine multiple streams into one, shift selected streams to LSB side | L1 |
-| streamCombine overload (2) | combine multiple streams into one, shift selected streams to MSB side | L1 |
-| streamCombine overload (3) | combine multiple streams into a wide one, align to LSB | L1 |
-| streamCombine overload (4) | combine multiple streams into a wide one, align to MSB | L1 |
-| streamDiscard overload (1) | Discard multiple streams with end flag helper for each | L1 |
-| streamDiscard overload (2) | Discard multiple streams synchronized with one end flag | L1 |
-| streamDiscard overload (3) | Discard one stream with its end flag helper | L1 |
-| streamDup overload (1) | Duplicate stream | L1 |
-| streamDup overload (2) | Duplicate stream | L1 |
-| streamNToOne overload (1) | stream distribute, skip to read the empty input streams | L1 |
-| streamNToOne overload (2) | stream distribute, skip to read the empty input streams | L1 |
-| streamNToOne overload (3) | stream distribute, in round-robin order from NStrm input streams | L1 |
-| streamNToOne overload (4) | stream distribute, in round-robin order from NStrm input streams | L1 |
-| streamNToOne overload (5) | This function selects from input streams based on tags | L1 |
-| streamNToOne overload (6) | This function selects from input streams based on tags | L1 |
-| streamOneToN overload (1) | stream distribute, using load-balancing algorithm | L1 |
-| streamOneToN overload (2) | stream distribute, using load-balancing algorithm | L1 |
-| streamOneToN overload (3) | stream distribute, in round-robin order from first output | L1 |
-| streamOneToN overload (4) | stream distribute, in round-robin order from first output | L1 |
-| streamOneToN overload (5) | This function send element from one stream to multiple streams based on tags | L1 |
-| streamOneToN overload (6) | This function send element from one stream to multiple streams based on tags | L1 |
-| streamReorder | Window-reorder in a stream | L1 |
-| streamShuffle | Shuffle the contents from an array of streams to another | L1 |
-| streamSplit overload (1) | split one wide stream into multiple streams, start from the LSB | L1 |
-| streamSplit overload (2) | split one wide stream into multiple streams, start from the MSB | L1 |
-| streamSync | Synchronize streams for successor module | L1 |
-| streamToAxi | Write elements in burst to AXI master port | L1 |
-
-| Library Class    | Description | Layer |
-|------------------|-------------|-------|
-| UramArray        | Helper class to create URAM array that can be updated every cycle with forwarding regs | L1 |
 
 ## Requirements
 
@@ -98,6 +59,46 @@ make run CSIM=1 CSYNTH=0 COSIM=0 VIVADO_SYN=0 VIVADO_IMPL=0 \
 To enable more than C++ simulation, just switch other steps to `1` in `make` command line.
 
 As well as verifying functional correctness, the reports generated from this flow give an indication of logic utilization, timing performance, latency and throughput. The output files of interest can be located at the location of the test project where the path name is "test.prj".
+
+## Library Contents
+
+| Library Function | Description | Layer |
+|------------------|-------------|-------|
+| axiToMultiStream | Loading multiple categories of data from one AXI master to streams | L1 |
+| axiToStream | Loading data elements from AXI master to stream | L1 |
+| axiToCharStream | Loading char data from AXI master to stream | L1 |
+| streamCombine overload (1) | combine multiple streams into one, shift selected streams to LSB side | L1 |
+| streamCombine overload (2) | combine multiple streams into one, shift selected streams to MSB side | L1 |
+| streamCombine overload (3) | combine multiple streams into a wide one, align to LSB | L1 |
+| streamCombine overload (4) | combine multiple streams into a wide one, align to MSB | L1 |
+| streamDiscard overload (1) | Discard multiple streams with end flag helper for each | L1 |
+| streamDiscard overload (2) | Discard multiple streams synchronized with one end flag | L1 |
+| streamDiscard overload (3) | Discard one stream with its end flag helper | L1 |
+| streamDup overload (1) | Duplicate stream | L1 |
+| streamDup overload (2) | Duplicate stream | L1 |
+| streamNToOne overload (1) | stream distribute, skip to read the empty input streams | L1 |
+| streamNToOne overload (2) | stream distribute, skip to read the empty input streams | L1 |
+| streamNToOne overload (3) | stream distribute, in round-robin order from NStrm input streams | L1 |
+| streamNToOne overload (4) | stream distribute, in round-robin order from NStrm input streams | L1 |
+| streamNToOne overload (5) | This function selects from input streams based on tags | L1 |
+| streamNToOne overload (6) | This function selects from input streams based on tags | L1 |
+| streamOneToN overload (1) | stream distribute, using load-balancing algorithm | L1 |
+| streamOneToN overload (2) | stream distribute, using load-balancing algorithm | L1 |
+| streamOneToN overload (3) | stream distribute, in round-robin order from first output | L1 |
+| streamOneToN overload (4) | stream distribute, in round-robin order from first output | L1 |
+| streamOneToN overload (5) | This function send element from one stream to multiple streams based on tags | L1 |
+| streamOneToN overload (6) | This function send element from one stream to multiple streams based on tags | L1 |
+| streamReorder | Window-reorder in a stream | L1 |
+| streamShuffle | Shuffle the contents from an array of streams to another | L1 |
+| streamSplit overload (1) | split one wide stream into multiple streams, start from the LSB | L1 |
+| streamSplit overload (2) | split one wide stream into multiple streams, start from the MSB | L1 |
+| streamSync | Synchronize streams for successor module | L1 |
+| streamToAxi | Write elements in burst to AXI master port | L1 |
+
+| Library Class    | Description | Layer |
+|------------------|-------------|-------|
+| UramArray        | Helper class to create URAM array that can be updated every cycle with forwarding regs | L1 |
+
 
 ## License
 
