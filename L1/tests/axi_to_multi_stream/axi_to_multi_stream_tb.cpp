@@ -33,7 +33,7 @@ typedef ap_int<8 * DT2_SZ> DT2;
 #define BUF_DEPTH (ELEM_SPACE * (DT0_SZ + DT1_SZ + DT2_SZ) / AXI_SZ)
 
 template <int _II, typename _TStrm>
-void forward_data(hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm, hls::stream<_TStrm>& r_strm, const int len) {
+void forward_data(hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm, hls::stream<_TStrm>& r_strm) {
     bool e = e_ostrm.read();
     while (!e) {
 #pragma HLS pipeline II = _II
@@ -46,31 +46,33 @@ void forward_data(hls::stream<_TStrm>& ostrm, hls::stream<bool>& e_ostrm, hls::s
 // top functions for co-sim
 // 3 consumers of different rate are connected to test against deadlock.
 void top_func(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
-              const int len[3],
-              const int offset[3],
               hls::stream<DT0>& r_strm0,
               hls::stream<DT1>& r_strm1,
               hls::stream<DT2>& r_strm2) {
     // clang-format off
     ;
+    int len[3] = {100 * DT0_SZ, 200 * DT2_SZ, 300 * DT2_SZ};
+#pragma HLS ARRAY_PARTITION variable = len complete
+    int offset[3] = {0 + 1, DT0_SZ * ELEM_SPACE + 2, DT0_SZ * ELEM_SPACE + DT1_SZ * ELEM_SPACE + 3};
+#pragma HLS ARRAY_PARTITION variable = offset complete
 #pragma HLS INTERFACE m_axi port = rbuf offset = slave bundle = gmem_in1 latency = 125 \
     num_read_outstanding = 32 max_read_burst_length = 32
 #pragma HLS ARRAY_PARTITION variable = len complete
 #pragma HLS ARRAY_PARTITION variable = offset complete
     ;
-// clang-format on
-
+    // clang-format on
+    {
 #pragma HLS DATAFLOW
 
-    hls::stream<bool> e_ostrm0;
-    hls::stream<DT0> ostrm0;
-    hls::stream<DT1> ostrm1;
-    hls::stream<bool> e_ostrm1;
-    hls::stream<DT2> ostrm2;
-    hls::stream<bool> e_ostrm2;
+        hls::stream<bool> e_ostrm0;
+        hls::stream<DT0> ostrm0;
+        hls::stream<DT1> ostrm1;
+        hls::stream<bool> e_ostrm1;
+        hls::stream<DT2> ostrm2;
+        hls::stream<bool> e_ostrm2;
 
-    // const int NONBLOCK_DEPTH = 256;
-    const int NONBLOCK_DEPTH = 8;
+        // const int NONBLOCK_DEPTH = 256;
+        const int NONBLOCK_DEPTH = 8;
 
 #pragma HLS RESOURCE variable = ostrm0 core = FIFO_LUTRAM
 #pragma HLS STREAM variable = ostrm0 depth = NONBLOCK_DEPTH
@@ -85,13 +87,14 @@ void top_func(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
 #pragma HLS RESOURCE variable = e_ostrm2 core = FIFO_LUTRAM
 #pragma HLS STREAM variable = e_ostrm2 depth = NONBLOCK_DEPTHS
 
-    xf::common::utils_hw::axiToMultiStream<BURST_LENTH, AXI_WIDTH, DT0, DT1, DT2>(
-        rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
+        xf::common::utils_hw::axiToMultiStream<BURST_LENTH, AXI_WIDTH, DT0, DT1, DT2>(
+            rbuf, ostrm0, e_ostrm0, ostrm1, e_ostrm1, ostrm2, e_ostrm2, len, offset);
 
-    // Stream Consumers
-    forward_data<1>(ostrm0, e_ostrm0, r_strm0, len[0]);
-    forward_data<2>(ostrm1, e_ostrm1, r_strm1, len[1]);
-    forward_data<4>(ostrm2, e_ostrm2, r_strm2, len[2]);
+        // Stream Consumers
+        forward_data<1>(ostrm0, e_ostrm0, r_strm0);
+        forward_data<2>(ostrm1, e_ostrm1, r_strm1);
+        forward_data<4>(ostrm2, e_ostrm2, r_strm2);
+    }
 }
 
 #ifndef __SYNTHESIS__
@@ -101,7 +104,6 @@ void top_func(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
 
 int main() {
     int nerror = 0;
-
     int len[3] = {100 * DT0_SZ, 200 * DT2_SZ, 300 * DT2_SZ};
     int offset[3] = {0 + 1, DT0_SZ * ELEM_SPACE + 2, DT0_SZ * ELEM_SPACE + DT1_SZ * ELEM_SPACE + 3};
 
@@ -127,7 +129,7 @@ int main() {
     hls::stream<DT1> ds1;
     hls::stream<DT2> ds2;
 
-    top_func((ap_uint<AXI_WIDTH>*)buf, len, offset, ds0, ds1, ds2);
+    top_func((ap_uint<AXI_WIDTH>*)buf, ds0, ds1, ds2);
 
     // verify the result
     int j = 0;
