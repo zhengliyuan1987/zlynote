@@ -199,10 +199,6 @@ void read_to_vec_stream(ap_uint<_WAxi>* rbuf,
     bool is_onetype_fnl[3];
 #pragma HLS RESOURCE variable = dat_ram core = RAM_2P_BRAM
 
-#pragma HLS ARRAY_PARTITION variable = vec_strm complete
-
-#pragma HLS ARRAY_PARTITION variable = len complete
-#pragma HLS ARRAY_PARTITION variable = offset complete
 #pragma HLS ARRAY_PARTITION variable = off_ali complete
 #pragma HLS ARRAY_PARTITION variable = len_vec complete
 #pragma HLS ARRAY_PARTITION variable = pos_vec complete
