@@ -327,6 +327,11 @@ void split_vec_to_aligned_duplicate(hls::stream<ap_uint<_WAxi> >& vec_strm,
 
 } // details
 
+/**
+ * @brief Transform AXI transaction into multiple data stream
+ *
+ * Notice: argument len and offset requires array_partition pragma at its defination loaction
+ */
 template <int _BurstLen, int _WAxi, typename _TStrm0, typename _TStrm1, typename _TStrm2>
 void axiToMultiStream(ap_uint<_WAxi>* rbuf,
                       hls::stream<_TStrm0>& ostrm0,
@@ -354,8 +359,6 @@ void axiToMultiStream(ap_uint<_WAxi>* rbuf,
 #pragma HLS RESOURCE variable = vec_strm core = FIFO_LUTRAM
 #pragma HLS STREAM variable = vec_strm depth = NONBLOCK_DEPTH
 #pragma HLS ARRAY_PARTITION variable = vec_strm complete
-#pragma HLS ARRAY_PARTITION variable = len complete
-#pragma HLS ARRAY_PARTITION variable = offset complete
 
     const int scal_char = _WAxi / 8;
     const int scal_vec0 = _WAxi / (8 * sizeof(_TStrm0));

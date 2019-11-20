@@ -55,6 +55,8 @@ void top_func(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
     ;
 #pragma HLS INTERFACE m_axi port = rbuf offset = slave bundle = gmem_in1 latency = 125 \
     num_read_outstanding = 32 max_read_burst_length = 32
+#pragma HLS ARRAY_PARTITION variable = len complete
+#pragma HLS ARRAY_PARTITION variable = offset complete
     ;
 // clang-format on
 
