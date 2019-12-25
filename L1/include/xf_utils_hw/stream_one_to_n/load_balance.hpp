@@ -222,7 +222,6 @@ void stream_one_to_n_distribute(hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n
     const int deq_depth = 8;
     const int deq_width = 4;
     ap_uint<buf_width> buff_r = 0;
-    ap_uint<buf_width> buff_r2 = 0;
     ap_uint<buf_width> buff_p = 0;
     ap_uint<buf_width> buff_q = 0;
     ap_uint<_WOutStrm> buf_arr[2 * _NStrm];
@@ -251,7 +250,6 @@ void stream_one_to_n_distribute(hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n
     int rn2 = 0;
     int ld = 0;
     int ld2 = 0;
-    int dflds = -1;
     bool ld_flg = true;
     bool wb = true;
     bool high = true;
@@ -286,6 +284,8 @@ void stream_one_to_n_distribute(hls::stream<ap_uint<_NStrm * _WOutStrm> >& buf_n
         frt[i] = 0;
         rr[i] = 0;
     }
+
+    bool new_buff_r = false;
 LOOP_core:
     while (!be) {
 #pragma HLS pipeline II = 1
@@ -316,45 +316,36 @@ LOOP_core:
         bak_full1 = full;
 
         base = next_base;
-        /*
-        * here ld = ld - rn2 means how many data are stored in buf_arr. However,if
-        * it locates before "if( ld < _NStrm)" , it leads to big latency because the
-        * critical path includes  read the input stream. So buff_r2 is added to
-        * cache the input data.
-        *
-        * */
-        // ld = ld-rn2 ;
-        // if (bak_full != all_full && ld < mult_nstrm && dflds <= 0) {
+
         if (bak_full != all_full && ld_flg) {
             //  read new data when left data is not enough
             be = e_buf_n_strm.read();
             buff_r = buf_n_strm.read();
             high = !high;
             tc = _NStrm;
-        } else
+            new_buff_r = true;
+        } else {
             tc = 0;
-        // ld is the number of input data ,including data in buf_arr and buff_r
+        }
+        // ld is the number of input data, including data in buf_arr and buff_r
+        // Updating `ld` before `if (ld < _NStrm)` leads to big latency because the
+        // critical path includes read the input stream.
+        ld = ld - rn2 + tc;
         // ld2 is the number of input data stored in buf_arr
         ld2 = ld2 - rn2;
-        ld = ld - rn2 + tc;
         int tmp_ld = ld2 < _NStrm ? ld2 + mult_nstrm : ld2 + _NStrm;
-        // dflds = ld - tmp_ld;
         ld_flg = ld < mult_nstrm && ld <= tmp_ld;
-        // get data when the  data in buf_arr is not enough
-        if (ld2 < _NStrm) {
+        // get data when the data in buf_arr is not enough
+        if (new_buff_r && ld2 < _NStrm) {
+            new_buff_r = false;
             wb = true;
-            buff_r2 = buff_r;
             ld2 += _NStrm;
-            buff_q = high ? buff_r2 : buff_q;
-            buff_p = high ? buff_p : buff_r2;
+            buff_q = high ? buff_r : buff_q;
+            buff_p = high ? buff_p : buff_r;
         } else {
             wb = false;
         }
-        // if the data in buff_r are move to buff_r2, ld is equals to ld2 and buff_r
-        // is free and could store new data
-        // dflds = ld - ld2- _NStrm;
-        // dflds = ld - tmp_ld;
-        // compute the index that  deq[i] read the data in buf_arr
+        // compute the index that deq[i] read the data in buf_arr
         pos[0] = base;
         for (int i = 1; i < _NStrm; ++i) {
 #pragma HLS unroll
@@ -370,7 +361,7 @@ LOOP_core:
             std::cout << "c =  " << std::dec << c << std::endl;
 #endif
         }
-        // double buffers service buf_arr in oder of deq accessing data
+        // double buffers service buf_arr in order of deq accessing data
         for (int i = 0; i < _NStrm; ++i) {
 #pragma HLS unroll
             buf_arr[i] = buff_p.range((i + 1) * _WOutStrm - 1, i * _WOutStrm);

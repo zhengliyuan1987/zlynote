@@ -120,12 +120,6 @@ void test_core_1_n(hls::stream<ap_uint<WIN_STRM> >& data_istrm,
                    hls::stream<bool>& e_istrm,
                    hls::stream<ap_uint<WOUT_STRM> > data_ostrms[NSTRM],
                    hls::stream<bool> e_data_ostrms[NSTRM]) {
-/*
-xf::common::utils_hw::streamOneToN<WIN_STRM, WOUT_STRM,NSTRM>(
-                       data_istrm,  e_istrm,
-                       data_ostrms, e_data_ostrms,
-                       xf::util::load_balance_t());
-*/
 #pragma HLS dataflow
     // here the depth  is an influence factor of outputs' order
     hls::stream<ap_uint<WOUT_STRM> > c_strms[NSTRM];
@@ -184,32 +178,29 @@ int test_1_n() {
     std::cout << std::dec << "comp_count=" << comp_count << std::endl;
     count = 0;
     for (int kk = 0; kk < NSTRM; ++kk) {
-        std::cout << "stream kk:" << kk << std::endl;
+        std::cout << "stream " << kk << ":";
         while (!e_data_ostrms[kk].read()) {
             ap_uint<WOUT_STRM> d = data_ostrms[kk].read();
             td[d]++;
-            std::cout << d << "  ";
             len[kk]++;
             count++;
+            std::cout << " " << d;
         }
         std::cout << std::endl;
     }
     for (int i = 0; i < NS; ++i)
         if (td[i] != 1) {
-            nerror = 1;
-            std::cout << "erro "
-                      << "i= " << i << "  "
-                      << "td[i]" << td[i] << std::endl;
+            nerror += 1;
+            std::cout << "error: td[" << i << "] = " << td[i] << std::endl;
         }
 
-    nerror = (count == NS) ? nerror : 1;
-    std::cout << "count= " << count << "  "
-              << "NS= " << NS << std::endl;
-    // nerror=0;
-    for (int id = 0; id < NSTRM; id++)
+    nerror += (count != NS);
+    std::cout << "count = " << count << ", NS = " << NS << std::endl;
+    for (int id = 0; id < NSTRM; id++) {
         std::cout << std::dec << "the length of stream_" << id << ": " << len[id] << std::endl;
+    }
     if (nerror) {
-        std::cout << "\nFAIL: " << nerror << "the order is wrong.\n";
+        std::cout << "\nFAIL: " << nerror << " results are wrong.\n";
     } else {
         std::cout << "\nPASS: no error found.\n";
     }
@@ -217,6 +208,5 @@ int test_1_n() {
 }
 
 int main() {
-    //   return  test_consume() ;
     return test_1_n();
 }
