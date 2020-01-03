@@ -13,14 +13,18 @@
     "clock": "2.5", 
     "topfunction": "round_robin_mpu", 
     "top": {
-        "source": "code.cpp", 
+        "source": [
+            "code.cpp"
+        ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include"
     }, 
     "testbench": {
-        "source": "tb.cpp", 
+        "source": [
+            "tb.cpp"
+        ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include", 
         "ldflags": "", 
-        "argv": ""
+        "argv": {}
     }, 
     "testinfo": {
         "disable": false, 

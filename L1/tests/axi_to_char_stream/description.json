@@ -13,14 +13,18 @@
     "clock": "2.5", 
     "topfunction": "top_axi_to_char_stream", 
     "top": {
-        "source": "axi_to_char_stream_tb.cpp", 
+        "source": [
+            "axi_to_char_stream_tb.cpp"
+        ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include"
     }, 
     "testbench": {
-        "source": "axi_to_char_stream_tb.cpp", 
+        "source": [
+            "axi_to_char_stream_tb.cpp"
+        ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include", 
         "ldflags": "", 
-        "argv": ""
+        "argv": {}
     }, 
     "testinfo": {
         "disable": false, 

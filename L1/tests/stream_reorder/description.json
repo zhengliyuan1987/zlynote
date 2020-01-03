@@ -13,14 +13,18 @@
     "clock": "2.5", 
     "topfunction": "test_core_reorder", 
     "top": {
-        "source": "test.cpp", 
+        "source": [
+            "test.cpp"
+        ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include"
     }, 
     "testbench": {
-        "source": "test.cpp", 
+        "source": [
+            "test.cpp"
+        ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include", 
         "ldflags": "", 
-        "argv": ""
+        "argv": {}
     }, 
     "testinfo": {
         "disable": false, 
