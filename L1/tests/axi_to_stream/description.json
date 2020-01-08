@@ -24,7 +24,8 @@
         ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include -std=c++0x", 
         "ldflags": "", 
-        "argv": {}
+        "argv": {}, 
+        "stdmath": false
     }, 
     "testinfo": {
         "disable": false, 
