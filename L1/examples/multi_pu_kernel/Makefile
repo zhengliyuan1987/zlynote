@@ -51,7 +51,7 @@ help::
 
 # MK_INC_BEGIN vivado.mk
 
-TOOL_VERSION ?= 2019.2
+TOOL_VERSION ?= 2020.1
 
 ifeq (,$(XILINX_VIVADO))
 XILINX_VIVADO = /opt/xilinx/Vivado/$(TOOL_VERSION)
@@ -69,6 +69,7 @@ export PATH := $(XILINX_VIVADO)/bin:$(PATH)
 # MK_INC_END vivado.mk
 
 DEVICE ?= u200
+
 # MK_INC_BEGIN vitis_set_part.mk
 
 .PHONY: check_part
@@ -109,7 +110,6 @@ ifneq (,$(wildcard $(XILINX_VITIS)/bin/ldlibpath.sh))
 export LD_LIBRARY_PATH := $(shell $(XILINX_VITIS)/bin/ldlibpath.sh $(XILINX_VITIS)/lib/lnx64.o):$(LD_LIBRARY_PATH)
 endif
 
-
 # MK_INC_END vitis.mk
 # MK_INC_BEGIN vitis_set_platform.mk
 
@@ -136,7 +136,7 @@ endif
 
 define MSG_PLATFORM
 No platform matched pattern '$(DEVICE)'.
-Avaialble platforms are: $(XPLATFORMS)
+Available platforms are: $(XPLATFORMS)
 To add more platform directories, set the PLATFORM_REPO_PATHS variable.
 endef
 export MSG_PLATFORM
@@ -165,7 +165,7 @@ ifneq (,$(wildcard $(XILINX_VITIS)/bin/platforminfo))
 override XPART := $(shell $(XILINX_VITIS)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(firstword $(XPLATFORM)))
 endif
 endif
-check_part: | check_platform
+check_part: check_platform check_vpp
 ifeq (,$(XPART))
 	@echo "XPART is not set and cannot be inferred. Please run \`make help\` for usage info." && false
 endif
@@ -179,7 +179,10 @@ endif # XPART
 # MK_INC_BEGIN hls_test_rules.mk
 
 
-.PHONY: run setup runhls clean
+.PHONY: run setup runhls clean cleanall check
+
+# Alias to run, for legacy test script
+check: run
 
 CSIM ?= 0
 CSYNTH ?= 0
@@ -187,7 +190,6 @@ COSIM ?= 0
 VIVADO_SYN ?= 0
 VIVADO_IMPL ?= 0
 QOR_CHECK ?= 0
-
 
 # at least RTL synthesis before check QoR
 ifeq (1,$(QOR_CHECK))
@@ -227,14 +229,14 @@ setup: | check_part
 	@cat ./settings.tcl
 	@echo "----"
 
-HLS ?= vivado_hls
-runhls: setup | check_vivado
+HLS ?= vitis_hls
+runhls: setup | check_vivado check_vpp
 	$(HLS) -f run_hls.tcl;
 
 clean:
-	rm -rf *.prj *_hls.log settings.tcl
+	rm -rf settings.tcl *_hls.log test.prj
 
-.PHONY: check
-check: run
+# Used by Jenkins test
+cleanall: clean
 
 # MK_INC_END hls_test_rules.mk
