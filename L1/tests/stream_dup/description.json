@@ -24,7 +24,10 @@
         ], 
         "cflags": "-I${XF_PROJ_ROOT}/L1/include", 
         "ldflags": "", 
-        "argv": {}, 
+	"argv": {
+		"hls_csim": "0",
+		"hls_cosim": "0"
+	}, 
         "stdmath": false
     }, 
     "testinfo": {
