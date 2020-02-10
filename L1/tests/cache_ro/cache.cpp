@@ -1,3 +1,7 @@
+#include "xf_utils_hw/cache.hpp"
+
+// XXX: macro with same name as template parameter is defined in this header, for easy matching up.
+// so this header must be included AFTER the API header under test.
 #include "cache_tb.hpp"
 
 void syn_top(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
@@ -26,4 +30,8 @@ void syn_top(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
     xf::common::utils_hw::cache_ro<BUSADDRWIDTH, BUSDATAWIDTH, CACHELINEIDXWIDTH, ADDRURAMIDXWIDTH,
                                    ADDRIDXURAMLINEWIDTH, URAMIDXWIDTH, DATAOFFURAMIDXWIDTH, ONCHIPSTRMDEPTH>(
         raddrStrm, eRaddrStrm, rdataStrm, eRdataStrm, ddrMem, valid);
+
+#ifndef __SYNTHESIS__
+    free(valid);
+#endif
 }

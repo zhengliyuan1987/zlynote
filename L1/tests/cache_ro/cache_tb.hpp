@@ -3,7 +3,6 @@
 #include <hls_stream.h>
 #include <ap_int.h>
 #include <math.h>
-#include "cache.hpp"
 
 #define DDRSIZEIN512 (5000)
 #define BUSADDRWIDTH (64)

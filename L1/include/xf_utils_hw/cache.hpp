@@ -5,6 +5,14 @@
 #include <ap_int.h>
 #include <assert.h>
 
+#ifndef __SYNTHESIS__
+#if __cplusplus < 201300
+#error "cache.hpp requires C++14 in c-simulation"
+#else
+#include <memory>
+#endif
+#endif
+
 namespace xf {
 namespace common {
 namespace utils_hw {

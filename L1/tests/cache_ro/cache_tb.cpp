@@ -28,6 +28,8 @@ int main() {
 
     syn_top(raddrStrm, eRaddrStrm, rdataStrm, eRdataStrm, ddrMem);
 
+    int err = 0;
+
     for (i = 0; i < 2000; i++) {
         int data = rdataStrm.read();
         eRdataStrm.read();
@@ -37,11 +39,13 @@ int main() {
                       << ddrMem[rd[i] / 8].range(383, 320) << " " << ddrMem[rd[i] / 8].range(319, 256) << " ";
             std::cout << ddrMem[rd[i] / 8].range(255, 192) << " " << ddrMem[rd[i] / 8].range(191, 128) << " "
                       << ddrMem[rd[i] / 8].range(127, 64) << " " << ddrMem[rd[i] / 8].range(63, 0) << std::endl;
+            ++err;
         }
     }
     eRdataStrm.read();
 
     free(ddrMem);
 
-    return 0;
+    std::cout << (err == 0 ? "PASS" : "FAIL") << std::endl;
+    return err;
 }
