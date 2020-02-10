@@ -26,9 +26,7 @@ typedef ap_int<ELEM_WIDTH> DType;
 
 // ------------------------------------------------------------
 // top functions for aligned data
-void top_axi_to_stream(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH],
-                       const int num,
-                       hls::stream<DType>& ostrm) {
+void top_axi_to_stream(ap_uint<AXI_WIDTH> rbuf[BUF_DEPTH], const int num, hls::stream<DType>& ostrm) {
     // clang-format off
     ;
 #pragma HLS INTERFACE m_axi port = rbuf offset = slave bundle = gmem_in1 \
@@ -65,7 +63,7 @@ int main() {
     std::cout << "num elem read: " << d_strm.size() << std::endl;
 
     // verify the result
-    for(int j = 0; j < k_num; ++j){
+    for (int j = 0; j < k_num; ++j) {
         DType t = d_strm.read();
         DType r = eptr[j];
         if (t != r) {

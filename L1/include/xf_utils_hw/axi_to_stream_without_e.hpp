@@ -111,8 +111,7 @@ void axiToStream(ap_uint<_WAxi>* rbuf, const int num, hls::stream<_TStrm>& ostrm
  * @param offset offset from the beginning of the buffer, in number of char.
  */
 template <int _BurstLen = 32, int _WAxi, typename _TStrm>
-void axiToCharStream(
-    ap_uint<_WAxi>* rbuf, hls::stream<_TStrm>& ostrm, const int len, const int offset = 0);
+void axiToCharStream(ap_uint<_WAxi>* rbuf, hls::stream<_TStrm>& ostrm, const int len, const int offset = 0);
 
 // ------------------- Implementation --------------------------
 
@@ -141,7 +140,7 @@ template <int _WAxi, typename _TStrm, int scal_vec>
 void split_vec(hls::stream<ap_uint<_WAxi> >& vec_strm,
                const int nrow,
                const int offset_AL,
-               hls::stream<_TStrm>& r_strm){
+               hls::stream<_TStrm>& r_strm) {
     const int WStrm = 8 * sizeof(_TStrm);
     ap_uint<_WAxi> fst_vec = vec_strm.read();
     int fst_n = (scal_vec - offset_AL) > nrow ? (nrow + offset_AL) : scal_vec;
@@ -150,7 +149,7 @@ SPLIT_FEW_VEC:
     for (int j = 0; j < scal_vec; ++j) {
 #pragma HLS loop_tripcount min = 1 max = 1
 #pragma HLS PIPELINE II = 1
-        //ap_uint<WStrm> fst_r0 = fst_vec.range(WStrm * (j + 1) - 1, WStrm * j);
+        // ap_uint<WStrm> fst_r0 = fst_vec.range(WStrm * (j + 1) - 1, WStrm * j);
         ap_uint<WStrm> fst_r0 = fst_vec.range(_WAxi - 1, WStrm * j);
         if (j < fst_n && j >= offset_AL) {
             r_strm.write((_TStrm)fst_r0);
@@ -166,8 +165,8 @@ SPLIT_VEC:
 
         for (int j = 0; j < scal_vec; ++j) {
 #pragma HLS PIPELINE II = 1
-      //      const int maxRange = min(WStrm)
-            //ap_uint<WStrm> r0 = vec.range(WStrm * (j + 1) - 1, WStrm * j);
+            //      const int maxRange = min(WStrm)
+            // ap_uint<WStrm> r0 = vec.range(WStrm * (j + 1) - 1, WStrm * j);
             ap_uint<WStrm> r0 = vec.range(_WAxi - 1, WStrm * j);
             if (j < n) {
                 r_strm.write((_TStrm)r0);
@@ -205,7 +204,7 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm,
                           const int len,
                           const int scal_char,
                           const int offset,
-                          hls::stream<_TStrm>& r_strm){
+                          hls::stream<_TStrm>& r_strm) {
     const int nread = (len + offset + scal_char - 1) / scal_char;
     // n read times except the first read, n_read+1 = total read times
     int cnt_r = nread - 1;
@@ -272,11 +271,10 @@ void split_vec_to_aligned(hls::stream<ap_uint<_WAxi> >& vec_strm,
 
 template <int _BurstLen, int _WAxi, typename _TStrm>
 void axiToStream(ap_uint<_WAxi>* rbuf, const int num, hls::stream<_TStrm>& ostrm) {
-
 #pragma HLS DATAFLOW
     static const int fifo_depth = _BurstLen * 2;
     static const int size0 = sizeof(_TStrm);
-    //static const int size0 = _WAxi / 8;
+    // static const int size0 = _WAxi / 8;
     static const int scal_vec = _WAxi / (8 * size0);
     static const int scal_char = _WAxi / 8;
 
