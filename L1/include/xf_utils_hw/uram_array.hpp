@@ -87,12 +87,17 @@ template <int _WData, int _NData, int _NCache>
 class UramArray {
    public:
     UramArray() {
-#pragma HLS RESOURCE variable = blocks core = RAM_2P_URAM
-#pragma HLS ARRAY_PARTITION variable = blocks complete dim = 1
-#pragma HLS ARRAY_PARTITION variable = blocks complete dim = 2
-#pragma HLS ARRAY_PARTITION variable = _index complete dim = 1
-#pragma HLS ARRAY_PARTITION variable = _state complete dim = 1
+#pragma HLS inline
+#pragma HLS resource variable = blocks core = RAM_2P_URAM
+#pragma HLS array_partition variable = blocks complete dim = 1
+#pragma HLS array_partition variable = blocks complete dim = 2
+#pragma HLS array_partition variable = _index complete dim = 1
+#pragma HLS array_partition variable = _state complete dim = 1
+        initialize();
+    }
 
+   private:
+    void initialize() {
 #ifndef __SYNTHESIS__
         for (int i = 0; i < _num_uram_x; i++) {
             for (int j = 0; j < _num_uram_y; j++) {
@@ -107,6 +112,7 @@ class UramArray {
         }
     }
 
+   public:
     ~UramArray() {
 #ifndef __SYNTHESIS__
         for (int i = 0; i < _num_uram_x; i++) {
