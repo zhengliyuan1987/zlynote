@@ -41,7 +41,7 @@ void check(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrInStrm,
 #ifndef __SYNTHESIS__
     assert((1 << (6 - ADDRIDXURAMLINEWIDTH)) >= ADDROFFURAMIDXWIDTH &&
            "the max index for the 64bit value must be greater than the stored index of the off chip memory");
-    std::unique_ptr<ap_uint<64>[]> onChipAddr = std::make_unique<ap_uint<64>[]>((long)(1 << ADDRURAMIDXWIDTH));
+    std::unique_ptr<ap_uint<64>[]> onChipAddr(new ap_uint<64>[ 1 << ADDRURAMIDXWIDTH ]);
 #else
     ap_uint<64> onChipAddr[(long)(1 << ADDRURAMIDXWIDTH)];
 #pragma HLS DEPENDENCE variable = onChipAddr inter false
@@ -223,7 +223,7 @@ void ctrlOnChip(hls::stream<ap_uint<2> >& onChipStrm,
 #pragma HLS ARRAY_PARTITION variable = dataQue complete dim = 1
 
 #ifndef __SYNTHESIS__
-    std::unique_ptr<ap_uint<512>[]> onChipData = std::make_unique<ap_uint<512>[]>((long)(1 << DATAURAMIDXWIDTH));
+    std::unique_ptr<ap_uint<512>[]> onChipData(new ap_uint<512>[ 1 << DATAURAMIDXWIDTH ]);
 #else
     ap_uint<512> onChipData[(long)(1 << DATAURAMIDXWIDTH)];
 #pragma HLS DEPENDENCE variable = onChipData inter false
