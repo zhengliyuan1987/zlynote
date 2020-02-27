@@ -203,7 +203,7 @@ void ctrlOnChip(hls::stream<ap_uint<2> >& onChipStrm,
 
 #ifndef __SYNTHESIS__
     assert(BUSDATAWIDTH * (1 << CACHELINEIDXWIDTH) == 512 &&
-           "cache_ro_interal: Bus width * (1<<CACHELINEIDX) must be 512\n");
+           "cacheRO_interal: Bus width * (1<<CACHELINEIDX) must be 512\n");
 #endif
 
     ap_uint<2> ctrl;
@@ -318,10 +318,10 @@ namespace common {
 namespace utils_hw {
 
 /**
- * @brief initialize function for cache_ro
+ * @brief initialize function for cacheRO
  *
- * This function is designed to work with cache_ro function.
- * It is used to initialize the valid array of cache_ro funcion.
+ * This function is designed to work with cacheRO function.
+ * It is used to initialize the valid array of cacheRO funcion.
  *
  * @tparam ADDRWIDTH Actual addr width
  * @tparam URAMIDXWIDTH The width to idex URAM
@@ -340,7 +340,7 @@ void init(ap_uint<64>* valid) {
 }
 
 /**
- * @brief cache_ro is a URAM design for caching Read-only DDR/HBM memory spaces
+ * @brief cacheRO is a URAM design for caching Read-only DDR/HBM memory spaces
  *
  * This function stores history data recently loaded from DDR/HBM in the on-chip memory(URAM).
  * It aims to reduce DDR/HBM access when the memory is accessed randomly.
@@ -371,33 +371,33 @@ template <int BUSADDRWIDTH,         // Width of the physical bus
           int DATAOFFURAMIDXWIDTH,  // The width of DDR address in 512bit, each URAM addr represent
           int ONCHIPSTRMDEPTH       // The strm depth for the hit addr
           >
-void cache_ro(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
-              hls::stream<bool>& eRaddrStrm,
-              hls::stream<ap_uint<BUSDATAWIDTH> >& rdataStrm,
-              hls::stream<bool>& eRdataStrm,
-              ap_uint<512>* ddrMem,
-              ap_uint<64>* valid) {
+void cacheRO(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
+             hls::stream<bool>& eRaddrStrm,
+             hls::stream<ap_uint<BUSDATAWIDTH> >& rdataStrm,
+             hls::stream<bool>& eRdataStrm,
+             ap_uint<512>* ddrMem,
+             ap_uint<64>* valid) {
 #pragma HLS inline off
 #pragma HLS dataflow
-    hls::stream<ap_uint<2> > DDRStrm("cache_ro_DDRStrm");
+    hls::stream<ap_uint<2> > DDRStrm("cacheRO_DDRStrm");
 #pragma HLS stream variable = DDRStrm depth = 32
 #pragma HLS resource variable = DDRStrm core = FIFO_LUTRAM
 
-    hls::stream<ap_uint<BUSADDRWIDTH> > addrMissStrm("cache_ro_addrMissStrm");
+    hls::stream<ap_uint<BUSADDRWIDTH> > addrMissStrm("cacheRO_addrMissStrm");
 #pragma HLS stream variable = addrMissStrm depth = 32
 #pragma HLS resource variable = addrMissStrm core = FIFO_LUTRAM
 
     const int depth = ONCHIPSTRMDEPTH;
 
-    hls::stream<ap_uint<BUSADDRWIDTH> > addrBothStrm("cache_ro_addrBothStrm");
+    hls::stream<ap_uint<BUSADDRWIDTH> > addrBothStrm("cacheRO_addrBothStrm");
 #pragma HLS stream variable = addrBothStrm depth = depth
 #pragma HLS resource variable = addrBothStrm core = FIFO_BRAM
 
-    hls::stream<ap_uint<2> > onChipStrm("cache_ro_onChipStrm");
+    hls::stream<ap_uint<2> > onChipStrm("cacheRO_onChipStrm");
 #pragma HLS stream variable = onChipStrm depth = depth
 #pragma HLS resource variable = onChipStrm core = FIFO_BRAM
 
-    hls::stream<ap_uint<512> > ddrDataStrm("cache_ro_ddrDataStrm");
+    hls::stream<ap_uint<512> > ddrDataStrm("cacheRO_ddrDataStrm");
 #pragma HLS stream variable = ddrDataStrm depth = 32
 #pragma HLS resource variable = ddrDataStrm core = FIFO_LUTRAM
 

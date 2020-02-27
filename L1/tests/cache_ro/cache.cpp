@@ -27,9 +27,9 @@ void syn_top(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
 
     xf::common::utils_hw::init<ADDRWIDTH, URAMIDXWIDTH>(valid);
 
-    xf::common::utils_hw::cache_ro<BUSADDRWIDTH, BUSDATAWIDTH, CACHELINEIDXWIDTH, ADDRURAMIDXWIDTH,
-                                   ADDRIDXURAMLINEWIDTH, URAMIDXWIDTH, DATAOFFURAMIDXWIDTH, ONCHIPSTRMDEPTH>(
-        raddrStrm, eRaddrStrm, rdataStrm, eRdataStrm, ddrMem, valid);
+    xf::common::utils_hw::cacheRO<BUSADDRWIDTH, BUSDATAWIDTH, CACHELINEIDXWIDTH, ADDRURAMIDXWIDTH, ADDRIDXURAMLINEWIDTH,
+                                  URAMIDXWIDTH, DATAOFFURAMIDXWIDTH, ONCHIPSTRMDEPTH>(raddrStrm, eRaddrStrm, rdataStrm,
+                                                                                      eRdataStrm, ddrMem, valid);
 
 #ifndef __SYNTHESIS__
     free(valid);
