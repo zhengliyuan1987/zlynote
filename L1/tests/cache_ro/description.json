@@ -16,14 +16,14 @@
 		"source": [
 			"cache.cpp"
 		],
-		"cflags": "-I${XF_PROJ_ROOT}/L1/include -std=c++14"
+		"cflags": "-I${XF_PROJ_ROOT}/L1/include"
 	},
 	"testbench": {
 		"source": [
 			"cache_tb.cpp",
 			"cache_tb.hpp"
 		],
-		"cflags": "-I${XF_PROJ_ROOT}/L1/include -std=c++14",
+		"cflags": "-I${XF_PROJ_ROOT}/L1/include",
 		"ldflags": "",
 		"argv": {
 			"hls_csim": "1",

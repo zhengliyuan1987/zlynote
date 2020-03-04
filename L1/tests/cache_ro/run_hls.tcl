@@ -25,11 +25,13 @@ if {![info exists CLKP]} {
 
 open_project -reset $PROJ
 
-add_files "cache.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++14"
-add_files -tb "cache_tb.cpp cache_tb.hpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++14"
+add_files "cache.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include"
+add_files -tb "cache_tb.cpp cache_tb.hpp" -cflags "-I${XF_PROJ_ROOT}/L1/include"
 set_top syn_top
 
 open_solution -reset $SOLN
+
+
 
 set_part $XPART
 create_clock -period $CLKP

@@ -119,19 +119,36 @@ XPLATFORM := $(DEVICE)
 else
 # Use DEVICE as a file name pattern
 DEVICE_L := $(shell echo $(DEVICE) | tr A-Z a-z)
-# Match the name
+# 1. search paths specified by variable
 ifneq (,$(PLATFORM_REPO_PATHS))
+# 1.1 as exact name
+XPLATFORM := $(strip $(foreach p, $(subst :, ,$(PLATFORM_REPO_PATHS)), $(wildcard $(p)/$(DEVICE_L)/$(DEVICE_L).xpfm)))
+# 1.2 as a pattern
+ifeq (,$(XPLATFORM))
 XPLATFORMS := $(foreach p, $(subst :, ,$(PLATFORM_REPO_PATHS)), $(wildcard $(p)/*/*.xpfm))
 XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-endif
+endif # 1.2
+endif # 1
+# 2. search Vitis installation
+ifeq (,$(XPLATFORM))
+# 2.1 as exact name
+XPLATFORM := $(strip $(wildcard $(XILINX_VITIS)/platforms/$(DEVICE_L)/$(DEVICE_L).xpfm))
+# 2.2 as a pattern
 ifeq (,$(XPLATFORM))
 XPLATFORMS := $(wildcard $(XILINX_VITIS)/platforms/*/*.xpfm)
 XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-endif
+endif # 2.2
+endif # 2
+# 3. search default locations
+ifeq (,$(XPLATFORM))
+# 3.1 as exact name
+XPLATFORM := $(strip $(wildcard /opt/xilinx/platforms/$(DEVICE_L)/$(DEVICE_L).xpfm))
+# 3.2 as a pattern
 ifeq (,$(XPLATFORM))
 XPLATFORMS := $(wildcard /opt/xilinx/platforms/*/*.xpfm)
 XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-endif
+endif # 3.2
+endif # 3
 endif
 
 define MSG_PLATFORM
