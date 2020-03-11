@@ -40,13 +40,13 @@ sys.path.insert(1, os.path.join(tools_dir, 'share/doxyrest_b/sphinx'))
 # -- Project information -----------------------------------------------------
 
 project = 'Vitis Utility Library'
-copyright = '2019, Xilinx'
+copyright = '2020, Xilinx'
 author = 'Xilinx'
 
 # The short X.Y version
-version = '2019.2'
+version = '2020.1'
 # The full version, including alpha/beta/rc tags
-release = 'v2019.2'
+release = 'v2020.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -124,6 +124,8 @@ pygments_style = None
 html_theme = 'xilinx'
 html_theme_path = [os.path.join(tools_dir, 'share/themes')]
 
+html_last_updated_fmt = '%B %d, %Y'
+
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -145,11 +147,6 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
-#html_context = {
-#    'css_files': [
-#        '_static/theme_overrides.css',  # override wide tables in RTD theme
-#    ],
-#}
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
