@@ -3,412 +3,711 @@
 
 #include <hls_stream.h>
 #include <ap_int.h>
-#include <assert.h>
-
-#ifndef __SYNTHESIS__
-#if __cplusplus < 201103
-#error "cache.hpp requires C++11 in c-simulation"
-#else
-#include <memory>
-#endif
-#endif
-
-namespace xf {
-namespace common {
-namespace utils_hw {
-namespace details {
-namespace cache {
-
-template <int BUSADDRWIDTH,         // Width of the physical bus
-          int CACHELINEIDXWIDTH,    // The width to index the 512bit
-          int ADDRURAMIDXWIDTH,     // The width used to index the address of URAMs
-          int ADDRIDXURAMLINEWIDTH, // The width used to index the 72bit load from URAMs
-          int ADDROFFURAMIDXWIDTH   // The width of DDR address, each URAM addr represent
-          >
-void check(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrInStrm,
-           hls::stream<bool>& eRaddrStrm,
-           hls::stream<ap_uint<2> >& onChipStrm,
-           hls::stream<ap_uint<BUSADDRWIDTH> >& raddrBothStrm,
-           hls::stream<ap_uint<2> >& DDRStrm,
-           hls::stream<ap_uint<BUSADDRWIDTH> >& raddrMissStrm,
-           ap_uint<64>* valid) {
-#pragma HLS inline off
-#pragma HLS DEPENDENCE variable = valid inter false
-
-    bool e;
-    ap_uint<BUSADDRWIDTH> raddr;
-
-#ifndef __SYNTHESIS__
-    assert((1 << (6 - ADDRIDXURAMLINEWIDTH)) >= ADDROFFURAMIDXWIDTH &&
-           "the max index for the 64bit value must be greater than the stored index of the off chip memory");
-    std::unique_ptr<ap_uint<64>[]> onChipAddr(new ap_uint<64>[ 1 << ADDRURAMIDXWIDTH ]);
-#else
-    ap_uint<64> onChipAddr[(long)(1 << ADDRURAMIDXWIDTH)];
-#pragma HLS DEPENDENCE variable = onChipAddr inter false
-#pragma HLS RESOURCE variable = onChipAddr core = RAM_S2P_URAM
-#endif
-
-    ap_uint<64> ramData;
-    ap_uint<ADDRURAMIDXWIDTH + 1> addrQue[4] = {-1, -1, -1, -1};
-#pragma HLS ARRAY_PARTITION variable = addrQue complete dim = 1
-
-    ap_uint<64> dataQue[4] = {0, 0, 0, 0};
-#pragma HLS ARRAY_PARTITION variable = dataQue complete dim = 1
-
-    ap_uint<ADDRURAMIDXWIDTH + ADDRIDXURAMLINEWIDTH - 5> validAddrQ[4] = {-1, -1, -1, -1};
-#pragma HLS ARRAY_PARTITION variable = validAddrQ complete dim = 1
-    ap_uint<64> validDataQ[4] = {0, 0, 0, 0};
-#pragma HLS ARRAY_PARTITION variable = validDataQ complete dim = 1
-
-    for (int i = 0; i < 4; i++) {
-#pragma HLS UNROLL
-        addrQue[i] = -1;
-        validAddrQ[i] = -1;
-        dataQue[i] = 0;
-        validDataQ[i] = 0;
-    }
-
-    e = eRaddrStrm.read();
-
-    while (!e) {
-#pragma HLS PIPELINE II = 1
-        ap_uint<BUSADDRWIDTH> raddr_reg = raddrInStrm.read();
-        raddr = raddr_reg.range(BUSADDRWIDTH - 1, CACHELINEIDXWIDTH);
-        raddrBothStrm.write(raddr_reg);
-
-        ap_uint<ADDRURAMIDXWIDTH> addrURAMIdx =
-            raddr.range(ADDRURAMIDXWIDTH - 1 + ADDROFFURAMIDXWIDTH + ADDRIDXURAMLINEWIDTH,
-                        ADDROFFURAMIDXWIDTH + ADDRIDXURAMLINEWIDTH);
-        ap_uint<ADDRIDXURAMLINEWIDTH> addrLineIdx =
-            raddr.range(ADDRIDXURAMLINEWIDTH - 1 + ADDROFFURAMIDXWIDTH, ADDROFFURAMIDXWIDTH);
-        ap_uint<ADDROFFURAMIDXWIDTH> addrOffURAMIdx = raddr.range(ADDROFFURAMIDXWIDTH - 1, 0);
-
-        ap_uint<ADDRURAMIDXWIDTH + ADDRIDXURAMLINEWIDTH - 6> validURAMIdx =
-            raddr.range(ADDRURAMIDXWIDTH + ADDRIDXURAMLINEWIDTH + ADDROFFURAMIDXWIDTH - 1, ADDROFFURAMIDXWIDTH + 6);
-        ap_uint<6> validLineIdx = raddr.range(ADDROFFURAMIDXWIDTH + 5, ADDROFFURAMIDXWIDTH);
-
-        ap_uint<64> validLine;
-        if (validURAMIdx == validAddrQ[0]) {
-            validLine = validDataQ[0];
-        } else if (validURAMIdx == validAddrQ[1]) {
-            validLine = validDataQ[1];
-        } else if (validURAMIdx == validAddrQ[2]) {
-            validLine = validDataQ[2];
-        } else if (validURAMIdx == validAddrQ[3]) {
-            validLine = validDataQ[3];
-        } else {
-            validLine = valid[validURAMIdx];
-        }
-
-        bool isValid = validLine[validLineIdx];
-
-        if (addrURAMIdx == addrQue[0]) {
-            ramData = dataQue[0];
-        } else if (addrURAMIdx == addrQue[1]) {
-            ramData = dataQue[1];
-        } else if (addrURAMIdx == addrQue[2]) {
-            ramData = dataQue[2];
-        } else if (addrURAMIdx == addrQue[3]) {
-            ramData = dataQue[3];
-        } else {
-            ramData = onChipAddr[addrURAMIdx];
-        }
-
-        ap_uint<1 << (6 - ADDRIDXURAMLINEWIDTH)> reg =
-            ramData.range((1 << (6 - ADDRIDXURAMLINEWIDTH)) - 1 + (1 << (6 - ADDRIDXURAMLINEWIDTH)) * addrLineIdx,
-                          (1 << (6 - ADDRIDXURAMLINEWIDTH)) * addrLineIdx);
-
-        if (isValid && reg == addrOffURAMIdx) {
-            onChipStrm.write(1);
-            DDRStrm.write(1);
-        } else {
-            onChipStrm.write(0);
-            DDRStrm.write(0);
-        }
-
-        raddrMissStrm.write(raddr);
-
-        ramData.range((1 << (6 - ADDRIDXURAMLINEWIDTH)) - 1 + (1 << (6 - ADDRIDXURAMLINEWIDTH)) * addrLineIdx,
-                      (1 << (6 - ADDRIDXURAMLINEWIDTH)) * addrLineIdx) = addrOffURAMIdx;
-        onChipAddr[addrURAMIdx] = ramData;
-
-        addrQue[3] = addrQue[2];
-        addrQue[2] = addrQue[1];
-        addrQue[1] = addrQue[0];
-        addrQue[0] = addrURAMIdx;
-
-        dataQue[3] = dataQue[2];
-        dataQue[2] = dataQue[1];
-        dataQue[1] = dataQue[0];
-        dataQue[0] = ramData;
-
-        validLine[validLineIdx] = 1;
-        valid[validURAMIdx] = validLine;
-
-        validAddrQ[3] = validAddrQ[2];
-        validAddrQ[2] = validAddrQ[1];
-        validAddrQ[1] = validAddrQ[0];
-        validAddrQ[0] = validURAMIdx;
-
-        validDataQ[3] = validDataQ[2];
-        validDataQ[2] = validDataQ[1];
-        validDataQ[1] = validDataQ[0];
-        validDataQ[0] = validLine;
-
-        e = eRaddrStrm.read();
-    }
-    DDRStrm.write(3);
-    onChipStrm.write(3);
-}
-
-template <int BUSADDRWIDTH // Width of the physical bus
-          >
-void ctrlDDR(ap_uint<512>* ddrMem,
-             hls::stream<ap_uint<2> >& DDRStrm,
-             hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
-             hls::stream<ap_uint<512> >& rdataStrm) {
-#pragma HLS inline off
-    bool e;
-    bool onChip;
-
-    ap_uint<2> ctrl = DDRStrm.read();
-    onChip = ctrl.get_bit(0);
-    e = ctrl.get_bit(1);
-
-    while (!e) {
-#pragma HLS PIPELINE II = 1
-        ap_uint<BUSADDRWIDTH> raddr = raddrStrm.read();
-        if (!onChip) {
-            ap_uint<512> rdata = ddrMem[raddr];
-            rdataStrm.write(rdata);
-        }
-        ctrl = DDRStrm.read();
-        onChip = ctrl.get_bit(0);
-        e = ctrl.get_bit(1);
-    }
-}
-
-template <int BUSADDRWIDTH,       // Width of the physical bus
-          int BUSDATAWIDTH,       // Width of the physical bus
-          int CACHELINEIDXWIDTH,  // The width to index the 512bit
-          int DATAURAMIDXWIDTH,   // The width used to index the address of URAMs
-          int DATAOFFURAMIDXWIDTH // The width of DDR address, each URAM addr represent
-          >
-void ctrlOnChip(hls::stream<ap_uint<2> >& onChipStrm,
-                hls::stream<ap_uint<BUSADDRWIDTH> >& raddrBothStrm,
-                hls::stream<ap_uint<512> >& ddrDataStrm,
-                hls::stream<ap_uint<BUSDATAWIDTH> >& rdataStrm,
-                hls::stream<bool>& eRdataStrm) {
-#pragma HLS inline off
-
-#ifndef __SYNTHESIS__
-    assert(BUSDATAWIDTH * (1 << CACHELINEIDXWIDTH) == 512 &&
-           "cacheRO_interal: Bus width * (1<<CACHELINEIDX) must be 512\n");
-#endif
-
-    ap_uint<2> ctrl;
-    bool e;
-    bool onChip;
-
-    ap_uint<BUSADDRWIDTH> raddr;
-    ap_uint<BUSADDRWIDTH> cacheidx;
-    ap_uint<512> ddrrdata;
-    ap_uint<512> onChiprdata;
-
-    ap_uint<512> ramData;
-    ap_uint<DATAURAMIDXWIDTH + 1> addrQue[4] = {-1, -1, -1, -1};
-#pragma HLS ARRAY_PARTITION variable = addrQue complete dim = 1
-
-    ap_uint<512> dataQue[4] = {0, 0, 0, 0};
-#pragma HLS ARRAY_PARTITION variable = dataQue complete dim = 1
-
-#ifndef __SYNTHESIS__
-    std::unique_ptr<ap_uint<512>[]> onChipData(new ap_uint<512>[ 1 << DATAURAMIDXWIDTH ]);
-#else
-    ap_uint<512> onChipData[(long)(1 << DATAURAMIDXWIDTH)];
-#pragma HLS DEPENDENCE variable = onChipData inter false
-#pragma HLS RESOURCE variable = onChipData core = RAM_S2P_URAM
-#endif
-
-    ctrl = onChipStrm.read();
-    e = ctrl.get_bit(1);
-    onChip = ctrl.get_bit(0);
-
-    while (!e) {
-#pragma HLS PIPELINE II = 1
-
-        ap_uint<BUSADDRWIDTH> raddr_reg = raddrBothStrm.read();
-        raddr = raddr_reg.range(BUSADDRWIDTH - 1, CACHELINEIDXWIDTH);
-        cacheidx = raddr_reg.range(CACHELINEIDXWIDTH - 1, 0);
-
-        ap_uint<DATAURAMIDXWIDTH> addrURAMIdx =
-            raddr.range(DATAURAMIDXWIDTH + DATAOFFURAMIDXWIDTH - 1, DATAOFFURAMIDXWIDTH);
-
-        if (addrURAMIdx == addrQue[0]) {
-            ramData = dataQue[0];
-        } else if (addrURAMIdx == addrQue[1]) {
-            ramData = dataQue[1];
-        } else if (addrURAMIdx == addrQue[2]) {
-            ramData = dataQue[2];
-        } else if (addrURAMIdx == addrQue[3]) {
-            ramData = dataQue[3];
-        } else {
-            ramData = onChipData[addrURAMIdx];
-        }
-
-        if (onChip) {
-            onChiprdata = ramData;
-            rdataStrm.write(onChiprdata.range(BUSDATAWIDTH - 1 + BUSDATAWIDTH * cacheidx, BUSDATAWIDTH * cacheidx));
-        } else {
-            ddrrdata = ddrDataStrm.read();
-            ramData = ddrrdata;
-            onChipData[addrURAMIdx] = ramData;
-
-            addrQue[3] = addrQue[2];
-            addrQue[2] = addrQue[1];
-            addrQue[1] = addrQue[0];
-            addrQue[0] = addrURAMIdx;
-
-            dataQue[3] = dataQue[2];
-            dataQue[2] = dataQue[1];
-            dataQue[1] = dataQue[0];
-            dataQue[0] = ramData;
-            rdataStrm.write(ddrrdata.range(BUSDATAWIDTH - 1 + BUSDATAWIDTH * cacheidx, BUSDATAWIDTH * cacheidx));
-        }
-
-        eRdataStrm.write(false);
-        ctrl = onChipStrm.read();
-        e = ctrl.get_bit(1);
-        onChip = ctrl.get_bit(0);
-    }
-    eRdataStrm.write(true);
-}
-
-template <int ADDRWIDTH,   // Actual addr width
-          int URAMIDXWIDTH // The width to idex URAM
-          >
-void initMulti(ap_uint<64>* valid) {
-    for (unsigned int i = 0; i < 4096; i++) {
-#pragma HLS PIPELINE II = 1
-        for (int j = 0; j < (1 << URAMIDXWIDTH) / (4096 * 64); j++) {
-#pragma HLS UNROLL
-            valid[j * 4096 + i] = 0;
-        }
-    }
-}
-
-template <int ADDRWIDTH,   // Actual addr width
-          int URAMIDXWIDTH // The width to idex URAM
-          >
-void initSingle(ap_uint<64>* valid) {
-    for (unsigned int i = 0; i < (1 << URAMIDXWIDTH) / 64; i++) {
-#pragma HLS PIPELINE II = 1
-        valid[i] = 0;
-    }
-}
-
-} // namespace cache
-} // namespace details
-} // namespace utils_hw
-} // namespace common
-} // namespace xf
+#include <stdint.h>
 
 namespace xf {
 namespace common {
 namespace utils_hw {
 
 /**
- * @brief initialize function for cacheRO
- *
- * This function is designed to work with cacheRO function.
- * It is used to initialize the valid array of cacheRO funcion.
- *
- * @tparam ADDRWIDTH Actual addr width
- * @tparam URAMIDXWIDTH The width to idex URAM
- *
- * @param valid The content of this array will be initialize to zero
- */
-template <int ADDRWIDTH,   // Actual addr width
-          int URAMIDXWIDTH // The width to idex URAM
-          >
-void init(ap_uint<64>* valid) {
-    if (URAMIDXWIDTH - 6 > 12) {
-        details::cache::initMulti<ADDRWIDTH, URAMIDXWIDTH>(valid);
-    } else {
-        details::cache::initSingle<ADDRWIDTH, URAMIDXWIDTH>(valid);
-    }
-}
-
-/**
- * @brief cacheRO is a URAM design for caching Read-only DDR/HBM memory spaces
+ * @brief cache is a URAM design for caching Read-only DDR/HBM memory spaces
  *
  * This function stores history data recently loaded from DDR/HBM in the on-chip memory(URAM).
  * It aims to reduce DDR/HBM access when the memory is accessed randomly.
  *
- * @tparam BUSADDRWIDTH Width of the physical bus
- * @tparam BUSDATAWIDTH Width of the physical bus
- * @tparam CACHELINEIDXWIDTH The width to index the 512bit
- * @tparam ADDRURAMIDXWIDTH The width used to index the address of Check URAMs in 512bit
- * @tparam ADDRIDXURAMLINEWIDTH The width used to index the 72bit load from Check URAMs
- * @tparam DATAURAMIDXWIDTH The width used to index the address of DATA URAMs in 512bit
- * @tparam DATAOFFURAMIDXWIDTH The width of DDR address in 512bit, each URAM addr represent
- * @tparam ONCHIPSTRMDEPTH The strm depth for the hit addr
- *
- * @param raddrStrm The read address should be sent to this stream
- * @param eRaddrStrm The side flag to mark the end of the raddrStrm
- * @param rdataStrm The read data will be returned to this stream
- * @param eRdataStrm The side flag to mark the end of the rdataStrm
- * @param ddrMem The AXI port for the off-chip DDR/HBM memory
- * @param valid To show if the on-chip data is a valid data, use init function to initialize it. The size should be
- * 1<<(DATAURAMIDXWIDTH-6).
+ * @tparam T 			    The type of the actual data accessed. Float and double is not supported.
+ * @tparam ramRow			The number of rows each on chip ram has
+ * @tparam groupramPart		The number of on chip ram used in cache
+ * @tparam dataOneLine		The number of actual data each 512 can contain
+ * @tparam addrWidth		The width of the address to access the memory
+ * @tparam validRamType     The ram type of the valid flag array. 0 for LUTRAM, 1 for BRAM, 2 for URAM
+ * @tparam addrRamType      The ram type of the onchip addr array. 0 for LUTRAM, 1 for BRAM, 2 for URAM
+ * @tparam dataRamType      The ram type of the onchip data array. 0 for LUTRAM, 1 for BRAM, 2 for URAM
  */
-template <int BUSADDRWIDTH,         // Width of the physical bus
-          int BUSDATAWIDTH,         // Width of the physical bus
-          int CACHELINEIDXWIDTH,    // The width to index the 512bit
-          int ADDRURAMIDXWIDTH,     // The width used to index the address of Check URAMs in 512bit
-          int ADDRIDXURAMLINEWIDTH, // The width used to index the 72bit load from Check URAMs
-          int DATAURAMIDXWIDTH,     // The width used to index the address of DATA URAMs in 512bit
-          int DATAOFFURAMIDXWIDTH,  // The width of DDR address in 512bit, each URAM addr represent
-          int ONCHIPSTRMDEPTH       // The strm depth for the hit addr
-          >
-void cacheRO(hls::stream<ap_uint<BUSADDRWIDTH> >& raddrStrm,
-             hls::stream<bool>& eRaddrStrm,
-             hls::stream<ap_uint<BUSDATAWIDTH> >& rdataStrm,
-             hls::stream<bool>& eRdataStrm,
-             ap_uint<512>* ddrMem,
-             ap_uint<64>* valid) {
+
+template <typename T,
+          int ramRow,
+          int groupRamPart,
+          int dataOneLine,
+          int addrWidth,
+          int validRamType,
+          int addrRamType,
+          int dataRamType>
+class cache {
+   public:
+    cache() {
+#pragma HLS inline
+#pragma HLS array_partition variable = valid block factor = 1 dim = 2
+#pragma HLS array_partition variable = onChipRam1 block factor = 1 dim = 2
+#pragma HLS array_partition variable = onChipRam0 block factor = 1 dim = 2
+#pragma HLS array_partition variable = onChipAddr block factor = 1 dim = 2
+
+        if (validRamType == 0) {
+#pragma HLS resource variable = valid core = RAM_S2P_LUTRAM
+        } else if (validRamType == 2) {
+#pragma HLS resource variable = valid core = RAM_S2P_BRAM
+        } else {
+#pragma HLS resource variable = valid core = RAM_S2P_URAM
+        }
+
+        if (addrRamType == 0) {
+#pragma HLS resource variable = onChipAddr core = RAM_S2P_LUTRAM
+        } else if (addrRamType == 2) {
+#pragma HLS resource variable = onChipAddr core = RAM_S2P_BRAM
+        } else {
+#pragma HLS resource variable = onChipAddr core = RAM_S2P_URAM
+        }
+
+        if (dataRamType == 0) {
+#pragma HLS resource variable = onChipRam0 core = RAM_S2P_LUTRAM
+#pragma HLS resource variable = onChipRam1 core = RAM_S2P_LUTRAM
+        } else if (dataRamType == 2) {
+#pragma HLS resource variable = onChipRam0 core = RAM_S2P_BRAM
+#pragma HLS resource variable = onChipRam1 core = RAM_S2P_BRAM
+        } else {
+#pragma HLS resource variable = onChipRam0 core = RAM_S2P_URAM
+#pragma HLS resource variable = onChipRam1 core = RAM_S2P_URAM
+        }
+
+#ifndef __SYNTHESIS__
+        valid = new ap_uint<dataOneLine>*[ramRow];
+        onChipRam1 = new ap_uint<512>*[ramRow];
+        onChipRam0 = new ap_uint<512>*[ramRow];
+        onChipAddr = new ap_uint<addrWidth>*[ramRow];
+        for (int i = 0; i < ramRow; ++i) {
+            valid[i] = new ap_uint<dataOneLine>[ groupRamPart ];
+            onChipRam0[i] = new ap_uint<512>[ groupRamPart ];
+            onChipRam1[i] = new ap_uint<512>[ groupRamPart ];
+            onChipAddr[i] = new ap_uint<addrWidth>[ groupRamPart ];
+        }
+#endif
+    }
+
+    ~cache() {
+#ifndef __SYNTHESIS__
+        for (int i = 0; i < ramRow; ++i) {
+            delete[] valid[i];
+            delete[] onChipRam0[i];
+            delete[] onChipRam1[i];
+            delete[] onChipAddr[i];
+        }
+        delete[] onChipAddr;
+        delete[] onChipRam0;
+        delete[] onChipRam1;
+        delete[] valid;
+#endif
+    }
+
+    /// @brief  Initialization of the on chip memory when controlling single off chip memory.
+    void initSingleOffChip() {
+    Loop_init_uram:
+        for (int j = 0; j < ramRow; ++j) {
+#pragma HLS loop_tripcount min = 4096 avg = 4096 max = 4096
+            for (int i = 0; i < groupRamPart; ++i) {
+#pragma HLS loop_tripcount min = 8 avg = 8 max = 8
+#pragma HLS pipeline II = 1
+                valid[j][i] = 0;
+                onChipAddr[j][i] = 0;
+                onChipRam0[j][i] = 0;
+            }
+        }
+    }
+
+    /// @brief  Initialization of the on chip memory when controlling dual off chip memory.
+    void initDualOffChip() {
+    Loop_init_uram:
+        for (int j = 0; j < ramRow; ++j) {
+#pragma HLS loop_tripcount min = 4096 avg = 4096 max = 4096
+            for (int i = 0; i < groupRamPart; ++i) {
+#pragma HLS loop_tripcount min = 8 avg = 8 max = 8
+#pragma HLS pipeline II = 1
+                valid[j][i] = 0;
+                onChipAddr[j][i] = 0;
+                onChipRam0[j][i] = 0;
+                onChipRam1[j][i] = 0;
+            }
+        }
+    }
+
+    /// @brief readOnly function with end flags.
+    /// @param ddrMem 		The pointer for the off chip memory
+    /// @param addrStrm		The read address should be sent from this stream
+    /// @param e_addrStrm	The end flag for the addrStrm
+    /// @param dataStrm		The data loaded from off chip memory
+    /// @param e_dataStrm	The end flag for the dataStrm
+    void readOnly(ap_uint<512>* ddrMem,
+                  hls::stream<ap_uint<32> >& addrStrm,
+                  hls::stream<bool>& e_addrStrm,
+                  hls::stream<T>& dataStrm,
+                  hls::stream<bool>& e_dataStrm) {
 #pragma HLS inline off
-#pragma HLS dataflow
-    hls::stream<ap_uint<2> > DDRStrm("cacheRO_DDRStrm");
-#pragma HLS stream variable = DDRStrm depth = 32
-#pragma HLS resource variable = DDRStrm core = FIFO_LUTRAM
 
-    hls::stream<ap_uint<BUSADDRWIDTH> > addrMissStrm("cacheRO_addrMissStrm");
-#pragma HLS stream variable = addrMissStrm depth = 32
-#pragma HLS resource variable = addrMissStrm core = FIFO_LUTRAM
+        ap_uint<dataOneLine> validCnt;
+        for (int i = 0; i < dataOneLine; ++i) {
+#pragma HLS loop_tripcount min = 8 avg = 8 max = 8
+#pragma HLS pipeline II = 1
+            validCnt[i] = 1;
+        }
+        const int size = sizeof(T) * 8;
 
-    const int depth = ONCHIPSTRMDEPTH;
+        ap_uint<addrWidth + 1> addrQue[4] = {-1, -1, -1, -1};
+        ap_uint<512> pingQue[4] = {0, 0, 0, 0};
+        ap_uint<dataOneLine> validQue[4] = {0, 0, 0, 0};
+        int validAddrQue[4] = {-1, -1, -1, -1};
+        int addrAddrQue[4] = {-1, -1, -1, -1};
+        int ramAddrQue[4] = {-1, -1, -1, -1};
+#pragma HLS array_partition variable = validQue complete dim = 1
+#pragma HLS array_partition variable = validAddrQue complete dim = 1
+#pragma HLS array_partition variable = ramAddrQue complete dim = 1
+#pragma HLS array_partition variable = pingQue complete dim = 1
+#pragma HLS array_partition variable = addrQue complete dim = 1
+#pragma HLS array_partition variable = addrAddrQue complete dim = 1
 
-    hls::stream<ap_uint<BUSADDRWIDTH> > addrBothStrm("cacheRO_addrBothStrm");
-#pragma HLS stream variable = addrBothStrm depth = depth
-#pragma HLS resource variable = addrBothStrm core = FIFO_BRAM
+        bool e = e_addrStrm.read();
 
-    hls::stream<ap_uint<2> > onChipStrm("cacheRO_onChipStrm");
-#pragma HLS stream variable = onChipStrm depth = depth
-#pragma HLS resource variable = onChipStrm core = FIFO_BRAM
+        while (!e) {
+#pragma HLS loop_tripcount min = 16500000 avg = 16500000 max = 16500000
+#pragma HLS pipeline II = 1
+#pragma HLS DEPENDENCE variable = valid inter false
+#pragma HLS DEPENDENCE variable = onChipRam0 inter false
+#pragma HLS DEPENDENCE variable = onChipAddr inter false
 
-    hls::stream<ap_uint<512> > ddrDataStrm("cacheRO_ddrDataStrm");
-#pragma HLS stream variable = ddrDataStrm depth = 32
-#pragma HLS resource variable = ddrDataStrm core = FIFO_LUTRAM
+            e = e_addrStrm.read();
+            int index = addrStrm.read();
+            int k00 = index % dataOneLine;
+            int k01 = index / dataOneLine;
+            int k10 = k01 % groupRamPart;
+            int k11 = k01 / groupRamPart;
+            int k20 = k11 % ramRow;
+            int k21 = k11 / ramRow;
+            int k30 = k21;
 
-    details::cache::check<BUSADDRWIDTH, CACHELINEIDXWIDTH, ADDRURAMIDXWIDTH, ADDRIDXURAMLINEWIDTH, DATAOFFURAMIDXWIDTH>(
-        raddrStrm, eRaddrStrm, onChipStrm, addrBothStrm, DDRStrm, addrMissStrm, valid);
+            ap_uint<dataOneLine> validTmp;
+            if (k01 == validAddrQue[0]) {
+                validTmp = validQue[0];
+            } else if (k01 == validAddrQue[1]) {
+                validTmp = validQue[1];
+            } else if (k01 == validAddrQue[2]) {
+                validTmp = validQue[2];
+            } else if (k01 == validAddrQue[3]) {
+                validTmp = validQue[3];
+            } else {
+                validTmp = valid[k20][k10];
+            }
+            ap_uint<1> validBool = validTmp[k00]; // to check
+            ap_uint<512> tmpV;
+            ap_uint<addrWidth> address;
+            ap_uint<addrWidth> addrTmp;
+            if (k01 == addrAddrQue[0]) {
+                addrTmp = addrQue[0];
+            } else if (k01 == addrAddrQue[1]) {
+                addrTmp = addrQue[1];
+            } else if (k01 == addrAddrQue[2]) {
+                addrTmp = addrQue[2];
+            } else if (k01 == addrAddrQue[3]) {
+                addrTmp = addrQue[3];
+            } else {
+                addrTmp = onChipAddr[k20][k10];
+            }
+            address = addrTmp;
+            if ((validBool == 1) && (address == k30)) {
+                if (k01 == ramAddrQue[0]) {
+                    tmpV = pingQue[0];
+                } else if (k01 == ramAddrQue[1]) {
+                    tmpV = pingQue[1];
+                } else if (k01 == ramAddrQue[2]) {
+                    tmpV = pingQue[2];
+                } else if (k01 == ramAddrQue[3]) {
+                    tmpV = pingQue[3];
+                } else {
+                    tmpV = onChipRam0[k20][k10];
+                }
+            } else {
+                tmpV = ddrMem[k01];
+                onChipRam0[k20][k10] = tmpV;
+                pingQue[3] = pingQue[2];
+                pingQue[2] = pingQue[1];
+                pingQue[1] = pingQue[0];
+                pingQue[0] = tmpV;
+                ramAddrQue[3] = ramAddrQue[2];
+                ramAddrQue[2] = ramAddrQue[1];
+                ramAddrQue[1] = ramAddrQue[0];
+                ramAddrQue[0] = k01;
+                ap_uint<addrWidth> tAddr = (ap_uint<addrWidth>)k30;
+                addrTmp = tAddr;
+                onChipAddr[k20][k10] = addrTmp;
+                addrQue[3] = addrQue[2];
+                addrQue[2] = addrQue[1];
+                addrQue[1] = addrQue[0];
+                addrQue[0] = addrTmp;
+                addrAddrQue[3] = addrAddrQue[2];
+                addrAddrQue[2] = addrAddrQue[1];
+                addrAddrQue[1] = addrAddrQue[0];
+                addrAddrQue[0] = k01;
+            }
+            if (validBool == 0) {
+                validTmp = validCnt;
+                valid[k20][k10] = validTmp;
+                validQue[3] = validQue[2];
+                validQue[2] = validQue[1];
+                validQue[1] = validQue[0];
+                validQue[0] = validTmp;
+                validAddrQue[3] = validAddrQue[2];
+                validAddrQue[2] = validAddrQue[1];
+                validAddrQue[1] = validAddrQue[0];
+                validAddrQue[0] = k01;
+            }
+            dataStrm.write(tmpV.range(size * (k00 + 1) - 1, size * k00));
+            e_dataStrm.write(0);
+        }
+        e_dataStrm.write(1);
+    }
 
-    details::cache::ctrlDDR<BUSADDRWIDTH>(ddrMem, DDRStrm, addrMissStrm, ddrDataStrm);
+    /// @brief readOnly function without end flags.
+    /// @param cnt			The number of access to the memory
+    /// @param ddrMem 		The pointer for the off chip memory
+    /// @param addrStrm		The read address should be sent from this stream
+    /// @param dataStrm		The data loaded from off chip memory
+    void readOnly(int cnt, ap_uint<512>* ddrMem, hls::stream<ap_uint<32> >& addrStrm, hls::stream<T>& dataStrm) {
+#pragma HLS inline off
 
-    details::cache::ctrlOnChip<BUSADDRWIDTH, BUSDATAWIDTH, CACHELINEIDXWIDTH, DATAURAMIDXWIDTH, DATAOFFURAMIDXWIDTH>(
-        onChipStrm, addrBothStrm, ddrDataStrm, rdataStrm, eRdataStrm);
-}
+        ap_uint<dataOneLine> validCnt;
+        for (int i = 0; i < dataOneLine; ++i) {
+#pragma HLS loop_tripcount min = 8 avg = 8 max = 8
+#pragma HLS pipeline II = 1
+            validCnt[i] = 1;
+        }
+        const int size = sizeof(T) * 8;
+
+        ap_uint<addrWidth + 1> addrQue[4] = {-1, -1, -1, -1};
+        ap_uint<512> pingQue[4] = {0, 0, 0, 0};
+        ap_uint<dataOneLine> validQue[4] = {0, 0, 0, 0};
+        int validAddrQue[4] = {-1, -1, -1, -1};
+        int addrAddrQue[4] = {-1, -1, -1, -1};
+        int ramAddrQue[4] = {-1, -1, -1, -1};
+#pragma HLS array_partition variable = validQue complete dim = 1
+#pragma HLS array_partition variable = validAddrQue complete dim = 1
+#pragma HLS array_partition variable = ramAddrQue complete dim = 1
+#pragma HLS array_partition variable = pingQue complete dim = 1
+#pragma HLS array_partition variable = addrQue complete dim = 1
+#pragma HLS array_partition variable = addrAddrQue complete dim = 1
+
+        for (int i = 0; i < cnt; i++) {
+#pragma HLS loop_tripcount min = 16500000 avg = 16500000 max = 16500000
+#pragma HLS pipeline II = 1
+#pragma HLS DEPENDENCE variable = valid inter false
+#pragma HLS DEPENDENCE variable = onChipRam0 inter false
+#pragma HLS DEPENDENCE variable = onChipAddr inter false
+
+            int index = addrStrm.read();
+            int k00 = index % dataOneLine;
+            int k01 = index / dataOneLine;
+            int k10 = k01 % groupRamPart;
+            int k11 = k01 / groupRamPart;
+            int k20 = k11 % ramRow;
+            int k21 = k11 / ramRow;
+            int k30 = k21;
+
+            ap_uint<dataOneLine> validTmp;
+            if (k01 == validAddrQue[0]) {
+                validTmp = validQue[0];
+            } else if (k01 == validAddrQue[1]) {
+                validTmp = validQue[1];
+            } else if (k01 == validAddrQue[2]) {
+                validTmp = validQue[2];
+            } else if (k01 == validAddrQue[3]) {
+                validTmp = validQue[3];
+            } else {
+                validTmp = valid[k20][k10];
+            }
+            ap_uint<1> validBool = validTmp[k00]; // to check
+            ap_uint<512> tmpV;
+            ap_uint<addrWidth> address;
+            ap_uint<addrWidth> addrTmp;
+            if (k01 == addrAddrQue[0]) {
+                addrTmp = addrQue[0];
+            } else if (k01 == addrAddrQue[1]) {
+                addrTmp = addrQue[1];
+            } else if (k01 == addrAddrQue[2]) {
+                addrTmp = addrQue[2];
+            } else if (k01 == addrAddrQue[3]) {
+                addrTmp = addrQue[3];
+            } else {
+                addrTmp = onChipAddr[k20][k10];
+            }
+            address = addrTmp;
+            if ((validBool == 1) && (address == k30)) {
+                if (k01 == ramAddrQue[0]) {
+                    tmpV = pingQue[0];
+                } else if (k01 == ramAddrQue[1]) {
+                    tmpV = pingQue[1];
+                } else if (k01 == ramAddrQue[2]) {
+                    tmpV = pingQue[2];
+                } else if (k01 == ramAddrQue[3]) {
+                    tmpV = pingQue[3];
+                } else {
+                    tmpV = onChipRam0[k20][k10];
+                }
+            } else {
+                tmpV = ddrMem[k01];
+                onChipRam0[k20][k10] = tmpV;
+                pingQue[3] = pingQue[2];
+                pingQue[2] = pingQue[1];
+                pingQue[1] = pingQue[0];
+                pingQue[0] = tmpV;
+                ramAddrQue[3] = ramAddrQue[2];
+                ramAddrQue[2] = ramAddrQue[1];
+                ramAddrQue[1] = ramAddrQue[0];
+                ramAddrQue[0] = k01;
+                ap_uint<addrWidth> tAddr = (ap_uint<addrWidth>)k30;
+                addrTmp = tAddr;
+                onChipAddr[k20][k10] = addrTmp;
+                addrQue[3] = addrQue[2];
+                addrQue[2] = addrQue[1];
+                addrQue[1] = addrQue[0];
+                addrQue[0] = addrTmp;
+                addrAddrQue[3] = addrAddrQue[2];
+                addrAddrQue[2] = addrAddrQue[1];
+                addrAddrQue[1] = addrAddrQue[0];
+                addrAddrQue[0] = k01;
+            }
+            if (validBool == 0) {
+                validTmp = validCnt;
+                valid[k20][k10] = validTmp;
+                validQue[3] = validQue[2];
+                validQue[2] = validQue[1];
+                validQue[1] = validQue[0];
+                validQue[0] = validTmp;
+                validAddrQue[3] = validAddrQue[2];
+                validAddrQue[2] = validAddrQue[1];
+                validAddrQue[1] = validAddrQue[0];
+                validAddrQue[0] = k01;
+            }
+            dataStrm.write(tmpV.range(size * (k00 + 1) - 1, size * k00));
+        }
+    }
+
+    /// @brief readOnly function that index two off-chip buffers without end flags. Both of the buffers should be
+    /// indexed in exactly the same behaviour.
+    /// @param cnt			The number of access to the memory
+    /// @param ddrMem0		The pointer for the first off chip memory
+    /// @param ddrMem1		The pointer for the second off chip memory
+    /// @param addrStrm		The read address should be sent from this stream
+    /// @param data0Strm	The data loaded from the first off chip memory
+    /// @param data1Strm	The data loaded from the second off chip memory
+    void readOnly(int cnt,
+                  ap_uint<512>* ddrMem0,
+                  ap_uint<512>* ddrMem1,
+                  hls::stream<ap_uint<32> >& addrStrm,
+                  hls::stream<T>& data0Strm,
+                  hls::stream<T>& data1Strm) {
+#pragma HLS inline off
+
+        ap_uint<dataOneLine> validCnt;
+        for (int i = 0; i < dataOneLine; ++i) {
+#pragma HLS loop_tripcount min = 8 avg = 8 max = 8
+#pragma HLS pipeline II = 1
+            validCnt[i] = 1;
+        }
+        const int size = sizeof(T) * 8;
+
+        ap_uint<addrWidth + 1> addrQue[4] = {-1, -1, -1, -1};
+        ap_uint<512> pingQue[4] = {0, 0, 0, 0};
+        ap_uint<512> cntQue[4] = {0, 0, 0, 0};
+        ap_uint<dataOneLine> validQue[4] = {0, 0, 0, 0};
+        int validAddrQue[4] = {-1, -1, -1, -1};
+        int addrAddrQue[4] = {-1, -1, -1, -1};
+        int ramAddrQue[4] = {-1, -1, -1, -1};
+#pragma HLS array_partition variable = validQue complete dim = 1
+#pragma HLS array_partition variable = validAddrQue complete dim = 1
+#pragma HLS array_partition variable = cntQue complete dim = 1
+#pragma HLS array_partition variable = ramAddrQue complete dim = 1
+#pragma HLS array_partition variable = pingQue complete dim = 1
+#pragma HLS array_partition variable = addrQue complete dim = 1
+#pragma HLS array_partition variable = addrAddrQue complete dim = 1
+
+        for (int i = 0; i < cnt; ++i) {
+#pragma HLS loop_tripcount min = 16500000 avg = 16500000 max = 16500000
+#pragma HLS pipeline II = 1
+#pragma HLS DEPENDENCE variable = valid inter false
+#pragma HLS DEPENDENCE variable = onChipRam0 inter false
+#pragma HLS DEPENDENCE variable = onChipRam1 inter false
+#pragma HLS DEPENDENCE variable = onChipAddr inter false
+            int index = addrStrm.read();
+            int k00 = index % dataOneLine;
+            int k01 = index / dataOneLine;
+            int k10 = k01 % groupRamPart;
+            int k11 = k01 / groupRamPart;
+            int k20 = k11 % ramRow;
+            int k21 = k11 / ramRow;
+            int k30 = k21;
+
+            ap_uint<dataOneLine> validTmp;
+            if (k01 == validAddrQue[0]) {
+                validTmp = validQue[0];
+            } else if (k01 == validAddrQue[1]) {
+                validTmp = validQue[1];
+            } else if (k01 == validAddrQue[2]) {
+                validTmp = validQue[2];
+            } else if (k01 == validAddrQue[3]) {
+                validTmp = validQue[3];
+            } else {
+                validTmp = valid[k20][k10];
+            }
+            ap_uint<1> validBool = validTmp[k00]; // to check
+            ap_uint<512> tmpV, tmpC;
+            ap_uint<addrWidth> address;
+            ap_uint<addrWidth> addrTmp;
+            if (k01 == addrAddrQue[0]) {
+                addrTmp = addrQue[0];
+            } else if (k01 == addrAddrQue[1]) {
+                addrTmp = addrQue[1];
+            } else if (k01 == addrAddrQue[2]) {
+                addrTmp = addrQue[2];
+            } else if (k01 == addrAddrQue[3]) {
+                addrTmp = addrQue[3];
+            } else {
+                addrTmp = onChipAddr[k20][k10];
+            }
+            address = addrTmp;
+            if ((validBool == 1) && (address == k30)) {
+                if (k01 == ramAddrQue[0]) {
+                    tmpV = pingQue[0];
+                    tmpC = cntQue[0];
+                } else if (k01 == ramAddrQue[1]) {
+                    tmpV = pingQue[1];
+                    tmpC = cntQue[1];
+                } else if (k01 == ramAddrQue[2]) {
+                    tmpV = pingQue[2];
+                    tmpC = cntQue[2];
+                } else if (k01 == ramAddrQue[3]) {
+                    tmpV = pingQue[3];
+                    tmpC = cntQue[3];
+                } else {
+                    tmpV = onChipRam0[k20][k10];
+                    tmpC = onChipRam1[k20][k10];
+                }
+            } else {
+                tmpV = ddrMem0[k01];
+                tmpC = ddrMem1[k01];
+                onChipRam0[k20][k10] = tmpV;
+                onChipRam1[k20][k10] = tmpC;
+                pingQue[3] = pingQue[2];
+                pingQue[2] = pingQue[1];
+                pingQue[1] = pingQue[0];
+                pingQue[0] = tmpV;
+                cntQue[3] = cntQue[2];
+                cntQue[2] = cntQue[1];
+                cntQue[1] = cntQue[0];
+                cntQue[0] = tmpC;
+                ramAddrQue[3] = ramAddrQue[2];
+                ramAddrQue[2] = ramAddrQue[1];
+                ramAddrQue[1] = ramAddrQue[0];
+                ramAddrQue[0] = k01;
+                ap_uint<addrWidth> tAddr = (ap_uint<addrWidth>)k30;
+                addrTmp = tAddr;
+                onChipAddr[k20][k10] = addrTmp;
+                addrQue[3] = addrQue[2];
+                addrQue[2] = addrQue[1];
+                addrQue[1] = addrQue[0];
+                addrQue[0] = addrTmp;
+                addrAddrQue[3] = addrAddrQue[2];
+                addrAddrQue[2] = addrAddrQue[1];
+                addrAddrQue[1] = addrAddrQue[0];
+                addrAddrQue[0] = k01;
+            }
+            if (validBool == 0) {
+                validTmp = validCnt;
+                valid[k20][k10] = validTmp;
+                validQue[3] = validQue[2];
+                validQue[2] = validQue[1];
+                validQue[1] = validQue[0];
+                validQue[0] = validTmp;
+                validAddrQue[3] = validAddrQue[2];
+                validAddrQue[2] = validAddrQue[1];
+                validAddrQue[1] = validAddrQue[0];
+                validAddrQue[0] = k01;
+            }
+            data0Strm.write(tmpV.range(size * (k00 + 1) - 1, size * k00));
+            data1Strm.write(tmpC.range(size * (k00 + 1) - 1, size * k00));
+        }
+    }
+
+    /// @brief readOnly function that index two off-chip buffers without end flags. Both of the buffers should be
+    /// indexed in exactly the same behaviour.
+    /// @param ddrMem0		The pointer for the first off chip memory
+    /// @param ddrMem1		The pointer for the second off chip memory
+    /// @param addrStrm		The read address should be sent from this stream
+    /// @param e_addrStrm   The end flag for the addrStrm
+    /// @param data0Strm	The data loaded from the first off chip memory
+    /// @param e_data0Strm  The end flag for the data0Strm
+    /// @param data1Strm	The data loaded from the second off chip memory
+    /// @param e_data1Strm  The end flag for the data1Strm
+    void readOnly(ap_uint<512>* ddrMem0,
+                  ap_uint<512>* ddrMem1,
+                  hls::stream<ap_uint<32> >& addrStrm,
+                  hls::stream<bool>& e_addrStrm,
+                  hls::stream<T>& data0Strm,
+                  hls::stream<bool>& e_data0Strm,
+                  hls::stream<T>& data1Strm,
+                  hls::stream<bool>& e_data1Strm
+
+                  ) {
+#pragma HLS inline off
+
+        ap_uint<dataOneLine> validCnt;
+        for (int i = 0; i < dataOneLine; ++i) {
+#pragma HLS loop_tripcount min = 8 avg = 8 max = 8
+#pragma HLS pipeline II = 1
+            validCnt[i] = 1;
+        }
+        const int size = sizeof(T) * 8;
+
+        ap_uint<addrWidth + 1> addrQue[4] = {-1, -1, -1, -1};
+        ap_uint<512> pingQue[4] = {0, 0, 0, 0};
+        ap_uint<512> cntQue[4] = {0, 0, 0, 0};
+        ap_uint<dataOneLine> validQue[4] = {0, 0, 0, 0};
+        int validAddrQue[4] = {-1, -1, -1, -1};
+        int addrAddrQue[4] = {-1, -1, -1, -1};
+        int ramAddrQue[4] = {-1, -1, -1, -1};
+#pragma HLS array_partition variable = validQue complete dim = 1
+#pragma HLS array_partition variable = validAddrQue complete dim = 1
+#pragma HLS array_partition variable = cntQue complete dim = 1
+#pragma HLS array_partition variable = ramAddrQue complete dim = 1
+#pragma HLS array_partition variable = pingQue complete dim = 1
+#pragma HLS array_partition variable = addrQue complete dim = 1
+#pragma HLS array_partition variable = addrAddrQue complete dim = 1
+
+        bool e = e_addrStrm.read();
+
+        while (!e) {
+#pragma HLS loop_tripcount min = 16500000 avg = 16500000 max = 16500000
+#pragma HLS pipeline II = 1
+#pragma HLS DEPENDENCE variable = valid inter false
+#pragma HLS DEPENDENCE variable = onChipRam0 inter false
+#pragma HLS DEPENDENCE variable = onChipRam1 inter false
+#pragma HLS DEPENDENCE variable = onChipAddr inter false
+
+            e = e_addrStrm.read();
+
+            int index = addrStrm.read();
+            int k00 = index % dataOneLine;
+            int k01 = index / dataOneLine;
+            int k10 = k01 % groupRamPart;
+            int k11 = k01 / groupRamPart;
+            int k20 = k11 % ramRow;
+            int k21 = k11 / ramRow;
+            int k30 = k21;
+
+            ap_uint<dataOneLine> validTmp;
+            if (k01 == validAddrQue[0]) {
+                validTmp = validQue[0];
+            } else if (k01 == validAddrQue[1]) {
+                validTmp = validQue[1];
+            } else if (k01 == validAddrQue[2]) {
+                validTmp = validQue[2];
+            } else if (k01 == validAddrQue[3]) {
+                validTmp = validQue[3];
+            } else {
+                validTmp = valid[k20][k10];
+            }
+            ap_uint<1> validBool = validTmp[k00]; // to check
+            ap_uint<512> tmpV, tmpC;
+            ap_uint<addrWidth> address;
+            ap_uint<addrWidth> addrTmp;
+            if (k01 == addrAddrQue[0]) {
+                addrTmp = addrQue[0];
+            } else if (k01 == addrAddrQue[1]) {
+                addrTmp = addrQue[1];
+            } else if (k01 == addrAddrQue[2]) {
+                addrTmp = addrQue[2];
+            } else if (k01 == addrAddrQue[3]) {
+                addrTmp = addrQue[3];
+            } else {
+                addrTmp = onChipAddr[k20][k10];
+            }
+            address = addrTmp;
+            if ((validBool == 1) && (address == k30)) {
+                if (k01 == ramAddrQue[0]) {
+                    tmpV = pingQue[0];
+                    tmpC = cntQue[0];
+                } else if (k01 == ramAddrQue[1]) {
+                    tmpV = pingQue[1];
+                    tmpC = cntQue[1];
+                } else if (k01 == ramAddrQue[2]) {
+                    tmpV = pingQue[2];
+                    tmpC = cntQue[2];
+                } else if (k01 == ramAddrQue[3]) {
+                    tmpV = pingQue[3];
+                    tmpC = cntQue[3];
+                } else {
+                    tmpV = onChipRam0[k20][k10];
+                    tmpC = onChipRam1[k20][k10];
+                }
+            } else {
+                tmpV = ddrMem0[k01];
+                tmpC = ddrMem1[k01];
+                onChipRam0[k20][k10] = tmpV;
+                onChipRam1[k20][k10] = tmpC;
+                pingQue[3] = pingQue[2];
+                pingQue[2] = pingQue[1];
+                pingQue[1] = pingQue[0];
+                pingQue[0] = tmpV;
+                cntQue[3] = cntQue[2];
+                cntQue[2] = cntQue[1];
+                cntQue[1] = cntQue[0];
+                cntQue[0] = tmpC;
+                ramAddrQue[3] = ramAddrQue[2];
+                ramAddrQue[2] = ramAddrQue[1];
+                ramAddrQue[1] = ramAddrQue[0];
+                ramAddrQue[0] = k01;
+                ap_uint<addrWidth> tAddr = (ap_uint<addrWidth>)k30;
+                addrTmp = tAddr;
+                onChipAddr[k20][k10] = addrTmp;
+                addrQue[3] = addrQue[2];
+                addrQue[2] = addrQue[1];
+                addrQue[1] = addrQue[0];
+                addrQue[0] = addrTmp;
+                addrAddrQue[3] = addrAddrQue[2];
+                addrAddrQue[2] = addrAddrQue[1];
+                addrAddrQue[1] = addrAddrQue[0];
+                addrAddrQue[0] = k01;
+            }
+            if (validBool == 0) {
+                validTmp = validCnt;
+                valid[k20][k10] = validTmp;
+                validQue[3] = validQue[2];
+                validQue[2] = validQue[1];
+                validQue[1] = validQue[0];
+                validQue[0] = validTmp;
+                validAddrQue[3] = validAddrQue[2];
+                validAddrQue[2] = validAddrQue[1];
+                validAddrQue[1] = validAddrQue[0];
+                validAddrQue[0] = k01;
+            }
+            data0Strm.write(tmpV.range(size * (k00 + 1) - 1, size * k00));
+            e_data0Strm.write(0);
+            data1Strm.write(tmpC.range(size * (k00 + 1) - 1, size * k00));
+            e_data1Strm.write(0);
+        }
+        e_data0Strm.write(1);
+        e_data1Strm.write(1);
+    }
+
+   private:
+#ifndef __SYNTHESIS__
+    ap_uint<dataOneLine>** valid;
+    ap_uint<512>** onChipRam0;
+    ap_uint<512>** onChipRam1;
+    ap_uint<addrWidth>** onChipAddr;
+#else
+    ap_uint<dataOneLine> valid[ramRow][groupRamPart];
+    ap_uint<512> onChipRam0[ramRow][groupRamPart];
+    ap_uint<512> onChipRam1[ramRow][groupRamPart];
+    ap_uint<addrWidth> onChipAddr[ramRow][groupRamPart];
+#endif
+
+}; // cache class
 
 } // namespace utils_hw
 } // namespace common
