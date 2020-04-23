@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "xf_utils_hw/axi_to_stream_without_e.hpp"
+#include "xf_utils_hw/axi_to_stream.hpp"
 
 #define ELEM_WIDTH (32)
 #define AXI_WIDTH (128)
