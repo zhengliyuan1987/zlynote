@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_to_axi", 
-    "description": "", 
+    "name": "Xilinx Stream To Axi HLS Test", 
+    "description": "Xilinx Stream To Axi HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_GCD", 
-    "description": "", 
+    "name": "Xilinx GCD HLS Test", 
+    "description": "Xilinx GCD HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

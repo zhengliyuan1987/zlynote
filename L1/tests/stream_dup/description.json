@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_dup", 
-    "description": "", 
+    "name": "Xilinx Stream Dup HLS Test", 
+    "description": "Xilinx Stream Dup HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

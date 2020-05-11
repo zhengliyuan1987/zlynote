@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_uram_array", 
-    "description": "", 
+    "name": "Xilinx Uram Array HLS Test", 
+    "description": "Xilinx Uram Array HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

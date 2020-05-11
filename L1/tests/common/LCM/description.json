@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_LCM", 
-    "description": "", 
+    "name": "Xilinx LCM HLS Test", 
+    "description": "Xilinx LCM HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

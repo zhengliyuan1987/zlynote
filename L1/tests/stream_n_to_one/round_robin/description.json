@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_n_to_one_round_robin", 
-    "description": "", 
+    "name": "Xilinx Stream N To One Round Robin HLS Test", 
+    "description": "Xilinx Stream N To One Round Robin HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

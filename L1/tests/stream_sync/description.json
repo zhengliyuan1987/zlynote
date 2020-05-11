@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_sync", 
-    "description": "", 
+    "name": "Xilinx Stream Sync HLS Test", 
+    "description": "Xilinx Stream Sync HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

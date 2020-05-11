@@ -1,6 +1,6 @@
 {
-	"name": "jks.L1_cache_ro_1port_wo_e",
-	"description": "",
+	"name": "Xilinx Cache Ro 1port Without E HLS Test",
+	"description": "Xilinx Cache Ro 1port Without E HLS Test",
 	"flow": "hls",
 	"platform_whitelist": [
 		"u200"

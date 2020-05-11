@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_examples_tag_select", 
-    "description": "", 
+    "name": "Xilinx Tag Select HLS Examples", 
+    "description": "Xilinx Tag Select HLS Examples", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_n_to_one_load_balance", 
-    "description": "", 
+    "name": "Xilinx Stream N To One Load Balance HLS Test", 
+    "description": "Xilinx Stream N To One Load Balance HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

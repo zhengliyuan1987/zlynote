@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_discard_share_e", 
-    "description": "", 
+    "name": "Xilinx Discard Share E HLS Test", 
+    "description": "Xilinx Discard Share E HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

@@ -1,6 +1,6 @@
 {
-	"name": "jks.L1_cache_ro_2ports",
-	"description": "",
+	"name": "Xilinx Cache Ro 2ports HLS Test",
+	"description": "Xilinx Cache Ro 2ports HLS Test",
 	"flow": "hls",
 	"platform_whitelist": [
 		"u200"

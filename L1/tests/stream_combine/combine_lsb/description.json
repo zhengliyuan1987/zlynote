@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_combine_lsb", 
-    "description": "", 
+    "name": "Xilinx Combine Lsb HLS Test", 
+    "description": "Xilinx Combine Lsb HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

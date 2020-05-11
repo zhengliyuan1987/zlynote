@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_split_msb", 
-    "description": "", 
+    "name": "Xilinx Split Msb HLS Test", 
+    "description": "Xilinx Split Msb HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

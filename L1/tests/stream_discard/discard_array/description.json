@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_discard_array", 
-    "description": "", 
+    "name": "Xilinx Discard Array HLS Test", 
+    "description": "Xilinx Discard Array HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

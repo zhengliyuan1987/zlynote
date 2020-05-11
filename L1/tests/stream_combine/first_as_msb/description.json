@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_first_as_msb", 
-    "description": "", 
+    "name": "Xilinx First As Msb HLS Test", 
+    "description": "Xilinx First As Msb HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

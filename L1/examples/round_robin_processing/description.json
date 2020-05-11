@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_examples_round_robin", 
-    "description": "", 
+    "name": "Xilinx Round Robin HLS Examples", 
+    "description": "Xilinx Round Robin HLS Examples", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

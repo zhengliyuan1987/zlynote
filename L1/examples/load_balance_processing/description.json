@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_examples_load_balance", 
-    "description": "", 
+    "name": "Xilinx Load Balance HLS Examples", 
+    "description": "Xilinx Load Balance HLS Examples", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

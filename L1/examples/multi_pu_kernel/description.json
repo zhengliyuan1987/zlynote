@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_examples_multi_pu", 
-    "description": "", 
+    "name": "Xilinx Multi Pu HLS Examples", 
+    "description": "Xilinx Multi Pu HLS Examples", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

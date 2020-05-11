@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_n_to_one_tag_select_type", 
-    "description": "", 
+    "name": "Xilinx Stream N To One Tag Select Type HLS Test", 
+    "description": "Xilinx Stream N To One Tag Select Type HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

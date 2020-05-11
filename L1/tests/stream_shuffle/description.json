@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_stream_shuffle", 
-    "description": "", 
+    "name": "Xilinx Stream Shuffle HLS Test", 
+    "description": "Xilinx Stream Shuffle HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

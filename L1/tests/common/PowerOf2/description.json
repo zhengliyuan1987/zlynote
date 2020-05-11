@@ -1,6 +1,6 @@
 {
-    "name": "jks.L1_PowerOf2", 
-    "description": "", 
+    "name": "Xilinx PowerOf2 HLS Test", 
+    "description": "Xilinx PowerOf2 HLS Test", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"
