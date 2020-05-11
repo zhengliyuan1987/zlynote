@@ -1,6 +1,6 @@
 {
-    "name": "Xilinx Multi Pu HLS Examples", 
-    "description": "Xilinx Multi Pu HLS Examples", 
+    "name": "Xilinx Multi Pu HLS Example", 
+    "description": "Xilinx Multi Pu HLS Example", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"

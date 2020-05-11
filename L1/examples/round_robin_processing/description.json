@@ -1,6 +1,6 @@
 {
-    "name": "Xilinx Round Robin HLS Examples", 
-    "description": "Xilinx Round Robin HLS Examples", 
+    "name": "Xilinx Round Robin HLS Example", 
+    "description": "Xilinx Round Robin HLS Example", 
     "flow": "hls", 
     "platform_whitelist": [
         "u200"
