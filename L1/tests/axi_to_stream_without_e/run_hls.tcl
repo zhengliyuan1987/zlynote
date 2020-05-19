@@ -25,11 +25,14 @@ if {![info exists CLKP]} {
 
 open_project -reset $PROJ
 
-add_files "axi_to_stream_without_e_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
-add_files -tb "axi_to_stream_without_e_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
+add_files "axi_to_stream_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
+add_files -tb "axi_to_stream_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
 set_top top_axi_to_stream
 
 open_solution -reset $SOLN
+
+
+
 
 set_part $XPART
 create_clock -period $CLKP
@@ -52,10 +55,6 @@ if {$VIVADO_SYN == 1} {
 
 if {$VIVADO_IMPL == 1} {
   export_design -flow impl -rtl verilog
-}
-
-if {$QOR_CHECK == 1} {
-  puts "QoR check not implemented yet"
 }
 
 exit
