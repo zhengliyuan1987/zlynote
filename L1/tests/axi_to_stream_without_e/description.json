@@ -14,13 +14,13 @@
     "topfunction": "top_axi_to_stream",
     "top": {
         "source": [
-            "axi_to_stream_tb.cpp"
+            "axi_to_stream_without_e_tb.cpp"
         ],
         "cflags": "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
     },
     "testbench": {
         "source": [
-            "axi_to_stream_tb.cpp"
+            "axi_to_stream_without_e_tb.cpp"
         ],
         "cflags": "-I${XF_PROJ_ROOT}/L1/include -std=c++0x",
         "ldflags": "",

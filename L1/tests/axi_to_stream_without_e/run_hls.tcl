@@ -25,8 +25,8 @@ if {![info exists CLKP]} {
 
 open_project -reset $PROJ
 
-add_files "axi_to_stream_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
-add_files -tb "axi_to_stream_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
+add_files "axi_to_stream_without_e_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
+add_files -tb "axi_to_stream_without_e_tb.cpp" -cflags "-I${XF_PROJ_ROOT}/L1/include -std=c++0x"
 set_top top_axi_to_stream
 
 open_solution -reset $SOLN
