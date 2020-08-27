@@ -14,6 +14,14 @@
  * limitations under the License.
  *
  */
+
+// fake dut in case run in HLS
+int dut(int i) {
+    return i;
+}
+
+#ifndef __SYNTHESIS__
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -63,9 +71,13 @@ int main(int argc, const char* argv[]) {
     if (v != true) ++nerror;
     if (idx != 2) ++nerror;
 
+    dut(0);
+
     if (!nerror)
         std::cout << "PASS!" << std::endl;
     else
         std::cout << "FAIL with " << nerror << " errors!" << std::endl;
     return nerror;
 }
+
+#endif
