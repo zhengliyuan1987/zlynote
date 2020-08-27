@@ -55,19 +55,24 @@ class ArgParser {
     /// @brief add an boolean flag.
     /// The default value is always 'false'.
     ///
-    /// @param opt the short opt name, must start with "-".
+    /// @param opt the short opt name, must start with "-", or being "" if not used.
     /// @param opt_full the full opt name, must start with "--", pass "" if not used.
     /// @param info the info to be shown in usage.
     void addFlag(const std::string opt, const std::string opt_full, const std::string info) {
         // TODO check opt and opt_full
         if (opt == "") {
-            _log << "ERROR: flag name cannot be empty." << std::endl;
-            exit(1);
+            if (opt_full != "") {
+                _flags.emplace_back(opt_full, info);
+            } else {
+                _log << "ERROR: short and full option name cannot be both empty." << std::endl;
+                exit(1);
+            }
+        } else {
+            if (opt_full != "") {
+                _opt_map.insert({{opt, opt_full}, {opt_full, opt}});
+            }
+            _flags.emplace_back(opt, info);
         }
-        if (opt_full != "") {
-            _opt_map.insert({{opt, opt_full}, {opt_full, opt}});
-        }
-        _flags.emplace_back(opt, info);
     }
     /// @brief add an option with value.
     ///
@@ -84,13 +89,18 @@ class ArgParser {
                    bool required = false) {
         // TODO check opt and opt_full
         if (opt == "") {
-            _log << "ERROR: flag name cannot be empty." << std::endl;
-            exit(1);
+            if (opt_full != "") {
+                _opts.emplace_back(opt_full, info, def, required);
+            } else {
+                _log << "ERROR: flag name cannot be empty." << std::endl;
+                exit(1);
+            }
+        } else {
+            if (opt_full != "") {
+                _opt_map.insert({{opt, opt_full}, {opt_full, opt}});
+            }
+            _opts.emplace_back(opt, info, def, required);
         }
-        if (opt_full != "") {
-            _opt_map.insert({{opt, opt_full}, {opt_full, opt}});
-        }
-        _opts.emplace_back(opt, info, def, required);
     }
 
     /// @brief get value of option by name without leading dash.

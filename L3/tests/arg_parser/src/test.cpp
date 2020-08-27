@@ -26,6 +26,7 @@ int main(int argc, const char* argv[]) {
     }
     xf::common::utils_sw::ArgParser parser(argc, argv);
 
+    parser.addFlag("", "--demo", "Run in demo mode, other options will be ignored");
     parser.addFlag("-c", "--check", "Check result");
     parser.addFlag("-v", "--verbose", "Be verbose");
     parser.addOption("-x", "--xclbin", "Path to xclbin", "", true);
@@ -34,6 +35,11 @@ int main(int argc, const char* argv[]) {
 
     if (parser.getAs<bool>("help")) {
         parser.showUsage();
+        return 0;
+    }
+
+    if (parser.getAs<bool>("demo")) {
+        std::cout << "Running demo... done!" << std::endl;
         return 0;
     }
 
