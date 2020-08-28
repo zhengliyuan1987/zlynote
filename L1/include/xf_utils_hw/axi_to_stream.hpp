@@ -162,8 +162,9 @@ namespace details {
 
 template <int _WAxi, int _BurstLen>
 void read_to_vec(ap_uint<_WAxi>* vec_ptr, const int nrow, const int scal_vec, hls::stream<ap_uint<_WAxi> >& vec_strm) {
+    const int nread = (nrow + scal_vec - 1) / scal_vec;
 READ_TO_VEC:
-    for (int i = 0; i < nrow; ++i) {
+    for (int i = 0; i < nread; ++i) {
 #pragma HLS loop_tripcount min = 1 max = 1
 #pragma HLS PIPELINE II = 1
         vec_strm.write(vec_ptr[i]);
