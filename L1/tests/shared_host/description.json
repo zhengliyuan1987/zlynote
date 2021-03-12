@@ -1,0 +1,56 @@
+{
+    "name": "Xilinx Shared Host Utility",
+    "description": "Xilinx Shared Host Utility",
+    "flow": "hls",
+    "platform_whitelist": [
+        "xilinx_u280_xdma_201920_3",
+        "xilinx_u250_xdma_201830_2",
+        "xilinx_u200_xdma_201830_2",
+        "xilinx_u50_gen3x16_xdma_201920_3"
+    ],
+    "platform_blacklist": [],
+    "part_whitelist": [],
+    "part_blacklist": [],
+    "project": "shared_host",
+    "solution": "sol1",
+    "clock": "2.5",
+    "topfunction": "main",
+    "top": {
+        "source": [
+            "test.cpp"
+        ],
+        "cflags": "-I${XF_PROJ_ROOT}/L1/include"
+    },
+    "testbench": {
+        "source": [
+            "test.cpp"
+        ],
+        "cflags": "-I${XF_PROJ_ROOT}/L1/include",
+        "ldflags": "",
+        "argv": {},
+        "stdmath": false
+    },
+    "testinfo": {
+        "disable": false,
+        "jobs": [
+            {
+                "index": 0,
+                "dependency": [],
+                "env": "",
+                "cmd": "",
+                "max_memory_MB": {
+                    "hls_vivado_syn": 16384,
+                    "hls_csim": 10240,
+                    "hls_cosim": 16384,
+                    "hls_vivado_impl": 16384,
+                    "hls_csynth": 10240
+                },
+                "max_time_min": 300
+            }
+        ],
+        "targets": [
+            "hls_csim"
+        ],
+        "category": "canary"
+    }
+}
