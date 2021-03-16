@@ -20,6 +20,28 @@
 #include <iostream>
 #include "CL/cl.h"
 
+#define OCL_LOG_CHECK(error, call)                                                       \
+    call;                                                                                \
+    if (std::string(#call).find("::Context") != std::string::npos ||                     \
+        std::string(#call).find("= Context") != std::string::npos ||                     \
+        std::string(#call).find("CreateContext") != std::string::npos) {                 \
+        xf::common::utils_sw::Logger(std::cout, std::cerr).logCreateContext(error);      \
+    } else if (std::string(#call).find("::Kernel") != std::string::npos ||               \
+               std::string(#call).find("= Kernel") != std::string::npos ||               \
+               std::string(#call).find("CreateKernel") != std::string::npos) {           \
+        xf::common::utils_sw::Logger(std::cout, std::cerr).logCreateKernel(error);       \
+    } else if (std::string(#call).find("::CommandQueue") != std::string::npos ||         \
+               std::string(#call).find("= CommandQueue") != std::string::npos ||         \
+               std::string(#call).find("CreateCommandQueue") != std::string::npos) {     \
+        xf::common::utils_sw::Logger(std::cout, std::cerr).logCreateCommandQueue(error); \
+    } else if (std::string(#call).find("::Program") != std::string::npos ||              \
+               std::string(#call).find("= Program") != std::string::npos ||              \
+               std::string(#call).find("CreateProgram") != std::string::npos) {          \
+        xf::common::utils_sw::Logger(std::cout, std::cerr).logCreateProgram(error);      \
+    } else {                                                                             \
+        xf::common::utils_sw::Logger(std::cout, std::cerr).logCommonCheck(error);        \
+    }
+
 namespace xf {
 namespace common {
 namespace utils_sw {

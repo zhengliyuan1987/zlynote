@@ -12,236 +12,193 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# makefile-generator v1.0.3
 #
 
-MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
-XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/L1/*}')
-
-# MK_INC_BEGIN hls_common.mk
-
+# ####################################### Help Section #####################################
 .PHONY: help
 
 help::
-	@echo ""
-	@echo "Makefile Usage:"
-	@echo ""
-	@echo "  make run CSIM=1 CSYNTH=1 COSIM=1 DEVICE=<FPGA platform> PLATFORM_REPO_PATHS=<path to platform directories>"
-	@echo "      Command to run the selected tasks for specified device."
-	@echo ""
-	@echo "      Valid tasks are CSIM, CSYNTH, COSIM, VIVADO_SYN, VIVADO_IMPL"
-	@echo ""
-	@echo "      DEVICE is case-insensitive and support awk regex."
-	@echo "      For example, \`make run DEVICE='u200.*xdma' COSIM=1\`"
-	@echo "      It can also be an absolute path to platform file."
-	@echo ""
-	@echo "      PLATFORM_REPO_PATHS variable is used to specify the paths in which the platform files will be"
-	@echo "      searched for."
-	@echo ""
-	@echo "  make run CSIM=1 CSYNTH=1 COSIM=1 XPART=<FPGA part name>"
-	@echo "      Alternatively, the FPGA part can be speficied via XPART."
-	@echo "      For example, \`make run XPART='xcu200-fsgd2104-2-e' COSIM=1\`"
-	@echo "      When XPART is set, DEVICE will be ignored."
-	@echo ""
-	@echo "  make clean "
-	@echo "      Command to remove the generated files."
-	@echo ""
+	$(ECHO) "Makefile Usage:"
+	$(ECHO) "  make all TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<aarch32/aarch64/x86>"
+	$(ECHO) "      Command to generate the design for specified Target and Shell."
+	$(ECHO) "      By default, HOST_ARCH=x86. HOST_ARCH is required for SoC shells"
+	$(ECHO) ""
+	$(ECHO) "  make clean "
+	$(ECHO) "      Command to remove the generated non-hardware files."
+	$(ECHO) ""
+	$(ECHO) "  make cleanall"
+	$(ECHO) "      Command to remove all the generated files."
+	$(ECHO) ""
+	$(ECHO) "  make TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<aarch32/aarch64/x86>"
+	$(ECHO) "      By default, HOST_ARCH=x86. HOST_ARCH is required for SoC shells"
+	$(ECHO) ""
+	$(ECHO) "  make run TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<aarch32/aarch64/x86>"
+	$(ECHO) "      Command to run application in emulation."
+	$(ECHO) "      By default, HOST_ARCH=x86. HOST_ARCH required for SoC shells"
+	$(ECHO) ""
+	$(ECHO) "  make build TARGET=<sw_emu/hw_emu/hw> DEVICE=<FPGA platform> HOST_ARCH=<aarch32/aarch64/x86>"
+	$(ECHO) "      Command to build xclbin application."
+	$(ECHO) "      By default, HOST_ARCH=x86. HOST_ARCH is required for SoC shells"
+	$(ECHO) ""
+	$(ECHO) "  make host HOST_ARCH=<aarch32/aarch64/x86>"
+	$(ECHO) "      Command to build host application."
+	$(ECHO) "      By default, HOST_ARCH=x86. HOST_ARCH is required for SoC shells"
+	$(ECHO) ""
+	$(ECHO) "  NOTE: For SoC shells, ENV variable SYSROOT needs to be set."
+	$(ECHO) ""
 
-# MK_INC_END hls_common.mk
+# ##################### Setting up default value of TARGET ##########################
+TARGET ?= sw_emu
 
-# MK_INC_BEGIN vivado.mk
-
-.PHONY: check_vivado
-check_vivado:
-ifeq (,$(wildcard $(XILINX_VIVADO)/bin/vivado))
-	@echo "Cannot locate Vivado installation. Please set XILINX_VIVADO variable." && false
-endif
-
-export PATH := $(XILINX_VIVADO)/bin:$(PATH)
-
-# MK_INC_END vivado.mk
-
+# ################### Setting up default value of DEVICE ##############################
 DEVICE ?= xilinx_u280_xdma_201920_3
 
-# MK_INC_BEGIN vitis_set_part.mk
+# ###################### Setting up default value of HOST_ARCH ####################### 
+HOST_ARCH ?= x86
 
-# MK_INC_BEGIN vitis.mk
+# #################### Checking if DEVICE in blacklist #############################
 
-.PHONY: check_vpp
-check_vpp:
-ifeq (,$(wildcard $(XILINX_VITIS)/bin/v++))
-	@echo "Cannot locate Vitis installation. Please set XILINX_VITIS variable." && false
+# #################### Checking if DEVICE in whitelist ############################
+ifneq ($(findstring xilinx_u280_xdma_201920_3, $(DEVICE)), xilinx_u280_xdma_201920_3)
+ifneq ($(findstring xilinx_u200_xdma_201830_2, $(DEVICE)), xilinx_u200_xdma_201830_2)
+ifneq ($(findstring xilinx_u250_xdma_201830_2, $(DEVICE)), xilinx_u250_xdma_201830_2)
+ifneq ($(findstring xilinx_u50_gen3x16_xdma_201920_3, $(DEVICE)), xilinx_u50_gen3x16_xdma_201920_3)
+$(error [ERROR]: This project is not supported for $(DEVICE).)
+endif
+endif
+endif
 endif
 
-.PHONY: check_xrt
-check_xrt:
-ifeq (,$(wildcard $(XILINX_XRT)/lib/libxilinxopencl.so))
-	@echo "Cannot locate XRT installation. Please set XILINX_XRT variable." && false
+# ######################## Setting up Project Variables #################################
+MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/L1/*}')
+CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
+XFLIB_DIR = $(XF_PROJ_ROOT)
+
+# ######################### Include environment variables in utils.mk ####################
+include ./utils.mk
+XDEVICE := $(call device2xsa, $(DEVICE))
+TEMP_DIR := _x_temp.$(TARGET).$(XDEVICE)
+TEMP_REPORT_DIR := $(CUR_DIR)/reports/_x.$(TARGET).$(XDEVICE)
+BUILD_DIR := build_dir.$(TARGET).$(XDEVICE)
+BUILD_REPORT_DIR := $(CUR_DIR)/reports/_build.$(TARGET).$(XDEVICE)
+EMCONFIG_DIR := $(BUILD_DIR)
+XCLBIN_DIR := $(CUR_DIR)/$(BUILD_DIR)
+export XCL_BINDIR = $(XCLBIN_DIR)
+
+# ######################### Setting up Host Variables #########################
+#Include Required Host Source Files
+HOST_SRCS += $(CUR_DIR)/test.cpp
+HOST_SRCS += $(CUR_DIR)/xcl2/xcl2.cpp
+CXXFLAGS += -I$(XFLIB_DIR)/L1/include
+CXXFLAGS += -I$(CUR_DIR)/xcl2
+CXXFLAGS += -I$(XFLIB_DIR)/L1/include
+
+ifeq ($(TARGET),sw_emu)
+CXXFLAGS += -D SW_EMU_TEST
 endif
 
-export PATH := $(XILINX_VITIS)/bin:$(XILINX_XRT)/bin:$(PATH)
+ifeq ($(TARGET),hw_emu)
+CXXFLAGS += -D HW_EMU_TEST
+endif
 
-ifeq (,$(LD_LIBRARY_PATH))
-LD_LIBRARY_PATH := $(XILINX_XRT)/lib
+# ######################### Host compiler global settings ############################
+CXXFLAGS += -I$(XILINX_XRT)/include -I$(XILINX_VIVADO)/include -std=c++11 -O3 -Wall -Wno-unknown-pragmas -Wno-unused-label
+LDFLAGS += -L$(XILINX_XRT)/lib -lOpenCL -lpthread -lrt -Wno-unused-label -Wno-narrowing -DVERBOSE
+CXXFLAGS += -fmessage-length=0 -g -O3 -D XDEVICE=$(XDEVICE)
+CXXFLAGS += -I$(CUR_DIR)/src/ 
+
+ifeq ($(HOST_ARCH), x86)
+LDFLAGS += -L$(XILINX_VIVADO)/lnx64/tools/fpo_v7_0 -Wl,--as-needed -lgmp -lmpfr -lIp_floating_point_v7_0_bitacc_cmodel
+endif
+
+# ################### Setting package and image directory #######################
+
+EXE_NAME := test.exe
+EXE_FILE := $(BUILD_DIR)/$(EXE_NAME)
+ifeq ($(TARGET),$(filter $(TARGET),sw_emu))
+HOST_ARGS := 
+endif
+
+# ##################### Kernel compiler global settings ##########################
+VPP_FLAGS += -t $(TARGET) --platform $(XPLATFORM) --save-temps --optimize 2
+VPP_FLAGS += --hls.jobs 16
+VPP_LDFLAGS += --vivado.synth.jobs 16 --vivado.impl.jobs 16
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/include
+
+VPP_FLAGS += -I$(XFLIB_DIR)/L1/include
+
+vadd_VPP_FLAGS += --hls.clock 300000000:vadd
+VPP_LDFLAGS_vadd += --kernel_frequency 300
+
+VPP_FLAGS += -g
+
+# ############################ Declaring Binary Containers ##########################
+
+BINARY_CONTAINERS += $(BUILD_DIR)/vadd.xclbin
+BINARY_CONTAINER_vadd_OBJS += $(TEMP_DIR)/vadd.xo
+
+# ######################### Setting Targets of Makefile ################################
+
+.PHONY: all clean cleanall docs emconfig
+all: check_vpp check_platform  $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
+
+.PHONY: host
+host: check_xrt check_sysroot $(EXE_FILE)
+
+.PHONY: xclbin
+xclbin: check_vpp check_sysroot $(BINARY_CONTAINERS)
+
+.PHONY: build
+build: xclbin
+
+# ################ Setting Rules for Binary Containers (Building Kernels) ################
+$(TEMP_DIR)/vadd.xo: $(CUR_DIR)/vadd.cpp
+	$(ECHO) "Compiling Kernel: vadd"
+	mkdir -p $(TEMP_DIR)
+	$(VPP) -c $(vadd_VPP_FLAGS) $(VPP_FLAGS) -k vadd -I'$(<D)' --temp_dir $(TEMP_DIR) --report_dir $(TEMP_REPORT_DIR) -o'$@' '$<'
+
+
+$(BUILD_DIR)/vadd.xclbin: $(BINARY_CONTAINER_vadd_OBJS)
+	mkdir -p $(BUILD_DIR)
+	$(VPP) -l $(VPP_FLAGS) --temp_dir $(TEMP_DIR) --report_dir $(BUILD_REPORT_DIR)/vadd $(VPP_LDFLAGS) $(VPP_LDFLAGS_vadd) -o '$@' $(+)
+
+
+# ################# Setting Rules for Host (Building Host Executable) ################
+$(EXE_FILE): $(HOST_SRCS) | check_xrt
+	mkdir -p $(BUILD_DIR)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+
+emconfig:$(EMCONFIG_DIR)/emconfig.json
+$(EMCONFIG_DIR)/emconfig.json:
+	emconfigutil --platform $(XPLATFORM) --od $(EMCONFIG_DIR)
+
+
+# ###############Setting Essential Checks And Running Rules For Vitis Flow #############
+run: all
+ifeq ($(TARGET),$(filter $(TARGET),sw_emu hw_emu))
+	$(CP) $(EMCONFIG_DIR)/emconfig.json .
+	XCL_EMULATION_MODE=$(TARGET) $(EXE_FILE) $(HOST_ARGS)
 else
-LD_LIBRARY_PATH := $(XILINX_XRT)/lib:$(LD_LIBRARY_PATH)
-endif
-ifneq (,$(wildcard $(XILINX_VITIS)/bin/ldlibpath.sh))
-export LD_LIBRARY_PATH := $(shell $(XILINX_VITIS)/bin/ldlibpath.sh $(XILINX_VITIS)/lib/lnx64.o):$(LD_LIBRARY_PATH)
+	$(EXE_FILE) $(HOST_ARGS)
 endif
 
-# MK_INC_END vitis.mk
+# ################################# Cleaning Rules ##################################
+cleanh:
+	-$(RMDIR) $(EXE_FILE) vitis_* TempConfig system_estimate.xtxt *.rpt .run/
+	-$(RMDIR) src/*.ll _xocc_* .Xil dltmp* xmltmp* *.log *.jou *.wcfg *.wdb sample_link.ini sample_compile.ini obj* bin* *.csv *.jpg *.jpeg *.png
 
-.PHONY: check_part
+cleank:
+	-$(RMDIR) $(BUILD_DIR)/*.xclbin _vimage *xclbin.run_summary qemu-memory-_* emulation/ _vimage/ pl* start_simulation.sh *.xclbin
+	-$(RMDIR) _x_temp.*/_x.* _x_temp.*/.Xil _x_temp.*/profile_summary.* xo_* _x*
+	-$(RMDIR) _x_temp.*/dltmp* _x_temp.*/kernel_info.dat _x_temp.*/*.log 
+	-$(RMDIR) _x_temp.* 
 
-ifeq (,$(XPART))
-# MK_INC_BEGIN vitis_set_platform.mk
+cleanall: cleanh cleank
+	-$(RMDIR) $(BUILD_DIR)  build_dir.* emconfig.json *.html $(TEMP_DIR) $(CUR_DIR)/reports *.csv *.run_summary $(CUR_DIR)/*.raw package_* run_script.sh .ipcache *.str
+	-$(RMDIR) $(XFLIB_DIR)/common/data/*.xe2xd* $(XFLIB_DIR)/common/data/*.orig*
 
-ifneq (,$(wildcard $(DEVICE)))
-# Use DEVICE as a file path
-XPLATFORM := $(DEVICE)
-else
-# Use DEVICE as a file name pattern
-DEVICE_L := $(shell echo $(DEVICE) | tr A-Z a-z)
-# 1. search paths specified by variable
-ifneq (,$(PLATFORM_REPO_PATHS))
-# 1.1 as exact name
-XPLATFORM := $(strip $(foreach p, $(subst :, ,$(PLATFORM_REPO_PATHS)), $(wildcard $(p)/$(DEVICE_L)/$(DEVICE_L).xpfm)))
-# 1.2 as a pattern
-ifeq (,$(XPLATFORM))
-XPLATFORMS := $(foreach p, $(subst :, ,$(PLATFORM_REPO_PATHS)), $(wildcard $(p)/*/*.xpfm))
-XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-endif # 1.2
-endif # 1
-# 2. search Vitis installation
-ifeq (,$(XPLATFORM))
-# 2.1 as exact name
-XPLATFORM := $(strip $(wildcard $(XILINX_VITIS)/platforms/$(DEVICE_L)/$(DEVICE_L).xpfm))
-# 2.2 as a pattern
-ifeq (,$(XPLATFORM))
-XPLATFORMS := $(wildcard $(XILINX_VITIS)/platforms/*/*.xpfm)
-XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-endif # 2.2
-endif # 2
-# 3. search default locations
-ifeq (,$(XPLATFORM))
-# 3.1 as exact name
-XPLATFORM := $(strip $(wildcard /opt/xilinx/platforms/$(DEVICE_L)/$(DEVICE_L).xpfm))
-# 3.2 as a pattern
-ifeq (,$(XPLATFORM))
-XPLATFORMS := $(wildcard /opt/xilinx/platforms/*/*.xpfm)
-XPLATFORM := $(strip $(foreach p, $(XPLATFORMS), $(shell echo $(p) | awk '$$1 ~ /$(DEVICE_L)/')))
-endif # 3.2
-endif # 3
-endif
+	-$(RMDIR) $(AIE_CONTAINERS) $(CUR_DIR)/Work $(CUR_DIR)/*.xpe $(CUR_DIR)/hw.o $(CUR_DIR)/*.xsa $(CUR_DIR)/xnwOut aiesimulator_output .AIE_SIM_CMD_LINE_OPTIONS
 
-define MSG_PLATFORM
-No platform matched pattern '$(DEVICE)'.
-Available platforms are: $(XPLATFORMS)
-To add more platform directories, set the PLATFORM_REPO_PATHS variable or point DEVICE variable to the full path of platform .xpfm file.
-endef
-export MSG_PLATFORM
-
-define MSG_DEVICE
-More than one platform matched: $(XPLATFORM)
-Please set DEVICE variable more accurately to select only one platform file, or set DEVICE variable to the full path of the platform .xpfm file.
-endef
-export MSG_DEVICE
-
-.PHONY: check_platform
-check_platform:
-ifeq (,$(XPLATFORM))
-	@echo "$${MSG_PLATFORM}" && false
-endif
-ifneq (,$(word 2,$(XPLATFORM)))
-	@echo "$${MSG_DEVICE}" && false
-endif
-
-XDEVICE := $(basename $(notdir $(firstword $(XPLATFORM))))
-
-# MK_INC_END vitis_set_platform.mk
-ifeq (1, $(words $(XPLATFORM)))
-# Query the part name of device
-ifneq (,$(wildcard $(XILINX_VITIS)/bin/platforminfo))
-override XPART := $(shell $(XILINX_VITIS)/bin/platforminfo --json="hardwarePlatform.board.part" --platform $(firstword $(XPLATFORM)))
-endif
-endif
-check_part: check_platform check_vpp
-ifeq (,$(XPART))
-	@echo "XPART is not set and cannot be inferred. Please run \`make help\` for usage info." && false
-endif
-else # XPART
-check_part:
-	@echo "XPART is directly set to $(XPART)"
-endif # XPART
-
-# MK_INC_END vitis_set_part.mk
-
-# MK_INC_BEGIN hls_test_rules.mk
-
-
-.PHONY: run setup runhls clean cleanall check
-
-# Alias to run, for legacy test script
-check: run
-
-CSIM ?= 0
-CSYNTH ?= 0
-COSIM ?= 0
-VIVADO_SYN ?= 0
-VIVADO_IMPL ?= 0
-QOR_CHECK ?= 0
-
-# at least RTL synthesis before check QoR
-ifeq (1,$(QOR_CHECK))
-ifeq (0,$(VIVADO_IMPL))
-override VIVADO_SYN := 1
-endif
-endif
-
-# need synthesis before cosim or vivado
-ifeq (1,$(VIVADO_IMPL))
-override CSYNTH := 1
-endif
-
-ifeq (1,$(VIVADO_SYN))
-override CSYNTH := 1
-endif
-
-ifeq (1,$(COSIM))
-override CSYNTH := 1
-endif
-
-# From testbench.data_recipe of description.json
-data:
-	@true
-
-run: data setup runhls
-
-setup: | check_part
-	@rm -f ./settings.tcl
-	@if [ -n "$$CLKP" ]; then echo 'set CLKP $(CLKP)' >> ./settings.tcl ; fi
-	@echo 'set XPART $(XPART)' >> ./settings.tcl
-	@echo 'set CSIM $(CSIM)' >> ./settings.tcl
-	@echo 'set CSYNTH $(CSYNTH)' >> ./settings.tcl
-	@echo 'set COSIM $(COSIM)' >> ./settings.tcl
-	@echo 'set VIVADO_SYN $(VIVADO_SYN)' >> ./settings.tcl
-	@echo 'set VIVADO_IMPL $(VIVADO_IMPL)' >> ./settings.tcl
-	@echo 'set XF_PROJ_ROOT "$(XF_PROJ_ROOT)"' >> ./settings.tcl
-	@echo 'set CUR_DIR "$(CUR_DIR)"' >> ./settings.tcl
-	@echo "Configured: settings.tcl"
-	@echo "----"
-	@cat ./settings.tcl
-	@echo "----"
-
-HLS ?= vitis_hls
-runhls: data setup | check_vivado check_vpp
-	$(HLS) -f run_hls.tcl;
-
-clean:
-	rm -rf settings.tcl *_hls.log shared_host.prj
-
-# Used by Jenkins test
-cleanall: clean
-
-# MK_INC_END hls_test_rules.mk
+clean: cleanh

@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include "xf_utils_sw/logger.hpp"
+#include "xcl2/xcl2.hpp"
 
 int main(int argc, const char* argv[]) {
     using namespace xf::common::utils_sw;
@@ -34,15 +35,17 @@ int main(int argc, const char* argv[]) {
     // eg: template message
     l.info(Logger::Message::TIME_KERNEL_MS, 1.5f);
 
+    // eg: for cases using original OCL_CHECK
+    auto devices = xcl::get_xil_devices();
+    cl::Context context;
+    OCL_LOG_CHECK(err, context = cl::Context(devices[0], NULL, NULL, NULL, &err));
+
     // eg: level and call chaining (this will print nothing since info is no longer under the level of WARNING)
     l.setLevel(Logger::Level::WARNING).info(Logger::Message::TEST_PASS).setLevel(Logger::Level::INFO);
 
     // eg: handling result checking
     bool has_err = false;
-    if (has_err) {
-        l.error(Logger::Message::TEST_FAIL);
-    } else {
-        l.info(Logger::Message::TEST_PASS);
-    }
+    has_err ? l.error(Logger::Message::TEST_FAIL) : l.info(Logger::Message::TEST_PASS);
+
     return has_err;
 }
