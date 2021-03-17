@@ -17,6 +17,12 @@
 #ifndef XF_UTILS_SW_LOGGER_HPP
 #define XF_UTILS_SW_LOGGER_HPP
 
+// Xilinx implements deprecated APIs
+// Turn off deprecation warnings
+#define CL_USE_DEPRECATED_OPENCL_1_0_APIS
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+
 #include <iostream>
 #include "CL/cl.h"
 
@@ -42,6 +48,11 @@
         xf::common::utils_sw::Logger(std::cout, std::cerr).logCommonCheck(error);        \
     }
 
+#define ERROR_CASE(err) \
+    case err:           \
+        return #err;    \
+        break
+
 namespace xf {
 namespace common {
 namespace utils_sw {
@@ -50,29 +61,71 @@ namespace utils_sw {
 const inline char* clErrorToString(int err) {
     // TODO complete list, referring to cl.h
     switch (err) {
-        case CL_SUCCESS:
-            return "CL_SUCCESS";
-        case CL_INVALID_PROGRAM:
-            return "CL_INVALID_PROGRAM";
-        case CL_INVALID_KERNEL_NAME:
-            return "CL_INVALID_KERNEL_NAME";
-        case CL_INVALID_CONTEXT:
-            return "CL_INVALID_CONTEXT";
-        case CL_INVALID_VALUE:
-            return "CL_INVALID_VALUE";
-        case CL_INVALID_DEVICE:
-            return "CL_INVALID_DEVICE";
-        case CL_INVALID_BINARY:
-            return "CL_INVALID_BINARY";
-        case CL_OUT_OF_HOST_MEMORY:
-            return "CL_OUT_OF_HOST_MEMORY";
-        case CL_INVALID_QUEUE_PROPERTIES:
-            return "CL_INVALID_QUEUE_PROPERTIES";
-        case CL_INVALID_OPERATION:
-            return "CL_INVALID_OPERATION";
+        ERROR_CASE(CL_SUCCESS);
+        ERROR_CASE(CL_DEVICE_NOT_FOUND);
+        ERROR_CASE(CL_DEVICE_NOT_AVAILABLE);
+        ERROR_CASE(CL_COMPILER_NOT_AVAILABLE);
+        ERROR_CASE(CL_MEM_OBJECT_ALLOCATION_FAILURE);
+        ERROR_CASE(CL_OUT_OF_RESOURCES);
+        ERROR_CASE(CL_OUT_OF_HOST_MEMORY);
+        ERROR_CASE(CL_PROFILING_INFO_NOT_AVAILABLE);
+        ERROR_CASE(CL_MEM_COPY_OVERLAP);
+        ERROR_CASE(CL_IMAGE_FORMAT_MISMATCH);
+        ERROR_CASE(CL_IMAGE_FORMAT_NOT_SUPPORTED);
+        ERROR_CASE(CL_BUILD_PROGRAM_FAILURE);
+        ERROR_CASE(CL_MAP_FAILURE);
+        ERROR_CASE(CL_INVALID_VALUE);
+        ERROR_CASE(CL_INVALID_DEVICE_TYPE);
+        ERROR_CASE(CL_INVALID_PLATFORM);
+        ERROR_CASE(CL_INVALID_DEVICE);
+        ERROR_CASE(CL_INVALID_CONTEXT);
+        ERROR_CASE(CL_INVALID_QUEUE_PROPERTIES);
+        ERROR_CASE(CL_INVALID_COMMAND_QUEUE);
+        ERROR_CASE(CL_INVALID_HOST_PTR);
+        ERROR_CASE(CL_INVALID_MEM_OBJECT);
+        ERROR_CASE(CL_INVALID_IMAGE_FORMAT_DESCRIPTOR);
+        ERROR_CASE(CL_INVALID_IMAGE_SIZE);
+        ERROR_CASE(CL_INVALID_SAMPLER);
+        ERROR_CASE(CL_INVALID_BINARY);
+        ERROR_CASE(CL_INVALID_BUILD_OPTIONS);
+        ERROR_CASE(CL_INVALID_PROGRAM);
+        ERROR_CASE(CL_INVALID_PROGRAM_EXECUTABLE);
+        ERROR_CASE(CL_INVALID_KERNEL_NAME);
+        ERROR_CASE(CL_INVALID_KERNEL_DEFINITION);
+        ERROR_CASE(CL_INVALID_KERNEL);
+        ERROR_CASE(CL_INVALID_ARG_INDEX);
+        ERROR_CASE(CL_INVALID_ARG_VALUE);
+        ERROR_CASE(CL_INVALID_ARG_SIZE);
+        ERROR_CASE(CL_INVALID_KERNEL_ARGS);
+        ERROR_CASE(CL_INVALID_WORK_DIMENSION);
+        ERROR_CASE(CL_INVALID_WORK_GROUP_SIZE);
+        ERROR_CASE(CL_INVALID_WORK_ITEM_SIZE);
+        ERROR_CASE(CL_INVALID_GLOBAL_OFFSET);
+        ERROR_CASE(CL_INVALID_EVENT_WAIT_LIST);
+        ERROR_CASE(CL_INVALID_EVENT);
+        ERROR_CASE(CL_INVALID_OPERATION);
+        ERROR_CASE(CL_INVALID_GL_OBJECT);
+        ERROR_CASE(CL_INVALID_BUFFER_SIZE);
+        ERROR_CASE(CL_INVALID_MIP_LEVEL);
+        ERROR_CASE(CL_INVALID_GLOBAL_WORK_SIZE);
+        ERROR_CASE(CL_COMPILE_PROGRAM_FAILURE);
+        ERROR_CASE(CL_LINKER_NOT_AVAILABLE);
+        ERROR_CASE(CL_LINK_PROGRAM_FAILURE);
+        ERROR_CASE(CL_DEVICE_PARTITION_FAILED);
+        ERROR_CASE(CL_KERNEL_ARG_INFO_NOT_AVAILABLE);
+        ERROR_CASE(CL_INVALID_PROPERTY);
+        ERROR_CASE(CL_INVALID_IMAGE_DESCRIPTOR);
+        ERROR_CASE(CL_INVALID_COMPILER_OPTIONS);
+        ERROR_CASE(CL_INVALID_LINKER_OPTIONS);
+        ERROR_CASE(CL_INVALID_DEVICE_PARTITION_COUNT);
+        default:
+            std::cerr << "Unknown OpenCL Error " << err << std::endl;
+            break;
     }
-    return "unknown CL error code";
+    return nullptr;
 }
+
+#undef ERROR_CASE
 
 // Logger class for handling the unified Error/Warning/Info/Debug messages.
 // Users can set the level of log that needed to be printed
