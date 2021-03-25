@@ -29,6 +29,8 @@ void dut(hls::stream<xf::datamover::ConstData::type>& is,
          hls::stream<ap_axiu<AXI_WIDTH, 0, 0, 0> >& cs,
          hls::stream<xf::datamover::CheckResult::type>& rs,
          const uint64_t sz) {
+#pragma HLS INTERFACE axis port = os
+#pragma HLS INTERFACE axis port = cs
     xf::datamover::PreloadableBRam<AXI_WIDTH, RAM_DEPTH> pbram;
     pbram.preload(is, sz);
     pbram.toStream(os, sz);

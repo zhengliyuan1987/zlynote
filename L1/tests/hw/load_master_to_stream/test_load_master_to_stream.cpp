@@ -25,6 +25,7 @@
 #define AXI_WIDTH 32
 
 void dut(ap_uint<MASTER_WIDTH> mm[SIZE], hls::stream<ap_axiu<AXI_WIDTH, 0, 0, 0> >& s, uint64_t sz) {
+#pragma HLS INTERFACE axis port = s
     xf::datamover::loadMasterToStream(mm, s, sz);
 }
 

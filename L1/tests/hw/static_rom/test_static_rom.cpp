@@ -28,6 +28,8 @@ void dut(hls::stream<ap_axiu<ROM_WIDTH, 0, 0, 0> >& os,
          hls::stream<ap_axiu<ROM_WIDTH, 0, 0, 0> >& cs,
          hls::stream<xf::datamover::CheckResult::type>& rs,
          const uint64_t sz) {
+#pragma HLS INTERFACE axis port = os
+#pragma HLS INTERFACE axis port = cs
     const ap_uint<ROM_WIDTH> in[] = {
 #include "init_file.inc"
     };
