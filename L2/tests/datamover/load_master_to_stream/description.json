@@ -58,6 +58,11 @@
             "name": "datamover"
         }
     ], 
+    "output_files": [
+        "kernel/*.cpp",
+        "kernel/*.inc",
+        "_krnlgen"
+    ],
     "testinfo": {
         "disable": false, 
         "jobs": [
