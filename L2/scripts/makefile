@@ -49,7 +49,6 @@ endif
 
 $(DEST_DIR)/py3env/.ok: $(DEST_DIR)/py3env/bin/activate
 	@echo "[INFO] Installing reqired python3 packages in venv..."
-	@(source $(DEST_DIR)/py3env/bin/activate; pip install wheel)
 	@(source $(DEST_DIR)/py3env/bin/activate; PYTHONPATH="" pip install -r requirements.txt)
 	@touch $(DEST_DIR)/py3env/.ok
 
