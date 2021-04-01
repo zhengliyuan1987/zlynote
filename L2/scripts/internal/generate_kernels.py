@@ -96,7 +96,7 @@ def main():
     #print(d)
 
     tmpl_loader = j2.FileSystemLoader(
-        searchpath=os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'src', 'hw', 'datamover'))
+        searchpath=os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'templates', 'datamover'))
     tmpl_env = j2.Environment(loader=tmpl_loader)
     templates = {}
     for impl in impl2file.keys():
