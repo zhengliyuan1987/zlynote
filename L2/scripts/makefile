@@ -15,7 +15,7 @@
 #
 
 MK_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-CUR_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
+MK_DIR := $(patsubst %/,%,$(dir $(MK_PATH)))
 XF_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/L2/scripts/*}')
 XFLIB_DIR = $(XF_PROJ_ROOT)
 
@@ -52,7 +52,7 @@ $(DEST_DIR)/dataConverter: $(XFLIB_DIR)/L2/src/sw/datamover/data_converter.cpp c
 
 $(DEST_DIR)/py3env/.ok: $(DEST_DIR)/py3env/bin/activate
 	@echo "[INFO] Installing reqired python3 packages in venv..."
-	@(source $(DEST_DIR)/py3env/bin/activate; PYTHONPATH="" pip install -r requirements.txt)
+	@(source $(DEST_DIR)/py3env/bin/activate; PYTHONPATH="" python3 $(DEST_DIR)/py3env/bin/pip install -r $(MK_DIR)/requirements.txt)
 	@touch $(DEST_DIR)/py3env/.ok
 
 $(DEST_DIR)/py3env/bin/activate:
