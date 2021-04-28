@@ -7,6 +7,9 @@
         "u200", 
         "aws-vu9p-f1"
     ], 
+    "default_target": "hw_emu",
+    "default_device": "xilinx_vck190_base_202110_1",
+    "default_HOST_ARCH": "aarch64",
     "platform_blacklist": [], 
     "platform_properties": {}, 
     "launch": [
@@ -61,6 +64,7 @@
     "output_files": [
         "kernel/*.cpp",
         "kernel/*.inc",
+        "kernel/.stamp",
         "_krnlgen"
     ],
     "testinfo": {
