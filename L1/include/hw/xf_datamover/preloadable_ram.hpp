@@ -31,12 +31,12 @@ namespace datamover {
  * @tparam DM depth of BRAM.
  */
 template <int WS, int DM>
-struct PreloadableBRam {
+struct PreloadableBram {
    private:
     ap_uint<WS> data[DM];
 
    public:
-    PreloadableBRam() {
+    PreloadableBram() {
 #pragma HLS inline
 #pragma HLS resource variable = data core = RAM_2P_BRAM
     }
@@ -164,12 +164,12 @@ struct PreloadableBRam {
  * @tparam DM depth of URAM.
  */
 template <int WS, int DM>
-struct PreloadableURam {
+struct PreloadableUram {
    private:
     ap_uint<WS> data[DM];
 
    public:
-    PreloadableURam() {
+    PreloadableUram() {
 #pragma HLS inline
 #pragma HLS resource variable = data core = RAM_2P_URAM
     }
