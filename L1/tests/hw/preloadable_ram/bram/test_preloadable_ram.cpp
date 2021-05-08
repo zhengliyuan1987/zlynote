@@ -31,14 +31,14 @@ void dut(hls::stream<xf::datamover::ConstData::type>& is,
          const uint64_t sz) {
 #pragma HLS INTERFACE axis port = os
 #pragma HLS INTERFACE axis port = cs
-    xf::datamover::PreloadableBRam<AXI_WIDTH, RAM_DEPTH> pbram;
+    xf::datamover::PreloadableBram<AXI_WIDTH, RAM_DEPTH> pbram;
     pbram.preload(is, sz);
     pbram.toStream(os, sz);
     pbram.checkStream(cs, rs, sz);
 }
 
 int main() {
-    std::cout << "Testing PreloadableBRam with " << SIZE << " bytes of input..." << std::endl;
+    std::cout << "Testing PreloadableBram with " << SIZE << " bytes of input..." << std::endl;
     xf::datamover::ConstData::type golden[AXI_WIDTH / xf::datamover::ConstData::Port_Width * RAM_DEPTH];
     hls::stream<xf::datamover::ConstData::type> is;
     hls::stream<ap_axiu<AXI_WIDTH, 0, 0, 0> > cs;
