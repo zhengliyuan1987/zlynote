@@ -256,7 +256,7 @@ PACKAGE_FILES += emconfig.json
 PACKAGE_FILES += $(DATA_FILE)
 SD_FILES_WITH_PREFIX = $(foreach sd_file,$(PACKAGE_FILES),--package.sd_file $(sd_file))
 SD_DIRS_WITH_PREFIX = $(foreach sd_dir,$(DATA_DIR),--package.sd_dir $(sd_dir))
-sd_card: $(EXE_FILE) $(BINARY_CONTAINERS) emconfig
+sd_card: host xclbin emconfig
 ifneq ($(HOST_ARCH), x86)
 	@echo "Generating sd_card folder...."
 	mkdir -p $(EMBEDDED_PACKAGE_OUT)
