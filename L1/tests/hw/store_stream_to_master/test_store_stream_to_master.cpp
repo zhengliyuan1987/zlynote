@@ -24,11 +24,11 @@
 #define MASTER_WIDTH 32
 #define AXI_WIDTH 32
 
-void dut(hls::stream<ap_axiu<AXI_WIDTH, 0, 0, 0> >& is,
+void dut(hls::stream<ap_axiu<AXI_WIDTH, 0, 0, 0> >& in_s,
          ap_uint<MASTER_WIDTH> mm[SIZE / (MASTER_WIDTH / 8) + 1],
          uint64_t sz) {
-#pragma HLS INTERFACE axis port = is
-    xf::datamover::storeStreamToMaster(is, mm, sz);
+#pragma HLS INTERFACE axis port = in_s
+    xf::datamover::storeStreamToMaster(in_s, mm, sz);
 }
 
 int main() {
