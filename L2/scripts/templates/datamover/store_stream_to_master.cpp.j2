@@ -29,7 +29,7 @@ extern "C" void {{ k["name"] }}({% for m in k["map"] %}
 // clang-format off{% for m in k["map"] %}
 #pragma HLS interface axis port={{ m["in_port"]["name"] }}
 #pragma HLS interface m_axi offset=slave bundle=gmem{{ loop.index0 }} port={{ m["out"]["name"] }} \
-    max_read_burst_length=32 num_read_outstanding=4 latency=128
+    max_write_burst_length=32 num_write_outstanding=4 latency=128
 #pragma HLS interface s_axilite bundle=control port={{ m["out"]["name"] }}
 #pragma HLS interface s_axilite bundle=control port=sz{{ loop.index0 }}
 {% endfor %}
